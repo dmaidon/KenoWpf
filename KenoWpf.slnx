@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="Keno.Core/Keno.Core.vbproj" />
+  <Project Path="Keno.Wpf/Keno.Wpf.vbproj" />
+  <Project Path="Keno/Keno.WinForms.vbproj" />
+</Solution>

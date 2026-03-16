@@ -1,0 +1,83 @@
+<!-- Last Edit: 2026-03-15 - WinConsecutiveSummary: per-game ListView + summary totals; win rows highlighted gold. -->
+<Window x:Class="WinConsecutiveSummary"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Consecutive Games Summary" Height="520" Width="410"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="44" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="44" />
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Background="SteelBlue">
+            <TextBlock Text="Consecutive Games — Results"
+                       FontFamily="Segoe UI" FontSize="13" FontWeight="Bold"
+                       Foreground="White"
+                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </Border>
+
+        <!-- Per-game results -->
+        <ListView x:Name="LvGames" Grid.Row="1"
+                  FontFamily="Segoe UI" FontSize="9"
+                  Margin="8,8,8,4">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Game"    Width="55"  DisplayMemberBinding="{Binding GameNum}" />
+                    <GridViewColumn Header="Bet"     Width="75"  DisplayMemberBinding="{Binding Bet}" />
+                    <GridViewColumn Header="Matched" Width="72"  DisplayMemberBinding="{Binding Matched}" />
+                    <GridViewColumn Header="Payout"  Width="100" DisplayMemberBinding="{Binding Payout}" />
+                    <GridViewColumn Header="Result"  Width="70"  DisplayMemberBinding="{Binding Result}" />
+                </GridView>
+            </ListView.View>
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsWin}" Value="True">
+                            <Setter Property="Background" Value="LightGoldenrodYellow" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </ListView.ItemContainerStyle>
+        </ListView>
+
+        <!-- Summary panel -->
+        <Grid x:Name="GrdSummary" Grid.Row="2" Margin="12,4,12,4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="Games Won:" Style="{StaticResource SumCapStyle}" />
+            <TextBlock x:Name="TbkWins"     Grid.Row="0" Grid.Column="1" Style="{StaticResource SumValStyle}" />
+
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="Subtotal (before bonus):" Style="{StaticResource SumCapStyle}" />
+            <TextBlock x:Name="TbkSubtotal" Grid.Row="1" Grid.Column="1" Style="{StaticResource SumValStyle}" />
+
+            <TextBlock Grid.Row="2" Grid.Column="0" Text="Bonus Multiplier:" Style="{StaticResource SumCapStyle}" />
+            <TextBlock x:Name="TbkBonus"    Grid.Row="2" Grid.Column="1" Style="{StaticResource SumValStyle}" />
+
+            <TextBlock Grid.Row="3" Grid.Column="0" Text="Total Payout:"
+                       FontFamily="Segoe UI" FontSize="9" FontWeight="Bold"
+                       HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,4,8,4" />
+            <TextBlock x:Name="TbkTotal"    Grid.Row="3" Grid.Column="1"
+                       FontFamily="Segoe UI" FontSize="9" FontWeight="Bold"
+                       HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0,4" />
+        </Grid>
+
+        <Button x:Name="BtnClose" Grid.Row="3" Content="Close"
+                FontFamily="Segoe UI" FontSize="9" FontWeight="Bold"
+                HorizontalAlignment="Right" Width="98" Margin="0,0,12,8"
+                Click="BtnClose_Click" />
+    </Grid>
+</Window>

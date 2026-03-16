@@ -1,0 +1,50 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <RootNamespace>Keno.Wpf</RootNamespace>
+    <UseWPF>true</UseWPF>
+    <AssemblyVersion>26.3.16.127</AssemblyVersion>
+    <FileVersion>26.3.16.127</FileVersion>
+    <ApplicationIcon>keno_2.ico</ApplicationIcon>
+    <OptionStrict>On</OptionStrict>
+    <Title>Keno</Title>
+    <PackageIcon>keno_2.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <NeutralLanguage>en-US</NeutralLanguage>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="keno_2.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Import Include="System.Windows" />
+    <Import Include="System.Windows.Controls" />
+    <Import Include="System.Windows.Data" />
+    <Import Include="System.Windows.Documents" />
+    <Import Include="System.Windows.Input" />
+    <Import Include="System.Windows.Media" />
+    <Import Include="System.Windows.Media.Imaging" />
+    <Import Include="System.Windows.Navigation" />
+    <Import Include="System.Windows.Shapes" />
+    <Import Include="Keno.Core" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\..\Users\dmaid\Downloads\keno_2.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Keno.Core\Keno.Core.vbproj" />
+  </ItemGroup>
+
+</Project>

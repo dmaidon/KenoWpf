@@ -1,0 +1,45 @@
+<!-- Last Edit: 2026-03-15 - WinKenoHelp: TreeView topic list + FlowDocumentScrollViewer for rich content. -->
+<Window x:Class="WinKenoHelp"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Keno Help" Height="580" Width="700"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="44" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="44" />
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Background="SteelBlue">
+            <TextBlock Text="Keno Help"
+                       FontFamily="Segoe UI" FontSize="13" FontWeight="Bold"
+                       Foreground="White"
+                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </Border>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="170" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Topic list -->
+            <TreeView x:Name="TvwTopics" Grid.Column="0"
+                      FontFamily="Segoe UI" FontSize="9"
+                      SelectedItemChanged="TvwTopics_SelectedItemChanged"
+                      Margin="4,4,2,4" />
+
+            <!-- Content area -->
+            <FlowDocumentScrollViewer x:Name="DocViewer" Grid.Column="1"
+                                      VerticalScrollBarVisibility="Auto"
+                                      Margin="2,4,4,4" />
+        </Grid>
+
+        <Button x:Name="BtnClose" Grid.Row="2" Content="Close"
+                FontFamily="Segoe UI" FontSize="9"
+                HorizontalAlignment="Right" Width="90" Margin="0,0,12,8"
+                Click="BtnClose_Click" />
+    </Grid>
+</Window>

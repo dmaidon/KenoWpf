@@ -1,0 +1,80 @@
+<!-- Last Edit: 2026-03-15 - WinAllTimeSummary: 11-row all-time stats; net P/L and return % colour-coded. -->
+<Window x:Class="WinAllTimeSummary"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="All-Time Play History" Height="360" Width="220"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="44" />
+            <RowDefinition />
+            <RowDefinition Height="45.04" />
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Background="SteelBlue">
+            <TextBlock Text="All-Time Play History"
+                       FontFamily="Segoe UI" FontSize="13" FontWeight="Bold"
+                       Foreground="White"
+                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </Border>
+
+        <Grid Grid.Row="1" Margin="12,10,70,4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0"  Grid.Column="0" Text="Sessions Played:"    Style="{StaticResource SumCapStyle}" />
+            <TextBlock x:Name="TbkSessions"   Grid.Row="0"  Grid.Column="1" Style="{StaticResource SumValStyle}" />
+
+            <TextBlock Grid.Row="1"  Grid.Column="0" Text="Total Games Played:" Style="{StaticResource SumCapStyle}" />
+            <TextBlock x:Name="TbkGames"      Grid.Row="1"  Grid.Column="1" Style="{StaticResource SumValStyle}" />
+
+            <TextBlock Grid.Row="2"  Grid.Column="0" Text="Wins / Losses:"      Style="{StaticResource SumCapStyle}" />
+            <TextBlock x:Name="TbkWinLoss"    Grid.Row="2"  Grid.Column="1" Style="{StaticResource SumValStyle}" />
+
+            <TextBlock Grid.Row="3"  Grid.Column="0" Text="Win Rate:"            Style="{StaticResource SumCapStyle}" />
+            <TextBlock x:Name="TbkWinRate"    Grid.Row="3"  Grid.Column="1" Style="{StaticResource SumValStyle}" />
+
+            <TextBlock Grid.Row="4"  Grid.Column="0" Text="Total Wagered:"      Style="{StaticResource SumCapStyle}" />
+            <TextBlock x:Name="TbkWagered"    Grid.Row="4"  Grid.Column="1" Style="{StaticResource SumValStyle}" />
+
+            <TextBlock Grid.Row="5"  Grid.Column="0" Text="Total Payout:"       Style="{StaticResource SumCapStyle}" />
+            <TextBlock x:Name="TbkPayout"     Grid.Row="5"  Grid.Column="1" Style="{StaticResource SumValStyle}" />
+
+            <TextBlock Grid.Row="6"  Grid.Column="0" Text="Net P/L:"             Style="{StaticResource SumCapStyle}" />
+            <TextBlock x:Name="TbkNetPL"      Grid.Row="6"  Grid.Column="1" Style="{StaticResource SumValStyle}" />
+
+            <TextBlock Grid.Row="7"  Grid.Column="0" Text="Return %:"            Style="{StaticResource SumCapStyle}" />
+            <TextBlock x:Name="TbkReturn"     Grid.Row="7"  Grid.Column="1" Style="{StaticResource SumValStyle}" />
+
+            <TextBlock Grid.Row="8"  Grid.Column="0" Text="Best Single Payout:" Style="{StaticResource SumCapStyle}" />
+            <TextBlock x:Name="TbkBest"       Grid.Row="8"  Grid.Column="1" Style="{StaticResource SumValStyle}" />
+
+            <TextBlock Grid.Row="9"  Grid.Column="0" Text="Free Games Earned:"  Style="{StaticResource SumCapStyle}" />
+            <TextBlock x:Name="TbkFreeGames"  Grid.Row="9"  Grid.Column="1" Style="{StaticResource SumValStyle}" />
+
+            <TextBlock Grid.Row="10" Grid.Column="0" Text="Jackpots Won:"        Style="{StaticResource SumCapStyle}" />
+            <TextBlock x:Name="TbkJackpots"   Grid.Row="10" Grid.Column="1" Style="{StaticResource SumValStyle}" />
+        </Grid>
+
+        <Button x:Name="BtnClose" Grid.Row="2" Content="Close"
+                FontFamily="Segoe UI" FontSize="9" FontWeight="Bold" Margin="0,20,0,0"
+                Click="BtnClose_Click" />
+    </Grid>
+</Window>

@@ -1,0 +1,11 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Keno.Core</RootNamespace>
+    <TargetFramework>net10.0</TargetFramework>
+    <OptionStrict>On</OptionStrict>
+    <AssemblyVersion>26.3.16.7</AssemblyVersion>
+    <FileVersion>26.3.16.7</FileVersion>
+  </PropertyGroup>
+
+</Project>

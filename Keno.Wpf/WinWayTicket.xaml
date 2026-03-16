@@ -1,0 +1,162 @@
+<!-- Last Edit: 2026-04-01 - WinWayTicket: full WinForms parity — Group Summary, Sub-ticket Preview, Colour Legend, Goldenrod king, Play Ways button. -->
+<Window x:Class="WinWayTicket"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Way Ticket" Height="640" Width="660"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="44" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="44" />
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Background="SteelBlue">
+            <TextBlock Text="Way Ticket — Group Assignment"
+                       FontFamily="Segoe UI" FontSize="13" FontWeight="Bold"
+                       Foreground="White"
+                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </Border>
+
+        <!-- Instructions -->
+        <TextBlock Grid.Row="1" Text="Click a number button, then click a group colour to assign it. Check King Ticket to add a king number to every group."
+                   FontFamily="Segoe UI" FontSize="9" TextWrapping="Wrap"
+                   Margin="10,8,10,4" Foreground="Gray" />
+
+        <!-- Group colour selector + King Ticket checkbox -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="10,4,10,4">
+            <TextBlock Text="Group:" VerticalAlignment="Center"
+                       FontFamily="Segoe UI" FontSize="9" Margin="0,0,6,0" />
+            <ComboBox x:Name="CmbGroup" Width="120" FontFamily="Segoe UI" FontSize="9"
+                      SelectedIndex="1" Margin="0,0,12,0" />
+            <CheckBox x:Name="ChkKingTicket" Content="♛  King Ticket — designate one number as King"
+                      FontFamily="Segoe UI" FontSize="9"
+                      VerticalAlignment="Center"
+                      Checked="ChkKingTicket_Changed"
+                      Unchecked="ChkKingTicket_Changed" />
+        </StackPanel>
+
+        <!-- Number buttons + right panel -->
+        <Grid Grid.Row="3" Margin="10,4,10,4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="218" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Left: number buttons -->
+            <Border Grid.Column="0" BorderBrush="Silver" BorderThickness="1" Margin="0,0,6,0">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <WrapPanel x:Name="WpNumbers" Margin="4" />
+                </ScrollViewer>
+            </Border>
+
+            <!-- Right: Group Summary + Colour Legend + Sub-ticket Preview -->
+            <StackPanel Grid.Column="1">
+                <Border Background="DarkSlateGray" Height="22">
+                    <TextBlock Text="Group Summary" FontFamily="Segoe UI" FontSize="9" FontWeight="Bold"
+                               Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+                <ItemsControl x:Name="IcGroups" BorderBrush="Silver" BorderThickness="1" MaxHeight="130">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Background="{Binding RowBrush}" Height="20">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="52" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="{Binding GroupName}"
+                                           FontFamily="Segoe UI" FontSize="9" FontWeight="SemiBold"
+                                           Padding="3,2" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="1" Text="{Binding NumbersText}"
+                                           FontFamily="Segoe UI" FontSize="9"
+                                           Padding="3,2" VerticalAlignment="Center"
+                                           TextTrimming="CharacterEllipsis" />
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <Border Background="SlateGray" Height="20" Margin="0,4,0,0">
+                    <TextBlock Text="Group Colors" FontFamily="Segoe UI" FontSize="8" FontWeight="Bold"
+                               Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+                <StackPanel Orientation="Horizontal" Height="22">
+                    <Rectangle Width="14" Fill="#FF87CEEB" Margin="3,4,4,4" />
+                    <TextBlock Text="G1 ◆ Blue" FontFamily="Segoe UI" FontSize="7.5" VerticalAlignment="Center" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Height="22">
+                    <Rectangle Width="14" Fill="#FF98FB98" Margin="3,4,4,4" />
+                    <TextBlock Text="G2 ◆ Green" FontFamily="Segoe UI" FontSize="7.5" VerticalAlignment="Center" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Height="22">
+                    <Rectangle Width="14" Fill="#FFFA8072" Margin="3,4,4,4" />
+                    <TextBlock Text="G3 ◆ Salmon" FontFamily="Segoe UI" FontSize="7.5" VerticalAlignment="Center" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Height="22">
+                    <Rectangle Width="14" Fill="#FFDDA0DD" Margin="3,4,4,4" />
+                    <TextBlock Text="G4 ◆ Plum" FontFamily="Segoe UI" FontSize="7.5" VerticalAlignment="Center" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Height="22">
+                    <Rectangle Width="14" Fill="#FFFAFAAA" Margin="3,4,4,4" />
+                    <TextBlock Text="G5 ◆ Yellow" FontFamily="Segoe UI" FontSize="7.5" VerticalAlignment="Center" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Height="22">
+                    <Rectangle Width="14" Fill="#FFDAA520" Margin="3,4,4,4" />
+                    <TextBlock Text="♛ King (all sub-tickets)" FontFamily="Segoe UI" FontSize="7.5" VerticalAlignment="Center" />
+                </StackPanel>
+
+                <Border Background="DarkSlateGray" Height="22" Margin="0,4,0,0">
+                    <TextBlock Text="Sub-ticket Preview" FontFamily="Segoe UI" FontSize="9" FontWeight="Bold"
+                               Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+                <ItemsControl x:Name="IcSubTickets" BorderBrush="Silver" BorderThickness="1" MaxHeight="130">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Background="{Binding RowBrush}" Height="20">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="52" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="{Binding GroupName}"
+                                           FontFamily="Segoe UI" FontSize="9" FontWeight="SemiBold"
+                                           Padding="3,2" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="1" Text="{Binding NumbersText}"
+                                           FontFamily="Segoe UI" FontSize="9"
+                                           Padding="3,2" VerticalAlignment="Center"
+                                           TextTrimming="CharacterEllipsis" />
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </Grid>
+
+        <!-- Summary labels -->
+        <StackPanel Grid.Row="4" Margin="10,4,10,4">
+            <TextBlock x:Name="TbkKingStatus"
+                       FontFamily="Segoe UI" FontSize="9" Foreground="DarkOrange"
+                       Padding="4,3" TextAlignment="Center" />
+            <TextBlock x:Name="TbkSummary"
+                       FontFamily="Segoe UI" FontSize="9" />
+        </StackPanel>
+
+        <!-- OK / Cancel -->
+        <StackPanel Grid.Row="5" Orientation="Horizontal"
+                    HorizontalAlignment="Right" VerticalAlignment="Center"
+                    Margin="0,0,12,8">
+            <Button x:Name="BtnOk" Content="Play Ways"
+                    FontFamily="Segoe UI" FontSize="9" FontWeight="Bold"
+                    Width="100" Height="30" Margin="0,0,8,0"
+                    Background="#FF228B22" Foreground="White"
+                    Click="BtnOk_Click" />
+            <Button x:Name="BtnCancel" Content="Cancel"
+                    FontFamily="Segoe UI" FontSize="9"
+                    Width="86" Height="30"
+                    Click="BtnCancel_Click" />
+        </StackPanel>
+    </Grid>
+</Window>

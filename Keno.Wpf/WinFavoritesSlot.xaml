@@ -1,0 +1,32 @@
+<!-- Last Edit: 2026-03-15 - WinFavoritesSlot: 3-slot picker dialog; Save and Load modes. -->
+<Window x:Class="WinFavoritesSlot"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Favorites Slots" Height="230" Width="340"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="40" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="38" />
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Background="SteelBlue">
+            <TextBlock x:Name="TbkTitle"
+                       FontFamily="Segoe UI" FontSize="10" FontWeight="Bold"
+                       Foreground="White"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                       TextWrapping="Wrap" TextAlignment="Center" Margin="8,0" />
+        </Border>
+
+        <!-- Slot buttons injected from code-behind -->
+        <StackPanel x:Name="SpSlots" Grid.Row="1" Margin="12,8,12,4" />
+
+        <Button x:Name="BtnCancel" Grid.Row="2" Content="Cancel"
+                FontFamily="Segoe UI" FontSize="9"
+                HorizontalAlignment="Right" Width="86" Margin="0,0,12,6"
+                Click="BtnCancel_Click" />
+    </Grid>
+</Window>

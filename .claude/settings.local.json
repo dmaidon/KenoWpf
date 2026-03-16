@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add CHANGELOG.md README.md Keno/FrmMain.Partial/FrmMain.KenoSelection.vb Keno/Keno.vbproj Keno/Modules/KenoPayouts.vb Keno/FrmBonusGame.vb Keno/FrmPayoutSchedule.vb)",
+      "Bash(git commit:*)",
+      "Bash(git add Keno/FrmBonusGame.vb Keno/FrmMain.Designer.vb Keno/FrmMain.Partial/FrmMain.KenoSelection.vb Keno/Keno.vbproj Keno/Modules/FreeGamesStore.vb)",
+      "Bash(git add CHANGELOG.md README.md Keno/FrmMain.Designer.vb Keno/FrmMain.Partial/FrmMain.KenoSelection.vb Keno/Globals.vb Keno/Keno.vbproj)",
+      "Bash(git add Keno/FrmMain.Designer.vb CHANGELOG.md)",
+      "Bash(git add Keno/FrmMain.Partial/FrmMain.KenoSelection.vb CHANGELOG.md)",
+      "Bash(git add Keno/FrmMain.Partial/FrmMain.KenoSelection.vb)",
+      "Bash(powershell -Command \":*)",
+      "Bash(powershell -ExecutionPolicy Bypass -File \"C:\\\\VB18\\\\Keno\\\\fix_tooltip.ps1\")",
+      "Bash(Remove-Item -Path \"C:\\\\VB18\\\\Keno\\\\fix_tooltip.ps1\")",
+      "Bash(Write-Host \"Removed\")",
+      "Bash(powershell -Command \"Remove-Item ''C:\\\\VB18\\\\Keno\\\\fix_tooltip.ps1''\")",
+      "Bash(git add Keno/FrmWayTicket.vb \"Keno/FrmMain.Partial/FrmMain.KenoSelection.vb\" CHANGELOG.md)",
+      "Bash(git add Keno/FrmWayTicket.vb)"
+    ]
+  }
+}
