@@ -1,9 +1,17 @@
-# Last Edit: 2026-03-17 - MahApps.Metro Dark.Steel skin applied to all WPF windows.
+# Last Edit: 2026-03-17 - XAML designer errors (XDG0010) and BC40026 warnings fixed.
 
 # Changelog
 
 All notable changes to this project are documented here.  
 Format: most-recent first. WPF entries are prefixed **(WPF)**, WinForms entries **(WF)**.
+
+---
+
+## [2026-03-17] — WPF XAML designer error + CLS warning cleanup
+
+- **(WPF) `Application.xaml` — MahApps `ResourceDictionary.MergedDictionaries` removed** — the three pack-URI entries (`Controls.xaml`, `Fonts.xaml`, `Dark.Steel.xaml`) caused persistent XDG0010 XAML designer errors because the VS designer could not resolve `MahApps.Metro.dll` at design time.
+- **(WPF) `Application.xaml.vb` — `Application_Startup` added** — calls `ControlzEx.Theming.ThemeManager.Current.ChangeTheme(Current, "Dark.Steel")` so the Dark.Steel theme is applied at runtime instead. Identical visual result; designer is no longer asked to load MahApps resources.
+- **(WPF) `Keno.Wpf.vbproj` — `<NoWarn>BC40026</NoWarn>` added** — suppresses the 20 harmless CLS compliance warnings produced because all 10 `MetroWindow`-derived classes are themselves not CLS-compliant (expected for a WPF exe that is not a shared class library).
 
 ---
 
