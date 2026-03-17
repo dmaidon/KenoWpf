@@ -1,4 +1,4 @@
-<!-- Last Edit: 2026-03-17 01:44 PM - FlyoutCheckboxHelp added (right-side); shown when ChkMultiplierKeno or ChkFirstLastPlay is checked. -->
+<!-- Last Edit: 2026-03-17 02:12 PM - GbxConsecutiveGames: 2 DIP row spacing via Margin 0,1 on each RadioButton. -->
 <mah:MetroWindow x:Class="MainWindow"
                  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                  xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
@@ -279,7 +279,7 @@
         </Border>
         <Button x:Name="BtnPlay" Content="PLAY" Click="BtnPlay_Click" HorizontalAlignment="Left" Margin="52,432,0,0" VerticalAlignment="Top" Width="71" Background="#FFEE614E" FontWeight="Bold" Height="20" RenderTransformOrigin="2.93,2.101" Grid.Column="1" />
         <Button x:Name="BtnCLEAR" Content="CLEAR" Click="BtnClear_Click" HorizontalAlignment="Left" Margin="213,433,0,0" VerticalAlignment="Top" Width="71" Background="#FFEECF4E" FontWeight="Bold" Height="20" Grid.Column="1" />
-        <Button x:Name="BtnFreeGames" Content="Free Games Won (0)" Tag="Free Games Won ({0})" Click="BtnFreeGames_Click" HorizontalAlignment="Center" Margin="0,379,0,0" VerticalAlignment="Top" Background="#FF086717" Foreground="#FFF1E3C2" FontSize="9" Height="16" Width="164" Grid.Column="1" RenderTransformOrigin="0.5,4.362" IsEnabled="False" />
+        <Button x:Name="BtnFreeGames" Content="Free Games Won (0)" Tag="Free Games Won ({0})" Click="BtnFreeGames_Click" HorizontalAlignment="Center" Margin="0,379,0,0" VerticalAlignment="Top" Background="#FF075907" FontSize="9" Height="16" Width="164" Grid.Column="1" RenderTransformOrigin="0.5,4.362" IsEnabled="False" BorderBrush="#FFDD0A0A" />
         <StatusBar x:Name="StatBar1" VerticalAlignment="Bottom" Margin="0,0,0,10" Grid.ColumnSpan="4" Height="21" Background="#FFDCF8F8" Foreground="Black" HorizontalAlignment="Left" Width="920">
             <StatusBar.Effect>
                 <DropShadowEffect />
@@ -453,28 +453,28 @@
             <StackPanel Margin="4,2,4,4">
                 <UniformGrid Columns="5">
                     <!-- Row 1 -->
-                    <RadioButton x:Name="RbConsecutive2"  Content="2"  Tag="2"  GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0" Background="#FFE9F6D5" Foreground="Black" />
-                    <RadioButton x:Name="RbConsecutive6"  Content="6"  Tag="6"  GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0" Background="#FFE9F6D5" Foreground="Black" />
-                    <RadioButton x:Name="RbConsecutive10" Content="10" Tag="10" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0" Background="#FFE9F6D5" Foreground="Black" />
-                    <RadioButton x:Name="RbConsecutive14" Content="14" Tag="14" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0" Background="#FFE9F6D5" Foreground="Black" />
-                    <RadioButton x:Name="RbConsecutive18" Content="18" Tag="18" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive2"  Content="2"  Tag="2"  GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive6"  Content="6"  Tag="6"  GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive10" Content="10" Tag="10" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive14" Content="14" Tag="14" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive18" Content="18" Tag="18" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
                     <!-- Row 2 -->
-                    <RadioButton x:Name="RbConsecutive3"  Content="3"  Tag="3"  GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0" Background="#FFE9F6D5" Foreground="Black" />
-                    <RadioButton x:Name="RbConsecutive7"  Content="7"  Tag="7"  GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0" Background="#FFE9F6D5" Foreground="Black" />
-                    <RadioButton x:Name="RbConsecutive11" Content="11" Tag="11" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0" Background="#FFE9F6D5" Foreground="Black" />
-                    <RadioButton x:Name="RbConsecutive15" Content="15" Tag="15" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0" Background="#FFE9F6D5" Foreground="Black" />
-                    <RadioButton x:Name="RbConsecutive19" Content="19" Tag="19" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive3"  Content="3"  Tag="3"  GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive7"  Content="7"  Tag="7"  GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive11" Content="11" Tag="11" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive15" Content="15" Tag="15" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive19" Content="19" Tag="19" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
                     <!-- Row 3 -->
-                    <RadioButton x:Name="RbConsecutive4"  Content="4"  Tag="4"  GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0" Background="#FFE9F6D5" Foreground="Black" />
-                    <RadioButton x:Name="RbConsecutive8"  Content="8"  Tag="8"  GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0" Background="#FFE9F6D5" Foreground="Black" />
-                    <RadioButton x:Name="RbConsecutive12" Content="12" Tag="12" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0" Background="#FFE9F6D5" Foreground="Black" />
-                    <RadioButton x:Name="RbConsecutive16" Content="16" Tag="16" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0" Background="#FFE9F6D5" Foreground="Black" />
-                    <RadioButton x:Name="RbConsecutive20" Content="20" Tag="20" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive4"  Content="4"  Tag="4"  GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive8"  Content="8"  Tag="8"  GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive12" Content="12" Tag="12" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive16" Content="16" Tag="16" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive20" Content="20" Tag="20" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
                     <!-- Row 4 -->
-                    <RadioButton x:Name="RbConsecutive5"  Content="5"  Tag="5"  GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0" Background="#FFE9F6D5" Foreground="Black" />
-                    <RadioButton x:Name="RbConsecutive9"  Content="9"  Tag="9"  GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0" Background="#FFE9F6D5" Foreground="Black" />
-                    <RadioButton x:Name="RbConsecutive13" Content="13" Tag="13" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0" Background="#FFE9F6D5" Foreground="Black" />
-                    <RadioButton x:Name="RbConsecutive17" Content="17" Tag="17" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive5"  Content="5"  Tag="5"  GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive9"  Content="9"  Tag="9"  GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive13" Content="13" Tag="13" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive17" Content="17" Tag="17" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
                 </UniformGrid>
                 <TextBlock x:Name="TbkBonusMultiplier" Text="Bonus: 1×"
                            FontSize="10" FontWeight="Bold"

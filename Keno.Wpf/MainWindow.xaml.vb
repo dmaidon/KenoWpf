@@ -839,7 +839,7 @@ Class MainWindow
         Dim selected As String
         Select Case delay
             Case 1000 : selected = "Slow"
-            Case 500 : selected = "Med"
+            Case 500 : selected = "Medium"
             Case 200 : selected = "Fast"
             Case Else : selected = "SS (Super Sonic)"
         End Select
