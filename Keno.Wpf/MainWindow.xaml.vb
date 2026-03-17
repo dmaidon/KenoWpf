@@ -1,4 +1,4 @@
-' Last Edit: 2026-03-17 01:10 PM - BtnFreeGames_Click, IsFreeGameBonus, AwardFreeGameBonus, UpdateFreeGamesButton implemented matching WinForms; freeGameIndices tracked per-loop; wrong post-loop free-game block removed.
+' Last Edit: 2026-03-17 01:44 PM - ShowMultiplierFlyout / ShowFirstLastFlyout / HideFlyout added; FlyoutCheckboxHelp wired to ChkMultiplierKeno and ChkFirstLastPlay.
 
 Class MainWindow
 
@@ -764,6 +764,9 @@ Class MainWindow
     Private Sub ChkMultiplierKeno_Changed()
         If ChkMultiplierKeno.IsChecked <> True Then
             ChkMultiplierKeno.Content = "Multiplier: 1×"
+            HideFlyout()
+        Else
+            ShowMultiplierFlyout()
         End If
         UpdateWagerPreview()
     End Sub
@@ -779,8 +782,44 @@ Class MainWindow
     End Function
 
     Private Sub ChkFirstLastPlay_Changed(sender As Object, e As RoutedEventArgs)
-        ' First/Last side bet resolved during game play
+        If ChkFirstLastPlay.IsChecked = True Then
+            ShowFirstLastFlyout()
+        Else
+            HideFlyout()
+        End If
         UpdateWagerPreview()
+    End Sub
+
+    Private Sub ShowMultiplierFlyout()
+        FlyoutCheckboxHelp.Header = "Multiplier Keno"
+        TbkFlyoutDesc.Text = "Adds $1 to your wager per game. Before each draw a random multiplier is applied to your base payout:"
+        TbkFlyoutData.Text = "  ×1  — 45%   (most common)" & vbLf &
+                             "  ×2  — 30%" & vbLf &
+                             "  ×3  — 13%" & vbLf &
+                             "  ×5  —  9%" & vbLf &
+                             "  ×10 —  3%   (jackpot tier)"
+        FlyoutCheckboxHelp.IsOpen = True
+    End Sub
+
+    Private Sub ShowFirstLastFlyout()
+        FlyoutCheckboxHelp.Header = "First / Last Ball"
+        TbkFlyoutDesc.Text = "Adds $1 to your wager per game. If the first or last ball drawn matches any of your picks, you win a flat cash bonus:"
+        TbkFlyoutData.Text = " Pick  Bonus   Pick  Bonus" & vbLf &
+                             "   1    $75     11    $35" & vbLf &
+                             "   2    $71     12    $31" & vbLf &
+                             "   3    $67     13    $27" & vbLf &
+                             "   4    $63     14    $23" & vbLf &
+                             "   5    $59     15    $20" & vbLf &
+                             "   6    $55     16    $17" & vbLf &
+                             "   7    $51     17    $14" & vbLf &
+                             "   8    $47     18    $11" & vbLf &
+                             "   9    $43     19     $8" & vbLf &
+                             "  10    $39     20     $5"
+        FlyoutCheckboxHelp.IsOpen = True
+    End Sub
+
+    Private Sub HideFlyout()
+        FlyoutCheckboxHelp.IsOpen = False
     End Sub
 
     Private Sub ChkWayTicket_Changed(sender As Object, e As RoutedEventArgs)
@@ -920,7 +959,7 @@ Class MainWindow
         BtnFreeGames.IsEnabled = count > 0 AndAlso BtnPlay.IsEnabled
     End Sub
 
-    Private Sub BtnPlayFavorites_Click
+    Private Sub BtnPlayFavorites_Click()
         Dim slot = WinFavoritesSlot.ShowForLoad(Me)
         If slot < 0 Then Return
 

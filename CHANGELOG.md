@@ -1,9 +1,18 @@
-# Last Edit: 2026-03-17 01:14 PM - BtnFreeGames, Bullseye, NudSpecialWager/QuickPickCount, RadioButton/CheckBox templates, WinConsecutiveSummary foreground.
+# Last Edit: 2026-03-17 01:44 PM - Flyout for Multiplier Keno and First/Last Ball checkboxes added.
 
 # Changelog
 
 All notable changes to this project are documented here.  
 Format: most-recent first. WPF entries are prefixed **(WPF)**, WinForms entries **(WF)**.
+
+---
+
+## [2026-03-17] — WPF right-side flyout for Multiplier and First/Last checkboxes
+
+- **(WPF) `FlyoutCheckboxHelp`** — MahApps `Flyout` (Position=Right, Width=270, Theme=Light) added to `MainWindow.xaml`.
+- Checking **Multiplier Keno** opens the flyout with odds table (×1 45%, ×2 30%, ×3 13%, ×5 9%, ×10 3%).
+- Checking **First/Last ($1)** opens the flyout with the full 20-row pick→bonus table ($75 Pick 1 → $5 Pick 20).
+- Unchecking either control closes the flyout. `ShowMultiplierFlyout`, `ShowFirstLastFlyout`, `HideFlyout` helpers added.
 
 ---
 
