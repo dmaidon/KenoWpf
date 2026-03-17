@@ -1,4 +1,4 @@
-' Last Edit: 2026-03-17 01:44 PM - ShowMultiplierFlyout / ShowFirstLastFlyout / HideFlyout added; FlyoutCheckboxHelp wired to ChkMultiplierKeno and ChkFirstLastPlay.
+' Last Edit: 2026-03-17 01:53 PM - ShowDrawSpeedFlyout added; RbDrawSpeed_Checked wired to FlyoutCheckboxHelp.
 
 Class MainWindow
 
@@ -713,6 +713,7 @@ Class MainWindow
 
     ' ── draw speed
     Private Sub RbDrawSpeed_Checked(sender As Object, e As RoutedEventArgs)
+        ShowDrawSpeedFlyout()
     End Sub
 
     Private Function GetDrawDelayMs() As Integer
@@ -804,22 +805,52 @@ Class MainWindow
     Private Sub ShowFirstLastFlyout()
         FlyoutCheckboxHelp.Header = "First / Last Ball"
         TbkFlyoutDesc.Text = "Adds $1 to your wager per game. If the first or last ball drawn matches any of your picks, you win a flat cash bonus:"
-        TbkFlyoutData.Text = " Pick  Bonus   Pick  Bonus" & vbLf &
-                             "   1    $75     11    $35" & vbLf &
-                             "   2    $71     12    $31" & vbLf &
-                             "   3    $67     13    $27" & vbLf &
-                             "   4    $63     14    $23" & vbLf &
-                             "   5    $59     15    $20" & vbLf &
-                             "   6    $55     16    $17" & vbLf &
-                             "   7    $51     17    $14" & vbLf &
-                             "   8    $47     18    $11" & vbLf &
-                             "   9    $43     19     $8" & vbLf &
-                             "  10    $39     20     $5"
+        TbkFlyoutData.Text = " Pick  Bonus" & vbLf &
+                             "    1   $75" & vbLf &
+                             "    2   $71" & vbLf &
+                             "    3   $67" & vbLf &
+                             "    4   $63" & vbLf &
+                             "    5   $59" & vbLf &
+                             "    6   $55" & vbLf &
+                             "    7   $51" & vbLf &
+                             "    8   $47" & vbLf &
+                             "    9   $43" & vbLf &
+                             "   10   $39" & vbLf &
+                             "   11   $35" & vbLf &
+                             "   12   $31" & vbLf &
+                             "   13   $27" & vbLf &
+                             "   14   $23" & vbLf &
+                             "   15   $20" & vbLf &
+                             "   16   $17" & vbLf &
+                             "   17   $14" & vbLf &
+                             "   18   $11" & vbLf &
+                             "   19    $8" & vbLf &
+                             "   20    $5"
         FlyoutCheckboxHelp.IsOpen = True
     End Sub
 
     Private Sub HideFlyout()
         FlyoutCheckboxHelp.IsOpen = False
+    End Sub
+
+    Private Sub ShowDrawSpeedFlyout()
+        If Not IsLoaded Then Return
+        Dim delay = GetDrawDelayMs()
+        Dim selected As String
+        Select Case delay
+            Case 1000 : selected = "Slow"
+            Case 500  : selected = "Med"
+            Case 200  : selected = "Fast"
+            Case Else : selected = "SS (Super Sonic)"
+        End Select
+        FlyoutCheckboxHelp.Header = "Draw Speed"
+        TbkFlyoutDesc.Text = $"Controls the pause between each of the 20 balls drawn per game. Currently: {selected}."
+        TbkFlyoutData.Text = " Mode   Delay" & vbLf &
+                             " Slow   1.0 s / ball" & vbLf &
+                             " Med    0.5 s / ball" & vbLf &
+                             " Fast   0.2 s / ball" & vbLf &
+                             " SS     instant"
+        FlyoutCheckboxHelp.IsOpen = True
     End Sub
 
     Private Sub ChkWayTicket_Changed(sender As Object, e As RoutedEventArgs)
