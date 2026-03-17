@@ -1,9 +1,22 @@
-# Last Edit: 2026-03-16 - WPF port entries added; CHANGELOG prepared for GitHub.
+# Last Edit: 2026-03-17 - WPF hot/cold persistence, First/Last payout fixes, AllTimeSummary bonus accuracy.
 
 # Changelog
 
 All notable changes to this project are documented here.  
 Format: most-recent first. WPF entries are prefixed **(WPF)**, WinForms entries **(WF)**.
+
+---
+
+## [2026-03-17] — WPF hot/cold persistence, First/Last payout fixes, AllTimeSummary bonus accuracy
+
+- **(WPF) `DrawStatsStore` fully wired** — `RecordDraw` called after every game draw; per-number frequency and win/loss streaks persisted to `Data\draw-stats.json` and restored on launch.
+- **(WPF) Hot & Cold status-bar pills** — top-5 hot numbers displayed as red pills in `StatBar2` (`TbkHot1–5`); top-5 cold numbers as blue pills in `StatBar1` (`TbkCold1–5`). `RefreshStatsDisplay` / `UpdateDrawStats` called after each draw to keep both bars live.
+- **(WPF) Hot/Cold click-to-toggle** — clicking any hot or cold pill toggles that number on the keno grid, identical to clicking the grid directly; `HotColdNum_Click` handler wired to all 10 labels.
+- **(WPF) Streak labels wired** — win/loss/best-streak `StatusBarItem` labels in `StatBar1` read from `DrawStatsStore` and update after every game.
+- **(WPF) First/Last Ball payout fix** — `GetFirstLastBallBonus` computation block added inside the game loop; bonus credited to `gamePayout` each game and stored in `gameResults` as `FirstLastBonus`; `LblWinnings` reflects the First/Last contribution immediately.
+- **(WPF) First/Last excluded from consecutive multiplier** — bonus is extracted before the series multiplier is applied and re-added flat afterward: `(subtotal − totalFirstLastBonus) × bonus + totalFirstLastBonus`.
+- **(WPF) `LblWinnings` running total** — updated after every individual game inside the consecutive loop so the label accumulates live rather than only refreshing after the full series.
+- **(WPF) `AllTimeSummaryStore` bonus-accuracy fix** — `RecordGame` moved out of the game loop and called post-series, recording the fully bonus-adjusted payout per game: `adjustedPayout = (r.Payout − r.FirstLastBonus) × bonus + r.FirstLastBonus`. Previously, pre-bonus per-game amounts were recorded, causing the all-time totals to under-count series winnings.
 
 ---
 

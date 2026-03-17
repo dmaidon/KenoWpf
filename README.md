@@ -1,4 +1,4 @@
-# Last Edit: 2026-03-16 - README rewritten for WPF version; solution structure, build instructions, and full gameplay docs added.
+# Last Edit: 2026-03-17 - Hot & Cold updated to status-bar pills; Data Files table paths corrected.
 
 # 🎰 Keno
 
@@ -426,11 +426,11 @@ including jackpots won, total free games earned, net P/L, and all-time best sing
 
 ## Hot & Cold Numbers
 
-After 20 games, the app tracks frequency across the last 15 draws.
+After 20 games, the app tracks frequency across the last 15 draws (persisted in `Data\draw-stats.json`).
 
-- **Hot numbers** — top 5 most frequent (bottom-left panel).
-- **Cold numbers** — top 5 least frequent (bottom-right panel).
-- Click any hot/cold label to toggle that number on the grid, same as clicking directly.
+- **Hot numbers** — top 5 most frequent, shown as red pills in **StatBar2** (bottom status bar).
+- **Cold numbers** — top 5 least frequent, shown as blue pills in **StatBar1** (top status bar).
+- Click any hot or cold pill to toggle that number on the grid, same as clicking directly.
 
 ---
 
@@ -473,10 +473,10 @@ All runtime data is stored relative to the application binary (`AppContext.BaseD
 | `Data\game-log.txt` | Pipe-delimited record of every game played |
 | `Data\all-time-summary.json` | Cumulative stats across all sessions |
 | `Data\draw-stats.json` | Per-number frequency, win/loss streaks |
-| `Settings\bank.json` | Current bank balance |
-| `Settings\app-settings.json` | Draw speed, last-used preferences |
-| `Settings\favorites.json` | 3-slot favorites |
-| `jackpot.json` | Current progressive jackpot pool |
+| `Data\bank-settings.json` | Current bank balance |
+| `Data\app-settings.json` | Draw speed, last-used preferences |
+| `Data\favorites.json` | 3-slot favorites |
+| `Data\jackpot.json` | Current progressive jackpot pool |
 | `Logs\err_MMMdd.log` | Daily error log (last 10 days retained) |
 
 ---

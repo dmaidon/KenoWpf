@@ -1,9 +1,10 @@
-' Last Edit: 2026-03-16 - Way Ticket fully wired: opens WinWayTicket on check, groups drive payout/wager, clears on number-change/reset.
+' Last Edit: 2026-03-17 - First/Last bonus credited and excluded from consecutive multiplier; LblWinnings live running total; AllTimeSummary records bonus-adjusted payouts.
 
 Class MainWindow
 
     ' ── colour constants matching WinForms FrmMain.KenoSelection ──────────────
     Private Shared ReadOnly BrushDefault As SolidColorBrush = Freeze(Color.FromRgb(192, 255, 255))  ' #C0FFFF
+    Private Shared ReadOnly BrushPlayedDefault As SolidColorBrush = Freeze(Color.FromRgb(245, 245, 245))  ' #F5F5F5
 
     Private Shared ReadOnly BrushUserPick As SolidColorBrush = Freeze(Colors.LightGreen)
     Private Shared ReadOnly BrushDraw As SolidColorBrush = Freeze(Colors.LightSkyBlue)
@@ -47,6 +48,8 @@ Class MainWindow
         UpdateJackpotDisplay()
         AllTimeSummaryStore.EnsureAllTimeSummary()
         AllTimeSummaryStore.IncrementSessions()
+        DrawStatsStore.EnsureDrawStats()
+        RefreshStatsDisplay(DrawStatsStore.LoadStats())
     End Sub
 
     ' ── grid builder ─────────────────────────────────────────────────────────
@@ -144,6 +147,7 @@ Class MainWindow
         Dim sorted = _selectedNumbers.ToArray()
         For i = 0 To 19
             _playedLabels(i).Content = If(i < sorted.Length, sorted(i).ToString(), String.Empty)
+            _playedLabels(i).Background = BrushPlayedDefault
         Next
     End Sub
 
@@ -204,7 +208,85 @@ Class MainWindow
         SbiPayout.Content = $"Payout: {_lastPayout:C2}"
     End Sub
 
-    ' ── payout schedule ──────────────────────────────────────────────────────
+    ' ── hot / cold numbers + streaks ─────────────────────────────────────────
+    Private Sub UpdateDrawStats(draw As HashSet(Of Integer), won As Boolean)
+        Try
+            Dim stats = RecordDraw(draw.ToList(), won)
+            RefreshStatsDisplay(stats)
+        Catch ex As Exception
+            LogError(ex, NameOf(UpdateDrawStats))
+        End Try
+    End Sub
+
+    Private Sub RefreshStatsDisplay(stats As DrawStatsStore.DrawStats)
+        ' ── streaks ──────────────────────────────────────────────────────────
+        If stats.CurrentWinStreak > 0 Then
+            SbiCurrentStreak.Content = $"Win Streak: {stats.CurrentWinStreak}"
+            SbiCurrentStreak.Foreground = Brushes.ForestGreen
+        ElseIf stats.CurrentLossStreak > 0 Then
+            SbiCurrentStreak.Content = $"Loss Streak: {stats.CurrentLossStreak}"
+            SbiCurrentStreak.Foreground = Brushes.Firebrick
+        Else
+            SbiCurrentStreak.Content = "Streak: —"
+            SbiCurrentStreak.Foreground = SystemColors.ControlTextBrush
+        End If
+
+        SbiBestStreak.Content = $"Best: {stats.BestWinStreak}W"
+        SbiBestStreak.Foreground = SystemColors.ControlTextBrush
+
+        ' ── hot / cold — require 5+ games in the window ───────────────────
+        If stats.GamesPlayed < 5 Then Return
+
+        Dim counts As New Dictionary(Of Integer, Integer)()
+        For n = 1 To 80
+            counts(n) = 0
+        Next
+        For Each draw In stats.RecentDraws
+            For Each num In draw
+                If num >= 1 AndAlso num <= 80 Then counts(num) += 1
+            Next
+        Next
+
+        Dim ordered = counts.OrderByDescending(Function(kv) kv.Value).ThenBy(Function(kv) kv.Key).ToList()
+        Dim hot = ordered.Take(5).Select(Function(kv) kv.Key).ToArray()
+        Dim cold = counts.OrderBy(Function(kv) kv.Value).ThenBy(Function(kv) kv.Key).Take(5).Select(Function(kv) kv.Key).ToArray()
+
+        Dim hotTbks = {TbkHot1, TbkHot2, TbkHot3, TbkHot4, TbkHot5}
+        Dim coldTbks = {TbkCold1, TbkCold2, TbkCold3, TbkCold4, TbkCold5}
+        For i = 0 To 4
+            hotTbks(i).Text = hot(i).ToString()
+            coldTbks(i).Text = cold(i).ToString()
+        Next
+    End Sub
+
+    Private Sub HotColdNum_Click(sender As Object, e As MouseButtonEventArgs)
+        If Not BtnPlay.IsEnabled Then Return
+        Dim brd = TryCast(sender, Border)
+        If brd Is Nothing Then Return
+        Dim tbk = TryCast(brd.Child, TextBlock)
+        If tbk Is Nothing Then Return
+
+        Dim number As Integer
+        If Not Integer.TryParse(tbk.Text, number) Then Return
+        If Not _kenoButtons.ContainsKey(number) Then Return
+
+        If _selectedNumbers.Remove(number) Then
+            _kenoButtons(number).Background = BrushDefault
+        ElseIf _selectedNumbers.Count < 20 Then
+            _selectedNumbers.Add(number)
+            _kenoButtons(number).Background = BrushUserPick
+        Else
+            Return
+        End If
+
+        UpdatePayoutScheduleDisplay()
+        UpdatePlayedGrid()
+        UpdateStatusBar()
+        UpdateWayTicketSummary()
+        UpdateWagerPreview()
+    End Sub
+
+
     Private Const HitsColWidth As Integer = 8
 
     Private Const WinColWidth As Integer = 19
@@ -339,13 +421,23 @@ Class MainWindow
                     If _selectedNumbers.Contains(pbNum) Then gamePayout *= 4
                 End If
 
+                ' ── First/Last flat bonus — not scaled by bet, multiplier, or Powerball ──
+                Dim firstLastBonus = 0D
+                If useFirstLast Then
+                    If _selectedNumbers.Contains(result.FirstDrawn) OrElse _selectedNumbers.Contains(result.LastDrawn) Then
+                        firstLastBonus = GetFirstLastBallBonus(_selectedNumbers.Count)
+                        gamePayout += firstLastBonus
+                    End If
+                End If
+
                 totalPayout += gamePayout
-                AllTimeSummaryStore.RecordGame(totalWager / gamesToPlay, gamePayout)
+                LblWinnings.Content = totalPayout.ToString("C2")
                 lastMatches = result.Matches
-                gameResults.Add((i, result.Matches, gamePayout, currentMultiplier, 0D))
+                gameResults.Add((i, result.Matches, gamePayout, currentMultiplier, firstLastBonus))
                 UpdateGamePlayCell(i, gamePayout > 0D,
                                    _selectedNumbers.Contains(result.FirstDrawn),
                                    _selectedNumbers.Contains(result.LastDrawn))
+                UpdateDrawStats(result.Draw, gamePayout > 0D)
 
                 ' ── progressive jackpot contribution ───────────────────────────
                 If bet >= 5D Then
@@ -382,8 +474,17 @@ Class MainWindow
         End Try
 
         Dim subtotal = totalPayout
+        Dim totalFirstLastBonus = gameResults.Sum(Function(r) r.FirstLastBonus)
         Dim bonus = GetConsecutiveBonus()
-        totalPayout *= bonus
+        totalPayout = (subtotal - totalFirstLastBonus) * bonus + totalFirstLastBonus
+
+        ' Record each game using bonus-adjusted payout so AllTimeSummary reflects actual earnings.
+        Dim perGameBet = totalWager / gamesToPlay
+        For Each r In gameResults
+            Dim adjustedPayout = (r.Payout - r.FirstLastBonus) * bonus + r.FirstLastBonus
+            AllTimeSummaryStore.RecordGame(perGameBet, adjustedPayout)
+        Next
+
         _bankBalance = _bankBalance - totalWager + totalPayout
         SaveBankBalance(_bankBalance)
         UpdateBankDisplay()
@@ -442,8 +543,14 @@ Class MainWindow
         Dim drawOrder As New List(Of Integer)(20)
         Dim drawSet As New HashSet(Of Integer)()
 
+        Dim sortedPicks = _selectedNumbers.ToArray()
+
         For Each kvp In _kenoButtons
             kvp.Value.Background = If(_selectedNumbers.Contains(kvp.Key), BrushUserPick, BrushDefault)
+        Next
+
+        For i = 0 To sortedPicks.Length - 1
+            _playedLabels(i).Background = BrushPlayedDefault
         Next
 
         Dim delay = GetDrawDelayMs()
@@ -454,6 +561,12 @@ Class MainWindow
             drawOrder.Add(num)
             drawSet.Add(num)
             _kenoButtons(num).Background = If(_selectedNumbers.Contains(num), BrushMatch, BrushDraw)
+
+            Dim pickIdx = Array.IndexOf(sortedPicks, num)
+            If pickIdx >= 0 Then
+                _playedLabels(pickIdx).Background = BrushMatch
+            End If
+
             If delay > 0 Then Await Task.Delay(delay)
         Loop
 
@@ -498,6 +611,11 @@ Class MainWindow
                                     If(inPick, BrushUserPick,
                                     If(inDraw, BrushDraw,
                                        BrushDefault)))
+        Next
+
+        Dim sorted = _selectedNumbers.ToArray()
+        For i = 0 To sorted.Length - 1
+            _playedLabels(i).Background = If(draw.Contains(sorted(i)), BrushMatch, BrushPlayedDefault)
         Next
     End Sub
 
