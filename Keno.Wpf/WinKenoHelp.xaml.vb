@@ -1,4 +1,4 @@
-' Last Edit: 2026-03-17 - All help topics corrected: multiplier tiers, bullseye numbers, statistics pills, powerball, wayticket, quadrants, progressive, freegames, firstlastball payout table.
+' Last Edit: 2026-03-17 01:21 PM - freegames topic expanded to match WinForms detail (Earning, Button, Session Tracking).
 Class WinKenoHelp
 
     Private ReadOnly _helpContent As New Dictionary(Of String, Action)()
@@ -299,10 +299,28 @@ Class WinKenoHelp
         _helpContent("freegames") = Sub()
                                         AppendTitle("FREE GAMES")
                                         AppendBlank()
-                                        AppendBody("Playing Pick 5–9 with a bet of $2 or more and matching zero numbers earns one free $2 game.")
+                                        AppendBody("Free games are bonus rounds earned by picking 5 through 9 numbers and " &
+                                                   "matching none of the drawn numbers (a catch-none result) with a $2 or " &
+                                                   "higher wager.")
                                         AppendBlank()
-                                        AppendBody("Free games persist between sessions and are tracked in Data\free-games.json. " &
-                                                   "A free game cannot itself earn another free game.")
+                                        AppendHeading("EARNING FREE GAMES")
+                                        AppendBody("  • Select exactly 5–9 numbers." & vbCrLf &
+                                                   "  • Place a wager of $2 or more." & vbCrLf &
+                                                   "  • If none of your picks match the draw (0 matches), one free game" & vbCrLf &
+                                                   "    credit is awarded automatically.")
+                                        AppendBlank()
+                                        AppendHeading("FREE GAME BUTTON")
+                                        AppendBody("When free game credits are available the green 'Free Games Won (N)' button " &
+                                                   "becomes enabled. Click it to play a free game round — no wager is " &
+                                                   "deducted from your bank.")
+                                        AppendBlank()
+                                        AppendBody("Free games use the same number selection as your current picks. " &
+                                                   "Your free game count decreases by one with each free play.")
+                                        AppendBlank()
+                                        AppendHeading("SESSION TRACKING")
+                                        AppendBody("The total free games earned in the current session is recorded in the " &
+                                                   "Session Summary. Free games persist between sessions and are tracked in " &
+                                                   "Data\free-games.json. A free game cannot itself earn another free game.")
                                     End Sub
 
         _helpContent("firstlastball") = Sub()

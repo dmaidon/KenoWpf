@@ -1,9 +1,10 @@
-' Last Edit: 2026-03-17 - First/Last bonus credited and excluded from consecutive multiplier; LblWinnings live running total; AllTimeSummary records bonus-adjusted payouts.
+' Last Edit: 2026-03-17 01:10 PM - BtnFreeGames_Click, IsFreeGameBonus, AwardFreeGameBonus, UpdateFreeGamesButton implemented matching WinForms; freeGameIndices tracked per-loop; wrong post-loop free-game block removed.
 
 Class MainWindow
 
     ' ── colour constants matching WinForms FrmMain.KenoSelection ──────────────
     Private Shared ReadOnly BrushDefault As SolidColorBrush = Freeze(Color.FromRgb(192, 255, 255))  ' #C0FFFF
+
     Private Shared ReadOnly BrushPlayedDefault As SolidColorBrush = Freeze(Color.FromRgb(245, 245, 245))  ' #F5F5F5
 
     Private Shared ReadOnly BrushUserPick As SolidColorBrush = Freeze(Colors.LightGreen)
@@ -24,6 +25,8 @@ Class MainWindow
     Private _replayNumbers As Integer() = Array.Empty(Of Integer)()
     Private _wayTicketGroups As List(Of List(Of Integer)) = Nothing
     Private _wayTicketKingNumber As Integer = 0
+    Private _isBullseyeActive As Boolean = False
+    Private Shared ReadOnly BullseyeNumbers As Integer() = {1, 10, 35, 36, 45, 46, 71, 80}
 
     ' ── session tracking ─────────────────────────────────────────────────────
     Private _sessionStartBalance As Decimal
@@ -50,6 +53,7 @@ Class MainWindow
         AllTimeSummaryStore.IncrementSessions()
         DrawStatsStore.EnsureDrawStats()
         RefreshStatsDisplay(DrawStatsStore.LoadStats())
+        UpdateFreeGamesButton()
     End Sub
 
     ' ── grid builder ─────────────────────────────────────────────────────────
@@ -168,6 +172,11 @@ Class MainWindow
             ChkWayTicket.IsChecked = False
         End If
 
+        If _isBullseyeActive Then
+            _isBullseyeActive = False
+            BtnBullseye.Background = Brushes.MistyRose
+        End If
+
         UpdatePayoutScheduleDisplay()
         UpdatePlayedGrid()
         UpdateStatusBar()
@@ -188,6 +197,8 @@ Class MainWindow
         End If
         _wayTicketGroups = Nothing
         _wayTicketKingNumber = 0
+        _isBullseyeActive = False
+        BtnBullseye.Background = Brushes.MistyRose
         For Each kvp In _kenoButtons
             kvp.Value.Background = BrushDefault
         Next
@@ -268,10 +279,12 @@ Class MainWindow
 
         Dim number As Integer
         If Not Integer.TryParse(tbk.Text, number) Then Return
-        If Not _kenoButtons.ContainsKey(number) Then Return
+
+        Dim value As Button = Nothing
+        If Not _kenoButtons.TryGetValue(number, value) Then Return
 
         If _selectedNumbers.Remove(number) Then
-            _kenoButtons(number).Background = BrushDefault
+            value.Background = BrushDefault
         ElseIf _selectedNumbers.Count < 20 Then
             _selectedNumbers.Add(number)
             _kenoButtons(number).Background = BrushUserPick
@@ -285,7 +298,6 @@ Class MainWindow
         UpdateWayTicketSummary()
         UpdateWagerPreview()
     End Sub
-
 
     Private Const HitsColWidth As Integer = 8
 
@@ -302,8 +314,8 @@ Class MainWindow
 
         Dim betAmount = GetSelectedBetAmount()
         If betAmount <= 0D Then betAmount = 1D
-        Dim entries = GetPayoutScheduleEntries(pickCount)
-        TbkPayoutHeader.Text = $"Payout — Pick {pickCount}"
+        Dim entries = If(_isBullseyeActive, GetBullseyePayoutScheduleEntries(), GetPayoutScheduleEntries(pickCount))
+        TbkPayoutHeader.Text = If(_isBullseyeActive, "Payout — Bullseye", $"Payout — Pick {pickCount}")
 
         Dim doc As New FlowDocument() With {
             .PagePadding = New Thickness(4),
@@ -356,6 +368,9 @@ Class MainWindow
     ' ── bank display ─────────────────────────────────────────────────────────
     Private Sub UpdateBankDisplay()
         LblBank.Content = _bankBalance.ToString("C2")
+        If NudSpecialWager IsNot Nothing Then
+            NudSpecialWager.Maximum = Math.Min(5000D, CDbl(_bankBalance))
+        End If
     End Sub
 
     Private Sub UpdateJackpotDisplay()
@@ -386,12 +401,14 @@ Class MainWindow
         Dim useMultiplier = ChkMultiplierKeno.IsChecked = True
         Dim useFirstLast = ChkFirstLastPlay.IsChecked = True
         Dim useWayTicket = ChkWayTicket.IsChecked = True
+        Dim useBullseye = _isBullseyeActive
         Dim usePowerball = ChkPowerball.IsChecked = True
 
         Dim totalWager = ComputeTotalWager(bet, gamesToPlay)
         Dim totalPayout = 0D
         Dim lastMatches = 0
         Dim gameResults As New List(Of (Index As Integer, Matched As Integer, Payout As Decimal, Multiplier As Integer, FirstLastBonus As Decimal))()
+        Dim freeGameIndices As New HashSet(Of Integer)()
 
         Dim isSuperSonic = (GetDrawDelayMs() = 0)
         BtnPlay.IsEnabled = False
@@ -404,6 +421,8 @@ Class MainWindow
                 Dim gamePayout As Decimal
                 If useWayTicket Then
                     gamePayout = GetWayTicketPayout(result.Draw, bet)
+                ElseIf useBullseye Then
+                    gamePayout = GetBullseyePayout(result.Matches) * bet
                 Else
                     gamePayout = GetPayout(_selectedNumbers.Count, result.Matches) * bet
                 End If
@@ -459,10 +478,14 @@ Class MainWindow
                     UpdateJackpotDisplay()
                 End If
 
-                ' Between consecutive games: winner dialog controls the pause; otherwise wait 3 s
-                If i < gamesToPlay AndAlso Not isSuperSonic Then
+                ' Free game bonus — matching WinForms IsFreeGameBonus / AwardFreeGameBonus
+                Dim isFreeGameResult = (gamePayout = 0D) AndAlso IsFreeGameBonus(result.Matches, bet)
+                If isFreeGameResult Then
+                    freeGameIndices.Add(i)
+                    AwardFreeGameBonus()
+                ElseIf i < gamesToPlay AndAlso Not isSuperSonic Then
                     If gamePayout > 0D Then
-                        WinPayoutSchedule.ShowForWin(Me, "Regular", _selectedNumbers.Count, result.Matches, gamePayout, bet)
+                        WinPayoutSchedule.ShowForWin(Me, If(useBullseye, "Bullseye", "Regular"), _selectedNumbers.Count, result.Matches, gamePayout, bet)
                     Else
                         Await Task.Delay(3000)
                     End If
@@ -501,17 +524,18 @@ Class MainWindow
         LblWagerTotal.Content = totalWager.ToString("C2")
         UpdatePayoutScheduleDisplay()
         UpdateStatusBar()
+        UpdateFreeGamesButton()
 
         ' ── game log ──────────────────────────────────────────────────────────
-        Dim isFreeGame = (lastMatches = 0 AndAlso _selectedNumbers.Count >= 5)
+        Dim gameMode = If(useBullseye, "Bullseye", "Regular")
         If gamesToPlay > 1 Then
-            AppendBatch("Regular", bet,
-                        gameResults.Select(Function(r) (r.Matched, r.Payout, False, r.Multiplier, r.FirstLastBonus)),
+            AppendBatch(gameMode, bet,
+                        gameResults.Select(Function(r) (r.Matched, r.Payout, freeGameIndices.Contains(r.Index), r.Multiplier, r.FirstLastBonus)),
                         bonus)
         Else
-            AppendGame("Regular", bet, lastMatches, totalPayout,
+            AppendGame(gameMode, bet, lastMatches, totalPayout,
                        If(gameResults.Count > 0, gameResults(0).Multiplier, 1),
-                       isFreeGame, 0D)
+                       freeGameIndices.Count > 0, 0D)
         End If
 
         ' ── Show result dialogs ────────────────────────────────────────────
@@ -519,21 +543,12 @@ Class MainWindow
             If gamesToPlay > 1 Then
                 WinConsecutiveSummary.ShowSummary(Me, gameResults, bet, bonus, subtotal, totalPayout)
             ElseIf totalPayout > 0D Then
-                WinPayoutSchedule.ShowForWin(Me, "Regular", _selectedNumbers.Count, lastMatches, totalPayout, bet)
+                WinPayoutSchedule.ShowForWin(Me, If(useBullseye, "Bullseye", "Regular"), _selectedNumbers.Count, lastMatches, totalPayout, bet)
             End If
         Catch ex As Exception
             MessageBox.Show($"Result dialog error: {ex.Message}{Environment.NewLine}{ex.StackTrace}",
                             "Result Error", MessageBoxButton.OK, MessageBoxImage.Error)
         End Try
-
-        If lastMatches = 0 AndAlso _selectedNumbers.Count >= 5 Then
-            _sessionFreeGamesEarned += 1
-            AllTimeSummaryStore.RecordFreeGameEarned()
-            _bankBalance += 2D
-            SaveBankBalance(_bankBalance)
-            UpdateBankDisplay()
-            WinBonusGame.ShowBonus(Me, _selectedNumbers.Count)
-        End If
     End Sub
 
     Private Async Function DrawSingleGameAnimated() As Task(Of (Draw As HashSet(Of Integer), Matches As Integer, FirstDrawn As Integer, LastDrawn As Integer))
@@ -671,24 +686,22 @@ Class MainWindow
             If rb.IsChecked = True Then Return CDec(rb.Tag)
         Next
 
-        Dim custom As Decimal
-        If Decimal.TryParse(TxtSpecialWager.Text, custom) AndAlso custom > 0D Then
-            Return custom
+        If NudSpecialWager IsNot Nothing AndAlso NudSpecialWager.Value.HasValue AndAlso NudSpecialWager.Value.Value >= 0.05 Then
+            Return CDec(NudSpecialWager.Value.Value)
         End If
 
         Return 0D
     End Function
 
     Private Sub RbWager_Checked(sender As Object, e As RoutedEventArgs)
-        If TxtSpecialWager IsNot Nothing Then TxtSpecialWager.Text = "0"
+        If NudSpecialWager IsNot Nothing Then NudSpecialWager.Value = Nothing
         UpdatePayoutScheduleDisplay()
         UpdateWayTicketSummary()
         UpdateWagerPreview()
     End Sub
 
-    Private Sub TxtSpecialWager_TextChanged(sender As Object, e As TextChangedEventArgs)
-        Dim custom As Decimal
-        If Decimal.TryParse(TxtSpecialWager.Text, custom) AndAlso custom > 0D Then
+    Private Sub NudSpecialWager_ValueChanged(sender As Object, e As RoutedPropertyChangedEventArgs(Of Double?))
+        If NudSpecialWager IsNot Nothing AndAlso NudSpecialWager.Value.GetValueOrDefault() >= 0.05 Then
             For Each rb In GetWagerRadioButtons()
                 rb.IsChecked = False
             Next
@@ -728,9 +741,7 @@ Class MainWindow
 
     ' ── special play ─────────────────────────────────────────────────────────────────────────────
     Private Sub BtnQuickPick_Click(sender As Object, e As RoutedEventArgs)
-        Dim n As Integer
-        If Not Integer.TryParse(TxtQuickPickCount.Text, n) Then n = 1
-        n = Math.Max(1, Math.Min(20, n))
+        Dim n As Integer = CInt(NudQuickPickCount.Value.GetValueOrDefault(1))
 
         ResetGrid()
         Dim pool As New List(Of Integer)()
@@ -750,17 +761,7 @@ Class MainWindow
         UpdateWagerPreview()
     End Sub
 
-    Private Sub TxtQuickPickCount_TextChanged(sender As Object, e As TextChangedEventArgs)
-        Dim val As Integer
-        If Not Integer.TryParse(TxtQuickPickCount.Text, val) Then Return
-        val = Math.Max(1, Math.Min(20, val))
-        If TxtQuickPickCount.Text <> val.ToString() Then
-            TxtQuickPickCount.Text = val.ToString()
-            TxtQuickPickCount.CaretIndex = TxtQuickPickCount.Text.Length
-        End If
-    End Sub
-
-    Private Sub ChkMultiplierKeno_Changed(sender As Object, e As RoutedEventArgs)
+    Private Sub ChkMultiplierKeno_Changed()
         If ChkMultiplierKeno.IsChecked <> True Then
             ChkMultiplierKeno.Content = "Multiplier: 1×"
         End If
@@ -823,11 +824,103 @@ Class MainWindow
     End Sub
 
     Private Sub BtnBullseye_Click(sender As Object, e As RoutedEventArgs)
-        MessageBox.Show("Bullseye is not yet available.", "Bullseye",
-                        MessageBoxButton.OK, MessageBoxImage.Information)
+        If Not BtnPlay.IsEnabled Then Return
+        If ChkWayTicket.IsChecked = True Then ChkWayTicket.IsChecked = False
+
+        For Each kvp In _kenoButtons
+            kvp.Value.Background = BrushDefault
+        Next
+        _selectedNumbers.Clear()
+        _wayTicketGroups = Nothing
+        _wayTicketKingNumber = 0
+
+        For Each n In BullseyeNumbers
+            _selectedNumbers.Add(n)
+            _kenoButtons(n).Background = BrushUserPick
+        Next
+
+        _isBullseyeActive = True
+        BtnBullseye.Background = Brushes.Gold
+        UpdatePayoutScheduleDisplay()
+        UpdatePlayedGrid()
+        UpdateStatusBar()
+        UpdateWagerPreview()
     End Sub
 
-    Private Sub BtnPlayFavorites_Click(sender As Object, e As RoutedEventArgs)
+    Private Async Sub BtnFreeGames_Click(sender As Object, e As RoutedEventArgs)
+        Try
+            If _selectedNumbers.Count = 0 OrElse GetFreeGames() <= 0 Then Return
+
+            UseFreeGame()
+            BtnPlay.IsEnabled = False
+            BtnCLEAR.IsEnabled = False
+            BtnFreeGames.IsEnabled = False
+            LblWinnings.Content = "$0"
+
+            Const FreeGameBet As Decimal = 2D
+            Dim result = Await DrawSingleGameAnimated()
+            Dim gameMode = If(_isBullseyeActive, "Bullseye", "Regular")
+
+            Dim gamePayout As Decimal
+            If _isBullseyeActive Then
+                gamePayout = GetBullseyePayout(result.Matches) * FreeGameBet
+            Else
+                gamePayout = GetPayout(_selectedNumbers.Count, result.Matches) * FreeGameBet
+            End If
+
+            LblWinnings.Content = gamePayout.ToString("C2")
+            _lastMatches = result.Matches
+            _lastPayout = gamePayout
+
+            _bankBalance += gamePayout
+            SaveBankBalance(_bankBalance)
+            UpdateBankDisplay()
+
+            AllTimeSummaryStore.RecordGame(FreeGameBet, gamePayout)
+            _sessionGamesPlayed += 1
+            If gamePayout > 0D Then _sessionWins += 1
+            If gamePayout > _sessionBestPayout Then _sessionBestPayout = gamePayout
+            _sessionTotalWagered += FreeGameBet
+
+            AppendGame($"Free Game ({gameMode})", FreeGameBet, result.Matches, gamePayout, 1, False, 0D)
+            UpdateStatusBar()
+            UpdatePayoutScheduleDisplay()
+
+            If gamePayout > 0D Then
+                WinPayoutSchedule.ShowForWin(Me, gameMode, _selectedNumbers.Count, result.Matches, gamePayout, FreeGameBet)
+            End If
+        Catch ex As Exception
+            MessageBox.Show($"Free game error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error)
+        Finally
+            BtnPlay.IsEnabled = True
+            BtnCLEAR.IsEnabled = True
+            UpdateFreeGamesButton()
+        End Try
+    End Sub
+
+    Private Function IsFreeGameBonus(matchedCount As Integer, betAmount As Decimal) As Boolean
+        If betAmount < 2D Then Return False
+        If matchedCount <> 0 Then Return False
+        Dim picks = _selectedNumbers.Count
+        Return picks >= 5 AndAlso picks <= 9
+    End Function
+
+    Private Sub AwardFreeGameBonus()
+        AddFreeGame()
+        _sessionFreeGamesEarned += 1
+        AllTimeSummaryStore.RecordFreeGameEarned()
+        UpdateFreeGamesButton()
+        WinBonusGame.ShowBonus(Me, _selectedNumbers.Count)
+    End Sub
+
+    Private Sub UpdateFreeGamesButton()
+        Dim count = GetFreeGames()
+        Dim template = TryCast(BtnFreeGames.Tag, String)
+        BtnFreeGames.Content = If(template IsNot Nothing, String.Format(template, count), $"Free Games Won ({count})")
+        BtnFreeGames.IsEnabled = count > 0 AndAlso BtnPlay.IsEnabled
+    End Sub
+
+    Private Sub BtnPlayFavorites_Click
         Dim slot = WinFavoritesSlot.ShowForLoad(Me)
         If slot < 0 Then Return
 

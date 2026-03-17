@@ -1,12 +1,12 @@
-<!-- Last Edit: 2026-03-17 - Hot/cold numbers wired into StatBar2 (hot, red) and StatBar1 (cold, blue); click-to-toggle support. -->
+<!-- Last Edit: 2026-03-17 01:10 PM - BtnFreeGames wired: Tag template, Click handler; free game bonus now stored via AddFreeGame, awarded in-loop matching WinForms. -->
 <mah:MetroWindow x:Class="MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
-        mc:Ignorable="d"
-        Title="Keno" Height="528" Width="942"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+                 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                 mc:Ignorable="d"
+        Title="Keno" Height="585" Width="942"
         WindowStartupLocation="CenterScreen"
         ResizeMode="CanMinimize"
         GlowBrush="{DynamicResource MahApps.Brushes.Accent}"
@@ -106,9 +106,73 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <!-- RadioButton — replaces MahApps template; white bullet with a bright blue dot when checked. -->
+        <!-- Affects all RadioButtons in this window: Wager, Consecutive, DrawSpeed.                   -->
+        <Style TargetType="RadioButton">
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <BulletDecorator Background="Transparent">
+                            <BulletDecorator.Bullet>
+                                <Grid Width="13" Height="13">
+                                    <Ellipse Stroke="#555555" StrokeThickness="1.5" Fill="White" />
+                                    <Ellipse x:Name="CheckGlyph" Width="7" Height="7" Fill="Transparent" />
+                                </Grid>
+                            </BulletDecorator.Bullet>
+                            <ContentPresenter Margin="4,0,0,0" VerticalAlignment="Center" RecognizesAccessKey="True" />
+                        </BulletDecorator>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="CheckGlyph" Property="Fill" Value="#FF0070C0" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.5" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- CheckBox — replaces MahApps template; square glyph with blue tick; Foreground is honoured for label text. -->
+        <Style TargetType="CheckBox">
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <BulletDecorator Background="Transparent">
+                            <BulletDecorator.Bullet>
+                                <Grid Width="13" Height="13">
+                                    <Border BorderBrush="#555555" BorderThickness="1.5" Background="White" />
+                                    <Path x:Name="CheckMark"
+                                          Data="M 2,7 L 5,11 L 11,3"
+                                          Stroke="#FF0070C0" StrokeThickness="2"
+                                          Visibility="Collapsed"
+                                          SnapsToDevicePixels="True" />
+                                </Grid>
+                            </BulletDecorator.Bullet>
+                            <ContentPresenter Margin="4,0,0,0"
+                                              VerticalAlignment="Center"
+                                              RecognizesAccessKey="True"
+                                              TextBlock.Foreground="{TemplateBinding Foreground}" />
+                        </BulletDecorator>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="CheckMark" Property="Visibility" Value="Visible" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.5" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
 
-    <Grid x:Name="FrmMain" Margin="12,0,0,0" Height="458" VerticalAlignment="Center" HorizontalAlignment="Left" Width="930">
+    <Grid x:Name="FrmMain" Margin="12,12,0,0" Height="543" VerticalAlignment="Top" HorizontalAlignment="Left" Width="930">
         <Grid.Background>
             <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                 <GradientStop Color="#FFBFBCBC" Offset="0.081" />
@@ -119,7 +183,7 @@
             <DropShadowEffect />
         </Grid.Effect>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="215*" />
+            <ColumnDefinition Width="218*" />
             <ColumnDefinition Width="326*" />
             <ColumnDefinition Width="169*" />
             <ColumnDefinition Width="220*" />
@@ -130,7 +194,7 @@
         <GroupBox x:Name="GbxPayoutSchedule"
                   HorizontalAlignment="Center"
                   Width="195"
-                  FontFamily="Segoe UI" FontSize="9" FontWeight="Bold" Margin="0,0,0,206">
+                  FontFamily="Segoe UI" FontSize="9" FontWeight="Bold" Margin="0,6,0,222" VerticalAlignment="Top">
             <GroupBox.Header>
                 <TextBlock x:Name="TbkPayoutHeader"
                            Text="Payout Schedule"
@@ -139,21 +203,22 @@
             <RichTextBox x:Name="RtbPayoutSchedule"
                          IsReadOnly="True"
                          FontFamily="Consolas" FontSize="8.5"
-                         Foreground= "BlanchedAlmond"
+                         Background="White"
+                         Foreground="Black"
                          FontWeight="Normal"
                          BorderThickness="0"
                          VerticalScrollBarVisibility="Auto"
-                         HorizontalScrollBarVisibility="Disabled" Height="218" Margin="0,0,-2,0" HorizontalAlignment="Right" Width="185" />
+                         HorizontalScrollBarVisibility="Disabled" Height="276" Margin="0,0,-1,0" HorizontalAlignment="Right" Width="185" />
         </GroupBox>
 
         <!-- 8 rows × 10 cols = numbers 1–80; each cell 60×60 DIP                  -->
         <!-- Split into two 4-row grids matching WinForms TlpKenoGridTop/Bottom     -->
         <Border BorderBrush="#888888" BorderThickness="2"
-                HorizontalAlignment="Center" VerticalAlignment="Top" Height="273" Width="304" Grid.Column="1">
+                HorizontalAlignment="Center" VerticalAlignment="Top" Height="273" Width="304" Grid.Column="1" Margin="0,8,0,0">
             <StackPanel Orientation="Vertical">
                 <UniformGrid x:Name="KenoGridTop"
                              Rows="4" Columns="10"
-                             Width="300" Height="120">
+                             Width="300" Height="120" VerticalAlignment="Top">
                     <UniformGrid.Style>
                         <Style />
                     </UniformGrid.Style>
@@ -168,7 +233,7 @@
                            Margin="0,6,0,6" FontWeight="Bold" />
                 <UniformGrid x:Name="KenoGridBottom"
                              Rows="4" Columns="10"
-                             Width="300" Height="120">
+                             Width="300" Height="120" VerticalAlignment="Top">
                     <UniformGrid.Effect>
                         <DropShadowEffect />
                     </UniformGrid.Effect>
@@ -189,10 +254,10 @@
                 </UniformGrid>
             </StackPanel>
         </Border>
-        <Button x:Name="BtnPlay" Content="PLAY" Click="BtnPlay_Click" HorizontalAlignment="Left" Margin="52,372,0,0" VerticalAlignment="Top" Width="71" Background="#FFEE614E" FontWeight="Bold" Height="20" RenderTransformOrigin="2.93,2.101" Grid.Column="1" />
-        <Button x:Name="BtnCLEAR" Content="CLEAR" Click="BtnClear_Click" HorizontalAlignment="Left" Margin="213,373,0,0" VerticalAlignment="Top" Width="71" Background="#FFEECF4E" FontWeight="Bold" Height="20" Grid.Column="1" />
-        <Button x:Name="BtnFreeGames" Content="Free Games Won" HorizontalAlignment="Center" Margin="0,278,0,0" VerticalAlignment="Top" Background="#FF086717" Foreground="#FFF1E3C2" FontSize="9" Height="16" Width="80" Grid.Column="1" />
-        <StatusBar x:Name="StatBar1" VerticalAlignment="Bottom" Margin="0,0,0,10" Grid.ColumnSpan="4" Height="21" Background="#FFDCF8F8" HorizontalAlignment="Left" Width="930">
+        <Button x:Name="BtnPlay" Content="PLAY" Click="BtnPlay_Click" HorizontalAlignment="Left" Margin="52,432,0,0" VerticalAlignment="Top" Width="71" Background="#FFEE614E" FontWeight="Bold" Height="20" RenderTransformOrigin="2.93,2.101" Grid.Column="1" />
+        <Button x:Name="BtnCLEAR" Content="CLEAR" Click="BtnClear_Click" HorizontalAlignment="Left" Margin="213,433,0,0" VerticalAlignment="Top" Width="71" Background="#FFEECF4E" FontWeight="Bold" Height="20" Grid.Column="1" />
+        <Button x:Name="BtnFreeGames" Content="Free Games Won (0)" Tag="Free Games Won ({0})" Click="BtnFreeGames_Click" HorizontalAlignment="Center" Margin="0,379,0,0" VerticalAlignment="Top" Background="#FF086717" Foreground="#FFF1E3C2" FontSize="9" Height="16" Width="164" Grid.Column="1" RenderTransformOrigin="0.5,4.362" IsEnabled="False" />
+        <StatusBar x:Name="StatBar1" VerticalAlignment="Bottom" Margin="0,0,0,10" Grid.ColumnSpan="4" Height="21" Background="#FFDCF8F8" Foreground="Black" HorizontalAlignment="Left" Width="920">
             <StatusBar.Effect>
                 <DropShadowEffect />
             </StatusBar.Effect>
@@ -225,7 +290,7 @@
             <Separator />
             <StatusBarItem x:Name="SbiPayout"  Content="Payout: $0.00" VerticalAlignment="Center" FontSize="10" FontWeight="Bold" Width="683" />
         </StatusBar>
-        <StatusBar x:Name="StatBar2" VerticalAlignment="Top" Margin="0,400,0,0" Height="21" Background="#FFCAF29B" Grid.ColumnSpan="4" RenderTransformOrigin="0.498,0.572">
+        <StatusBar x:Name="StatBar2" VerticalAlignment="Top" Margin="0,482,10,0" Height="21" Background="#FFCAF29B" Grid.ColumnSpan="4" RenderTransformOrigin="0.498,0.572"  Width="920">
             <StatusBar.Effect>
                 <DropShadowEffect />
             </StatusBar.Effect>
@@ -240,27 +305,27 @@
             <StatusBarItem x:Name="SbiSummary" DockPanel.Dock="Right"
                            Cursor="Hand" Padding="0"
                            MouseLeftButtonDown="SbiSummary_MouseDown">
-                <Border Background="MistyRose" BorderBrush="#888888" BorderThickness="1" Padding="4,0">
+                <Border Background="Coral" BorderBrush="#888888" BorderThickness="1" Padding="4,0">
                     <TextBlock x:Name="TbkAllTimeSummary" Text="Summary" FontSize="9" FontWeight="Bold" VerticalAlignment="Center" />
                 </Border>
             </StatusBarItem>
             <StatusBarItem x:Name="SbiGameLog" DockPanel.Dock="Right"
                            Cursor="Hand" Padding="0"
                            MouseLeftButtonDown="SbiGameLog_MouseDown">
-                <Border Background="#FFC0C0FF" BorderBrush="#888888" BorderThickness="1" Padding="4,0">
+                <Border Background="green" BorderBrush="#888888" BorderThickness="1" Padding="4,0">
                     <TextBlock Text="Game Log" FontSize="9" FontWeight="Bold" VerticalAlignment="Center" />
                 </Border>
             </StatusBarItem>
             <StatusBarItem x:Name="SbiHelp" DockPanel.Dock="Right"
                            Cursor="Hand" Padding="0"
                            MouseLeftButtonDown="SbiHelp_MouseDown">
-                <Border Background="#FFFFC0C0" BorderBrush="#888888" BorderThickness="1" Padding="4,0">
+                <Border Background="Coral" BorderBrush="#888888" BorderThickness="1" Padding="4,0">
                     <TextBlock Text="Help" FontSize="9" FontWeight="Bold" VerticalAlignment="Center" />
                 </Border>
             </StatusBarItem>
-            <StatusBarItem x:Name="SbiCurrentStreak" DockPanel.Dock="Left" Content="Streak: — " VerticalAlignment="Center" FontSize="10" FontWeight="Bold" />
+            <StatusBarItem x:Name="SbiCurrentStreak" DockPanel.Dock="Left" Content="Streak: — " Foreground="Navy" VerticalAlignment="Center" FontSize="10" FontWeight="Bold" FontStyle="Normal" />
             <Separator />
-            <StatusBarItem x:Name="SbiBestStreak" DockPanel.Dock="Left" Content="Best: 0W" VerticalAlignment="Center" FontSize="10" FontWeight="Bold" />
+            <StatusBarItem x:Name="SbiBestStreak" DockPanel.Dock="Left" Content="Best: 0W" Foreground="Navy" VerticalAlignment="Center" FontSize="10" FontWeight="Bold" />
             <Separator />
             <StatusBarItem x:Name="SbiHotNumbers" DockPanel.Dock="Left" Padding="6,0,0,0" VerticalAlignment="Center">
                 <StackPanel Orientation="Horizontal">
@@ -282,9 +347,9 @@
                     </Border>
                 </StackPanel>
             </StatusBarItem>
-            </StatusBar>
-        <GroupBox x:Name="GbxBank" Header="Bank" Margin="0,-4,0,0" HorizontalAlignment="Center" Width="150" VerticalAlignment="Top"
-                  Background="#FF538697" FontWeight="Bold" Height="138" Grid.Column="2">
+        </StatusBar>
+        <GroupBox x:Name="GbxBank" Header="Bank" HorizontalAlignment="Center" Width="150" VerticalAlignment="Top"
+                  Background="#FF538697" FontWeight="Bold" Height="138" Grid.Column="2" Margin="0,4,0,0">
             <GroupBox.Effect>
                 <DropShadowEffect />
             </GroupBox.Effect>
@@ -292,8 +357,8 @@
                 <Label x:Name="LblBank" Content="$0"
                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
                        VerticalContentAlignment="Center" FontFamily="Segoe UI" FontSize="10" FontWeight="Bold"
-                       Background="#FF8FF3E4" BorderBrush="#888888" BorderThickness="1"
-                       Height="25" Padding="0" />
+                       Background="#FF8FF3E4" Foreground="Navy" BorderBrush="#888888" BorderThickness="1"
+                       Height="20" Padding="0" />
                 <TextBlock Text="Winnings" HorizontalAlignment="Center"
                            FontFamily="Segoe UI" FontSize="9" FontWeight="Bold" FontStyle="Italic"
                            Margin="0,4,0,1" Foreground="White" />
@@ -301,7 +366,7 @@
                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
                        VerticalContentAlignment="Center" FontFamily="Segoe UI" FontSize="10" FontWeight="Bold" FontStyle="Italic"
                        Background="#FF80FF80" Foreground="Black"
-                       BorderBrush="#888888" BorderThickness="1" Height="25" Padding="0" />
+                       BorderBrush="#888888" BorderThickness="1" Height="20" Padding="0" />
                 <TextBlock Text="Wager" HorizontalAlignment="Center"
                            FontFamily="Segoe UI" FontSize="9" FontWeight="Bold" FontStyle="Italic"
                            Margin="0,4,0,1" Foreground="White" />
@@ -309,34 +374,34 @@
                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
                        VerticalContentAlignment="Center" FontFamily="Segoe UI" FontSize="10" FontWeight="Bold" FontStyle="Italic"
                        Background="DarkOrange" Foreground="Black"
-                       BorderBrush="#888888" BorderThickness="1" Height="25" Padding="0" />
+                       BorderBrush="#888888" BorderThickness="1" Height="20" Padding="0" />
             </StackPanel>
         </GroupBox>
         <!-- Wager selector — mirrors WinForms GbxWager (2 cols: $1–$20 left, $25–$200 right) -->
         <GroupBox x:Name="GbxWager" Header="Wager"
                   HorizontalAlignment="Center" VerticalAlignment="Top"
-                  Margin="0,135,0,0" Width="150"
+                  Margin="0,157,0,0" Width="150"
                   Background="{DynamicResource {x:Static SystemColors.GradientInactiveCaptionBrushKey}}"
-                  FontFamily="Segoe UI" FontSize="10" FontWeight="Bold" Height="163" Grid.Column="2">
+                  FontFamily="Segoe UI" FontSize="10" FontWeight="Bold" Height="219" Grid.Column="2">
             <GroupBox.Effect>
                 <DropShadowEffect />
             </GroupBox.Effect>
             <StackPanel Margin="4,2,4,4">
                 <UniformGrid Columns="2">
-                    <RadioButton x:Name="RbWager1"   Content="$1"   Tag="1"   GroupName="Wager" IsChecked="True" Checked="RbWager_Checked" Margin="0,1" />
-                    <RadioButton x:Name="RbWager25"  Content="$25"  Tag="25"  GroupName="Wager" Checked="RbWager_Checked" Margin="0,1" />
-                    <RadioButton x:Name="RbWager2"   Content="$2"   Tag="2"   GroupName="Wager" Checked="RbWager_Checked" Margin="0,1" />
-                    <RadioButton x:Name="RbWager30"  Content="$30"  Tag="30"  GroupName="Wager" Checked="RbWager_Checked" Margin="0,1" />
-                    <RadioButton x:Name="RbWager3"   Content="$3"   Tag="3"   GroupName="Wager" Checked="RbWager_Checked" Margin="0,1" />
-                    <RadioButton x:Name="RbWager40"  Content="$40"  Tag="40"  GroupName="Wager" Checked="RbWager_Checked" Margin="0,1" />
-                    <RadioButton x:Name="RbWager5"   Content="$5"   Tag="5"   GroupName="Wager" Checked="RbWager_Checked" Margin="0,1" />
-                    <RadioButton x:Name="RbWager50"  Content="$50"  Tag="50"  GroupName="Wager" Checked="RbWager_Checked" Margin="0,1" />
-                    <RadioButton x:Name="RbWager10"  Content="$10"  Tag="10"  GroupName="Wager" Checked="RbWager_Checked" Margin="0,1" />
-                    <RadioButton x:Name="RbWager100" Content="$100" Tag="100" GroupName="Wager" Checked="RbWager_Checked" Margin="0,1" />
-                    <RadioButton x:Name="RbWager15"  Content="$15"  Tag="15"  GroupName="Wager" Checked="RbWager_Checked" Margin="0,1" />
-                    <RadioButton x:Name="RbWager150" Content="$150" Tag="150" GroupName="Wager" Checked="RbWager_Checked" Margin="0,1" />
-                    <RadioButton x:Name="RbWager20"  Content="$20"  Tag="20"  GroupName="Wager" Checked="RbWager_Checked" Margin="0,1" />
-                    <RadioButton x:Name="RbWager200" Content="$200" Tag="200" GroupName="Wager" Checked="RbWager_Checked" Margin="0,1" />
+                    <RadioButton x:Name="RbWager1"   Content="$1"   Tag="1"   GroupName="Wager" IsChecked="True" Checked="RbWager_Checked" Margin="0,1" Foreground="Navy" />
+                    <RadioButton x:Name="RbWager25"  Content="$25"  Tag="25"  GroupName="Wager" Checked="RbWager_Checked" Margin="0,1" Foreground="Navy" />
+                    <RadioButton x:Name="RbWager2"   Content="$2"   Tag="2"   GroupName="Wager" Checked="RbWager_Checked" Margin="0,1" Foreground="Navy" />
+                    <RadioButton x:Name="RbWager30"  Content="$30"  Tag="30"  GroupName="Wager" Checked="RbWager_Checked" Margin="0,1" Foreground="Navy" />
+                    <RadioButton x:Name="RbWager3"   Content="$3"   Tag="3"   GroupName="Wager" Checked="RbWager_Checked" Margin="0,1" Foreground="Navy" />
+                    <RadioButton x:Name="RbWager40"  Content="$40"  Tag="40"  GroupName="Wager" Checked="RbWager_Checked" Margin="0,1" Foreground="Navy" />
+                    <RadioButton x:Name="RbWager5"   Content="$5"   Tag="5"   GroupName="Wager" Checked="RbWager_Checked" Margin="0,1" Foreground="Navy" />
+                    <RadioButton x:Name="RbWager50"  Content="$50"  Tag="50"  GroupName="Wager" Checked="RbWager_Checked" Margin="0,1" Foreground="Navy" />
+                    <RadioButton x:Name="RbWager10"  Content="$10"  Tag="10"  GroupName="Wager" Checked="RbWager_Checked" Margin="0,1" Foreground="Navy" />
+                    <RadioButton x:Name="RbWager100" Content="$100" Tag="100" GroupName="Wager" Checked="RbWager_Checked" Margin="0,1" Foreground="Navy" />
+                    <RadioButton x:Name="RbWager15"  Content="$15"  Tag="15"  GroupName="Wager" Checked="RbWager_Checked" Margin="0,1" Foreground="Navy" />
+                    <RadioButton x:Name="RbWager150" Content="$150" Tag="150" GroupName="Wager" Checked="RbWager_Checked" Margin="0,1" Foreground="Navy" />
+                    <RadioButton x:Name="RbWager20"  Content="$20"  Tag="20"  GroupName="Wager" Checked="RbWager_Checked" Margin="0,1" Foreground="Navy" />
+                    <RadioButton x:Name="RbWager200" Content="$200" Tag="200" GroupName="Wager" Checked="RbWager_Checked" Margin="0,1" Foreground="Navy" />
                 </UniformGrid>
                 <Separator Margin="0,4" />
                 <Grid>
@@ -345,51 +410,52 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <Label Grid.Column="0" Content="Custom:" FontSize="9" FontWeight="Normal"
-                           Padding="0,0,4,0" VerticalAlignment="Center" />
-                    <TextBox Grid.Column="1" x:Name="TxtSpecialWager" Text="0"
-                             TextAlignment="Right" FontSize="10" FontWeight="Normal"
-                             VerticalContentAlignment="Center"
-                             TextChanged="TxtSpecialWager_TextChanged" />
+                           Padding="0,0,4,0" VerticalAlignment="Center" Foreground="Black" />
+                    <mah:NumericUpDown Grid.Column="1" x:Name="NudSpecialWager"
+                                       Minimum="0.05" Maximum="5000"
+                                       Interval="0.05" NumericInputMode="Decimal" StringFormat="F2"
+                                       FontSize="9" HorizontalContentAlignment="Center"
+                                       ValueChanged="NudSpecialWager_ValueChanged" />
                 </Grid>
             </StackPanel>
         </GroupBox>
         <!-- Consecutive games — mirrors WinForms GbxConsecutiveGames 5-col layout -->
         <GroupBox x:Name="GbxConsecutiveGames" Header="Consecutive Games"
-                  Margin="1,277,7,0" VerticalAlignment="Top"
+                  Margin="1,341,7,0" VerticalAlignment="Top"
                   Background="#FFE9F6D5"
-                  FontFamily="Segoe UI" FontSize="9" FontWeight="Bold" Height="104">
+                  FontFamily="Segoe UI" FontSize="8.5" FontWeight="Bold" Height="115">
             <GroupBox.Effect>
                 <DropShadowEffect />
             </GroupBox.Effect>
             <StackPanel Margin="4,2,4,4">
                 <UniformGrid Columns="5">
                     <!-- Row 1 -->
-                    <RadioButton x:Name="RbConsecutive2"  Content="2"  Tag="2"  GroupName="Consec" Checked="RbConsecutive_Checked" Margin="1" />
-                    <RadioButton x:Name="RbConsecutive6"  Content="6"  Tag="6"  GroupName="Consec" Checked="RbConsecutive_Checked" Margin="1" />
-                    <RadioButton x:Name="RbConsecutive10" Content="10" Tag="10" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="1" />
-                    <RadioButton x:Name="RbConsecutive14" Content="14" Tag="14" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="1" />
-                    <RadioButton x:Name="RbConsecutive18" Content="18" Tag="18" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="1" />
+                    <RadioButton x:Name="RbConsecutive2"  Content="2"  Tag="2"  GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive6"  Content="6"  Tag="6"  GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive10" Content="10" Tag="10" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive14" Content="14" Tag="14" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive18" Content="18" Tag="18" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0" Background="#FFE9F6D5" Foreground="Black" />
                     <!-- Row 2 -->
-                    <RadioButton x:Name="RbConsecutive3"  Content="3"  Tag="3"  GroupName="Consec" Checked="RbConsecutive_Checked" Margin="1" />
-                    <RadioButton x:Name="RbConsecutive7"  Content="7"  Tag="7"  GroupName="Consec" Checked="RbConsecutive_Checked" Margin="1" />
-                    <RadioButton x:Name="RbConsecutive11" Content="11" Tag="11" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="1" />
-                    <RadioButton x:Name="RbConsecutive15" Content="15" Tag="15" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="1" />
-                    <RadioButton x:Name="RbConsecutive19" Content="19" Tag="19" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="1" />
+                    <RadioButton x:Name="RbConsecutive3"  Content="3"  Tag="3"  GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive7"  Content="7"  Tag="7"  GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive11" Content="11" Tag="11" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive15" Content="15" Tag="15" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive19" Content="19" Tag="19" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0" Background="#FFE9F6D5" Foreground="Black" />
                     <!-- Row 3 -->
-                    <RadioButton x:Name="RbConsecutive4"  Content="4"  Tag="4"  GroupName="Consec" Checked="RbConsecutive_Checked" Margin="1" />
-                    <RadioButton x:Name="RbConsecutive8"  Content="8"  Tag="8"  GroupName="Consec" Checked="RbConsecutive_Checked" Margin="1" />
-                    <RadioButton x:Name="RbConsecutive12" Content="12" Tag="12" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="1" />
-                    <RadioButton x:Name="RbConsecutive16" Content="16" Tag="16" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="1" />
-                    <RadioButton x:Name="RbConsecutive20" Content="20" Tag="20" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="1" />
+                    <RadioButton x:Name="RbConsecutive4"  Content="4"  Tag="4"  GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive8"  Content="8"  Tag="8"  GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive12" Content="12" Tag="12" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive16" Content="16" Tag="16" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive20" Content="20" Tag="20" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0" Background="#FFE9F6D5" Foreground="Black" />
                     <!-- Row 4 -->
-                    <RadioButton x:Name="RbConsecutive5"  Content="5"  Tag="5"  GroupName="Consec" Checked="RbConsecutive_Checked" Margin="1" />
-                    <RadioButton x:Name="RbConsecutive9"  Content="9"  Tag="9"  GroupName="Consec" Checked="RbConsecutive_Checked" Margin="1" />
-                    <RadioButton x:Name="RbConsecutive13" Content="13" Tag="13" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="1" />
-                    <RadioButton x:Name="RbConsecutive17" Content="17" Tag="17" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="1" />
+                    <RadioButton x:Name="RbConsecutive5"  Content="5"  Tag="5"  GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive9"  Content="9"  Tag="9"  GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive13" Content="13" Tag="13" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive17" Content="17" Tag="17" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0" Background="#FFE9F6D5" Foreground="Black" />
                 </UniformGrid>
                 <TextBlock x:Name="TbkBonusMultiplier" Text="Bonus: 1×"
-                           FontSize="8" FontWeight="Bold"
-                           HorizontalAlignment="Center" Margin="0,3,0,0" />
+                           FontSize="10" FontWeight="Bold"
+                           HorizontalAlignment="Center" Margin="0,3,0,0" Foreground="Maroon" />
             </StackPanel>
         </GroupBox>
 
@@ -407,7 +473,7 @@
             </StackPanel>
             <UniformGrid x:Name="TlpGamePlay"
                          Rows="2" Columns="10"
-                         Height="45" Width="130">
+                         Height="45" Width="130" VerticalAlignment="Top">
                 <UniformGrid.Effect>
                     <DropShadowEffect />
                 </UniformGrid.Effect>
@@ -417,15 +483,15 @@
         <!-- Save favorites — mirrors WinForms BtnSaveFavorites -->
         <Button x:Name="BtnSaveFavorites" Content="Save My Favorites"
                 HorizontalAlignment="Center" VerticalAlignment="Top"
-                Margin="0,306,0,0" Width="114" Height="20"
-                Background="MistyRose" FontFamily="Segoe UI" FontSize="9" FontWeight="Bold"
-                Click="BtnSaveFavorites_Click" Grid.Column="2" />
+                Margin="0,444,0,0" Width="114" Height="20"
+                Background="Coral" FontFamily="Segoe UI" FontSize="9" FontWeight="Bold"
+                Click="BtnSaveFavorites_Click" Grid.Column="3" />
 
         <!-- Draw speed selector — mirrors WinForms TableLayoutPanel2 -->
         <GroupBox x:Name="GbxDrawSpeed" Header="Draw Speed"
                   HorizontalAlignment="Center" VerticalAlignment="Top"
-                  Margin="0,331,0,0"
-                  Background="#FFC0FFC0" FontFamily="Segoe UI" FontSize="9" FontWeight="Bold" Grid.Column="2" Height="57" Width="119">
+                  Margin="0,397,0,0"
+                  Background="#FFC0FFC0" FontFamily="Segoe UI" FontSize="9" FontWeight="Bold" Grid.Column="2" Height="78" Width="119">
             <GroupBox.Effect>
                 <DropShadowEffect />
             </GroupBox.Effect>
@@ -457,7 +523,7 @@
                 </Border>
                 <Border Grid.Column="0" Grid.Row="1" Background="#FFC0FFFF">
                     <TextBlock Text="Slow" HorizontalAlignment="Center"
-                               FontWeight="Bold" Padding="4,2" />
+                               FontWeight="Bold" Padding="4,2" Foreground="Navy" />
                 </Border>
                 <Border Grid.Column="1" Grid.Row="1" Background="#FFFFC080">
                     <TextBlock Text="Med" HorizontalAlignment="Center"
@@ -481,72 +547,76 @@
 
         <!-- Special Play — mirrors WinForms GbxSpecialPlay -->
         <GroupBox x:Name="GbxSpecialPlay" Header="Special Play"
-                  HorizontalAlignment="Left" VerticalAlignment="Top" Width="154" Height="323"
-                  Background="Silver" FontFamily="Segoe UI" FontSize="8" FontWeight="Bold" Grid.Column="3" Margin="35,65,0,0">
+                  HorizontalAlignment="Left" VerticalAlignment="Top" Width="180" Height="323"
+                  Background="#FFF2F1F1" FontFamily="Segoe UI" FontSize="8" FontWeight="Bold" Grid.Column="3" Margin="18,75,0,0">
             <GroupBox.Effect>
                 <DropShadowEffect />
             </GroupBox.Effect>
-            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Height="312" Margin="0,0,22,0">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="0">
                 <StackPanel Margin="4,2,4,4">
                     <StackPanel Orientation="Horizontal" Margin="0,2,0,4">
                         <Button x:Name="BtnQuickPick" Content="Quick Pick" Width="69" Height="20"
-                                Background="MistyRose" FontFamily="Segoe UI" FontSize="8" FontWeight="Bold"
+                                Background="Coral" FontFamily="Segoe UI" FontSize="8" FontWeight="Bold"
                                 Click="BtnQuickPick_Click" />
-                        <TextBox x:Name="TxtQuickPickCount" Text="1" Width="42" Height="20"
-                                 TextAlignment="Center" FontSize="10" FontWeight="Normal"
-                                 VerticalContentAlignment="Center" Margin="4,0,0,0"
-                                 TextChanged="TxtQuickPickCount_TextChanged" />
+                        <mah:NumericUpDown x:Name="NudQuickPickCount" Value="1" Width="72" Height="20"
+                                           Minimum="1" Maximum="20" Interval="1"
+                                           NumericInputMode="Numbers" StringFormat="0"
+                                           FontSize="10" HorizontalContentAlignment="Center"
+                                           Margin="4,0,0,0" />
                     </StackPanel>
-                    <CheckBox x:Name="ChkMultiplierKeno" Content="Multiplier: 1×" Margin="2,1"
-                              Foreground="Red" FontFamily="Segoe UI" FontSize="8" FontWeight="Bold"
-                              Checked="ChkMultiplierKeno_Changed" Unchecked="ChkMultiplierKeno_Changed" />
-                    <CheckBox x:Name="ChkFirstLastPlay" Content="First/Last ($1)" Margin="2,1"
-                              Foreground="Teal" FontFamily="Segoe UI" FontSize="8" FontWeight="Bold"
-                              Checked="ChkFirstLastPlay_Changed" Unchecked="ChkFirstLastPlay_Changed" />
-                    <CheckBox x:Name="ChkWayTicket" Content="Way Ticket" Margin="2,1"
-                              Foreground="#FFC04000" FontFamily="Segoe UI" FontSize="8" FontWeight="Bold"
-                              Checked="ChkWayTicket_Changed" Unchecked="ChkWayTicket_Changed" />
-                    <Label x:Name="LblWayTicketSummary" Content="—"
-                           HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
-                           FontFamily="Segoe UI" FontSize="8" FontStyle="Italic"
-                           Foreground="#FFC04000" Padding="2,0" />
-                    <CheckBox x:Name="ChkPowerball" Content="Powerball (×4)" Margin="2,1"
-                              Foreground="#FF80FFFF" FontFamily="Segoe UI" FontSize="8" FontWeight="Bold"
-                              Checked="ChkPowerball_Changed" Unchecked="ChkPowerball_Changed" />
-                    <Label x:Name="LblPowerballValue" Content="—"
-                           HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
-                           FontFamily="Segoe UI" FontSize="8" FontStyle="Italic"
-                           Foreground="#FF80FFFF" Padding="2,0" />
+                    <UniformGrid Columns="2">
+                        <CheckBox x:Name="ChkMultiplierKeno" Content="Multiplier: 1×" Margin="2,1" FontFamily="Segoe UI" FontSize="8" FontWeight="Bold"
+                                  Foreground="Red" Checked="ChkMultiplierKeno_Changed" Unchecked="ChkMultiplierKeno_Changed" />
+                        <CheckBox x:Name="ChkFirstLastPlay" Content="First/Last ($1)" Margin="2,1"
+                                  Foreground="Teal" FontFamily="Segoe UI" FontSize="8" FontWeight="Bold"
+                                  Checked="ChkFirstLastPlay_Changed" Unchecked="ChkFirstLastPlay_Changed" />
+                        <CheckBox x:Name="ChkWayTicket" Content="Way Ticket" Margin="2,1"
+                                  Foreground="#FFC04000" FontFamily="Segoe UI" FontSize="8" FontWeight="Bold"
+                                  Checked="ChkWayTicket_Changed" Unchecked="ChkWayTicket_Changed" />
+                        <CheckBox x:Name="ChkPowerball" Content="Powerball (×4)" Margin="2,1"
+                                  Foreground="Black" FontFamily="Segoe UI" FontSize="8" FontWeight="Bold"
+                                  Checked="ChkPowerball_Changed" Unchecked="ChkPowerball_Changed" />
+                    </UniformGrid>
+                    <UniformGrid Columns="2">
+                        <Label x:Name="LblWayTicketSummary" Content="—"
+                               HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                               FontFamily="Segoe UI" FontSize="8" FontStyle="Italic"
+                               Foreground="#FFC04000" Padding="2,0" />
+                        <Label x:Name="LblPowerballValue" Content="—"
+                               HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                               FontFamily="Segoe UI" FontSize="8" FontStyle="Italic"
+                               Foreground="Black" Padding="2,0" />
+                    </UniformGrid>
                     <Separator Margin="0,4" />
                     <Button x:Name="BtnBullseye" Content="Play Bullseye" Height="20"
                             HorizontalAlignment="Stretch" Margin="0,2"
-                            Background="MistyRose" FontFamily="Segoe UI" FontSize="8" FontWeight="Bold"
-                            Click="BtnBullseye_Click" Width="77" RenderTransformOrigin="-0.5,0.629" />
+                            Background="Coral" FontFamily="Segoe UI" FontSize="8" FontWeight="Bold"
+                            Click="BtnBullseye_Click" Width="103" RenderTransformOrigin="-0.5,0.629" />
                     <Button x:Name="BtnPlayFavorites" Content="Play My Favorites" Height="20"
                             HorizontalAlignment="Stretch" Margin="0,2"
-                            Background="MistyRose" FontFamily="Segoe UI" FontSize="8" FontWeight="Bold"
-                            Click="BtnPlayFavorites_Click" Width="77" />
+                            Background="Coral" FontFamily="Segoe UI" FontSize="8" FontWeight="Bold"
+                            Click="BtnPlayFavorites_Click" Width="103" />
                     <Button x:Name="BtnReplayLastGame" Content="Replay Last Game" Height="20"
                             HorizontalAlignment="Stretch" Margin="0,2"
-                            Background="MistyRose" FontFamily="Segoe UI" FontSize="8" FontWeight="Bold"
-                            Click="BtnReplayLastGame_Click" Width="77" />
+                            Background="Coral" FontFamily="Segoe UI" FontSize="8" FontWeight="Bold"
+                            Click="BtnReplayLastGame_Click" Width="103" />
                     <Separator Margin="0,4" />
                     <TextBlock Text="Play Quadrants/Halves"
-                               HorizontalAlignment="Center" TextAlignment="Center"
-                               FontFamily="Segoe UI Semibold" FontSize="8" FontWeight="Bold"
+                               HorizontalAlignment="Center" TextAlignment="Center" Foreground="Navy"
+                               FontFamily="Segoe UI Semibold" FontSize="9" FontWeight="Bold"
                                Margin="0,2,0,4" Width="134" />
                     <UniformGrid x:Name="TlpQuadrants" Rows="2" Columns="2" Width="79">
-                        <Button x:Name="BtnQuadrant1" Content="1" Tag="1" Height="36"
-                                Background="#FFFFC0FF" FontFamily="Segoe UI" FontSize="10" FontWeight="Bold"
+                        <Button x:Name="BtnQuadrant1" Content="1" Tag="1" Height="30"
+                                Background="Orange" Foreground="Black" FontFamily="Segoe UI" FontSize="10" FontWeight="Bold"
                                 Click="BtnQuadrant_Click" Width="36" />
-                        <Button x:Name="BtnQuadrant2" Content="2" Tag="2" Height="36"
-                                Background="#FFFFC0FF" FontFamily="Segoe UI" FontSize="10" FontWeight="Bold"
+                        <Button x:Name="BtnQuadrant2" Content="2" Tag="2" Height="30"
+                                Background="Orange" Foreground="Black" FontFamily="Segoe UI" FontSize="10" FontWeight="Bold"
                                 Click="BtnQuadrant_Click" Width="36" />
-                        <Button x:Name="BtnQuadrant3" Content="3" Tag="3" Height="36"
-                                Background="#FFFFC0FF" FontFamily="Segoe UI" FontSize="10" FontWeight="Bold"
+                        <Button x:Name="BtnQuadrant3" Content="3" Tag="3" Height="30"
+                                Background="Orange" Foreground="Black" FontFamily="Segoe UI" FontSize="10" FontWeight="Bold"
                                 Click="BtnQuadrant_Click" Width="36" />
-                        <Button x:Name="BtnQuadrant4" Content="4" Tag="4" Height="36"
-                                Background="#FFFFC0FF" FontFamily="Segoe UI" FontSize="10" FontWeight="Bold"
+                        <Button x:Name="BtnQuadrant4" Content="4" Tag="4" Height="30"
+                                Background="Orange" Foreground="Black" FontFamily="Segoe UI" FontSize="10" FontWeight="Bold"
                                 Click="BtnQuadrant_Click" Width="36" />
                     </UniformGrid>
                 </StackPanel>

@@ -70,6 +70,7 @@ Class WinFavoritesSlot
                 .Height = 36,
                 .Margin = New Thickness(0, 0, 0, 4),
                 .Background = New SolidColorBrush(Color.FromRgb(240, 248, 255)),
+                .Foreground = If(count > 0, Brushes.Black, Brushes.Gray),
                 .IsEnabled = _isSaveMode OrElse count > 0
             }
 

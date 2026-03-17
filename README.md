@@ -1,4 +1,4 @@
-# Last Edit: 2026-03-17 - Hot & Cold updated to status-bar pills; Data Files table paths corrected.
+# Last Edit: 2026-03-17 01:21 PM - Free $2 Game section updated: button enable note added.
 
 # 🎰 Keno
 
@@ -392,7 +392,8 @@ All payouts are **multipliers × bet**. A 5x multiplier on a $10 bet returns $50
 ### Free $2 Game
 
 Playing **Pick 5–9** with a bet of **$2 or more** and matching **zero numbers** earns one free $2 game.  
-Free games persist between sessions and cannot be earned while playing a free game.
+Free games persist between sessions and cannot be earned while playing a free game.  
+The green **Free Games Won (N)** button becomes enabled when credits are available; click it to play immediately using your current number selection.
 
 ---
 

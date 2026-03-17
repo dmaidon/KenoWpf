@@ -1,9 +1,38 @@
-# Last Edit: 2026-03-17 - XAML designer errors (XDG0010) and BC40026 warnings fixed.
+# Last Edit: 2026-03-17 01:14 PM - BtnFreeGames, Bullseye, NudSpecialWager/QuickPickCount, RadioButton/CheckBox templates, WinConsecutiveSummary foreground.
 
 # Changelog
 
 All notable changes to this project are documented here.  
 Format: most-recent first. WPF entries are prefixed **(WPF)**, WinForms entries **(WF)**.
+
+---
+
+## [2026-03-17] — WPF BtnFreeGames full WinForms parity
+
+- **(WPF) `BtnFreeGames_Click` implemented** — plays one animated $2 game using the current number selection; no bank deduction (free); payout credited; logs as `"Free Game (Regular/Bullseye)"`.
+- **(WPF) `IsFreeGameBonus`** — gate: bet ≥ $2, zero matches, Pick 5–9 (matches WinForms exactly, including the ≤ 9 cap that was previously missing in WPF).
+- **(WPF) `AwardFreeGameBonus`** — called inside the game loop per-game when bonus triggered: `AddFreeGame()`, `_sessionFreeGamesEarned += 1`, `RecordFreeGameEarned()`, `UpdateFreeGamesButton()`, `WinBonusGame.ShowBonus()`. Replaces wrong post-loop block that incorrectly credited $2 cash instead of storing a token.
+- **(WPF) `UpdateFreeGamesButton`** — reads `GetFreeGames()`, formats content from `Tag` template (`"Free Games Won ({0})"`), enables only when `count > 0 AndAlso BtnPlay.IsEnabled`; called from constructor, from `AwardFreeGameBonus`, and post-play.
+- **(WPF) `freeGameIndices` HashSet** — tracked per-loop so `AppendBatch` correctly marks which games were free-game-bonus games (previously always `False`).
+
+## [2026-03-17] — WPF Bullseye game mode
+
+- **(WPF) `BtnBullseye_Click`** — clears grid, selects fixed 8-spot pattern `{1, 10, 35, 36, 45, 46, 71, 80}` (4 corners + 4 centre cells), sets `_isBullseyeActive = True`, turns button **Gold**.
+- **(WPF) Bullseye payout path** — `GetBullseyePayout(result.Matches) * bet` used when `useBullseye`; multiplier table: 0→×10, 4→×3, 5→×15, 6→×75, 7→×500, 8→×30000.
+- **(WPF) Payout schedule** — `UpdatePayoutScheduleDisplay` shows Bullseye-specific table with header `"Payout — Bullseye"` when active.
+- **(WPF) Game log** — `gameMode = "Bullseye"` passed to `AppendGame`/`AppendBatch` and `WinPayoutSchedule`.
+- **(WPF) State cleared** — `_isBullseyeActive = False` and button reset to **MistyRose** in both `ResetGrid` and `KenoNumber_Click`.
+
+## [2026-03-17] — WPF NumericUpDown controls + RadioButton/CheckBox templates
+
+- **(WPF) `NudSpecialWager`** — `TxtSpecialWager` replaced with `mah:NumericUpDown`; min 0.05, max 5000, step 0.05, `StringFormat="F2"`; `NudSpecialWager_ValueChanged` handler wired.
+- **(WPF) `NudQuickPickCount`** — `TxtQuickPickCount` replaced with `mah:NumericUpDown`; min 1, max 20, step 1, integer mode; picks requested count of random numbers on **Quick Pick** click.
+- **(WPF) RadioButton custom template** — implicit style replaces MahApps template; white ellipse bullet with bright-blue (`#FF0070C0`) filled dot when checked; `Foreground` honoured for label text.
+- **(WPF) CheckBox custom template** — implicit style replaces MahApps template; white square border with blue Path tick mark (`M 2,7 L 5,11 L 11,3`) when checked; `TextBlock.Foreground` bound to `TemplateBinding Foreground` so per-checkbox colour (Red, Teal, etc.) is respected.
+
+## [2026-03-17] — WPF WinConsecutiveSummary winning-row foreground
+
+- **(WPF) `WinConsecutiveSummary.xaml`** — `IsWin` `DataTrigger` now sets both `Background = LightGoldenrodYellow` and `Foreground = Navy`; previously the MahApps-inherited light foreground was unreadable against the yellow background.
 
 ---
 
