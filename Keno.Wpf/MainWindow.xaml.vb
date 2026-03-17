@@ -1,4 +1,4 @@
-' Last Edit: 2026-03-17 02:02 PM - ShowDrawSpeedFlyout: uniform table; SS detail in description block.
+' Last Edit: 2026-03-17 02:19 PM - SbiSettings_MouseDown added; ChkFlyoutsEnabled guard in Show*Flyout helpers.
 
 Class MainWindow
 
@@ -792,6 +792,7 @@ Class MainWindow
     End Sub
 
     Private Sub ShowMultiplierFlyout()
+        If ChkFlyoutsEnabled.IsChecked <> True Then Return
         FlyoutCheckboxHelp.Header = "Multiplier Keno"
         TbkFlyoutDesc.Text = "Adds $1 to your wager per game. Before each draw a random multiplier is applied to your base payout:"
         TbkFlyoutData.Text = "  ×1  — 45%   (most common)" & vbLf &
@@ -803,6 +804,7 @@ Class MainWindow
     End Sub
 
     Private Sub ShowFirstLastFlyout()
+        If ChkFlyoutsEnabled.IsChecked <> True Then Return
         FlyoutCheckboxHelp.Header = "First / Last Ball"
         TbkFlyoutDesc.Text = "Adds $1 to your wager per game. If the first or last ball drawn matches any of your picks, you win a flat cash bonus:"
         TbkFlyoutData.Text = " Pick  Bonus" & vbLf &
@@ -835,6 +837,7 @@ Class MainWindow
 
     Private Sub ShowDrawSpeedFlyout()
         If Not IsLoaded Then Return
+        If ChkFlyoutsEnabled.IsChecked <> True Then Return
         Dim delay = GetDrawDelayMs()
         Dim selected As String
         Select Case delay
@@ -1073,6 +1076,10 @@ Class MainWindow
     End Function
 
     ' ── status bar actions
+
+    Private Sub SbiSettings_MouseDown(sender As Object, e As MouseButtonEventArgs)
+        FlyoutSettings.IsOpen = Not FlyoutSettings.IsOpen
+    End Sub
 
     Private Sub SbiHelp_MouseDown(sender As Object, e As MouseButtonEventArgs)
         WinKenoHelp.ShowWindow(Me)
