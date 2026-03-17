@@ -1,4 +1,4 @@
-' Last Edit: 2026-03-15 - WinKenoHelp: TreeView topics + FlowDocument rich content; mirrors FrmKenoHelp topic set.
+' Last Edit: 2026-03-17 - All help topics corrected: multiplier tiers, bullseye numbers, statistics pills, powerball, wayticket, quadrants, progressive, freegames, firstlastball payout table.
 Class WinKenoHelp
 
     Private ReadOnly _helpContent As New Dictionary(Of String, Action)()
@@ -181,39 +181,65 @@ Class WinKenoHelp
         _helpContent("multiplier") = Sub()
                                          AppendTitle("MULTIPLIER KENO")
                                          AppendBlank()
-                                         AppendBody("Adds $1 per game to your wager. A multiplier is drawn each game:")
+                                         AppendBody("Adds $1 per game to your wager. A multiplier is drawn each game before payouts are calculated:")
                                          AppendBlank()
-                                         AppendBody("  1× (45%)   2× (30%)   3× (13%)   5× (9%)   10× (3%)")
+                                         AppendBody("  1×  (45 %)   2×  (25 %)   3×  (15 %)" & vbCrLf &
+                                                    "  4×  ( 8 %)   5×  ( 4 %)   8×  ( 2 %)   10× ( 1 %)")
                                          AppendBlank()
-                                         AppendBody("Winnings for that game are multiplied by the drawn value.")
+                                         AppendBody("The multiplier drawn applies only to that individual game. " &
+                                                    "In a consecutive series every game draws its own multiplier independently.")
                                      End Sub
 
         _helpContent("wayticket") = Sub()
                                         AppendTitle("WAY TICKET")
                                         AppendBlank()
-                                        AppendBody("Splits your picks into groups of 3 and evaluates each sub-ticket independently. " &
-                                                   "Total wager = base bet × number of sub-tickets. Total payout is the sum of all sub-ticket payouts.")
+                                        AppendBody("Splits your picks into equal-sized groups (G1–G5). Each unique combination " &
+                                                   "of groups becomes a sub-ticket played independently. " &
+                                                   "Total wager = base bet × number of sub-tickets.")
+                                        AppendBlank()
+                                        AppendHeading("KING TICKET")
+                                        AppendBody("Crown one number as King (♛). The King is added to every sub-ticket automatically, " &
+                                                   "increasing each sub-ticket by one spot. Click the King number again to unset it.")
+                                        AppendBlank()
+                                        AppendBody("Open the Way Ticket dialog by checking Way Ticket and pressing Play.")
                                     End Sub
 
         _helpContent("powerball") = Sub()
                                         AppendTitle("POWERBALL")
                                         AppendBlank()
-                                        AppendBody("A bonus number 1–80 is drawn each game. If it matches one of your picks, " &
-                                                   "your payout for that game is multiplied by 4. No extra wager required.")
+                                        AppendBody("Optional +$1 side-bet available on Pick 6–20. After the regular 20-ball draw, " &
+                                                   "a 21st ball is drawn from the 60 unused numbers. " &
+                                                   "If it lands on one of your picks, any win is multiplied by ×4.")
+                                        AppendBlank()
+                                        AppendBody("Powerball stacks with Multiplier Keno and is unchecked automatically after each play.")
                                     End Sub
 
         _helpContent("bullseye") = Sub()
                                        AppendTitle("BULLSEYE")
                                        AppendBlank()
-                                       AppendBody("Bullseye plays the four corners plus the center of the board (numbers 1, 10, 71, 80, 40). " &
-                                                  "Payouts follow a separate schedule. Currently reserved for future release.")
+                                       AppendBody("Bullseye plays a fixed 8-spot pattern — the four corners, two inner-top, and two inner-bottom:")
+                                       AppendBlank()
+                                       AppendBody("  Numbers: 1, 10, 35, 36, 45, 46, 71, 80")
+                                       AppendBlank()
+                                       AppendHeading("PAYOUT SCHEDULE")
+                                       AppendBody("  Match 8 — 30,000×   Match 7 — 500×   Match 6 — 75×" & vbCrLf &
+                                                  "  Match 5 —     15×   Match 4 —   3×   Catch 0 — 10×")
+                                       AppendBlank()
+                                       AppendBody("Click Play Bullseye to activate. Standard bet applies.")
                                    End Sub
 
         _helpContent("quadrants") = Sub()
                                         AppendTitle("QUADRANTS / HALVES")
                                         AppendBlank()
-                                        AppendBody("The Quick Select buttons (Q1–Q4, Top, Bottom, Left, Right) fill your picks with " &
-                                                   "a predefined region of the board. 20 numbers are selected instantly.")
+                                        AppendBody("The Quick Select buttons (Q1–Q4, Top Half, Bottom Half, Left Half, Right Half) " &
+                                                   "fill your picks with a predefined region of the board instantly.")
+                                        AppendBlank()
+                                        AppendHeading("SELECTION SIZES")
+                                        AppendBody("  Single quadrant (Q1, Q2, Q3, or Q4) — 20 numbers" & vbCrLf &
+                                                   "  Two quadrants (e.g. Q1+Q2, Top, Left)  — 40 numbers")
+                                        AppendBlank()
+                                        AppendBody("Quadrant/Half selections and manual number picks are mutually exclusive — " &
+                                                   "selecting one clears the other.")
                                     End Sub
 
         _helpContent("bank") = Sub()
@@ -226,8 +252,21 @@ Class WinKenoHelp
         _helpContent("statistics") = Sub()
                                          AppendTitle("HOT & COLD STATISTICS")
                                          AppendBlank()
-                                         AppendBody("Statistics tracking is available in the full version. Hot numbers appear most frequently; " &
-                                                    "Cold numbers appear least frequently across all draws.")
+                                         AppendBody("After 20 games the app tracks how often each number has been drawn " &
+                                                    "across the last 15 draws. Statistics persist between sessions in " &
+                                                    "Data\draw-stats.json.")
+                                         AppendBlank()
+                                         AppendHeading("STATUS BAR PILLS")
+                                         AppendBody("  Hot numbers  — top 5 most frequent, shown as red pills in the bottom status bar (StatBar2)." & vbCrLf &
+                                                    "  Cold numbers — top 5 least frequent, shown as blue pills in the top status bar (StatBar1).")
+                                         AppendBlank()
+                                         AppendHeading("CLICK TO TOGGLE")
+                                         AppendBody("Click any hot or cold pill to toggle that number on the Keno grid, " &
+                                                    "exactly the same as clicking the number on the board directly.")
+                                         AppendBlank()
+                                         AppendHeading("WIN/LOSS STREAKS")
+                                         AppendBody("Current win streak, loss streak, and all-time best streak are shown " &
+                                                    "in the top status bar and update after every game.")
                                      End Sub
 
         _helpContent("favorites") = Sub()
@@ -249,28 +288,39 @@ Class WinKenoHelp
         _helpContent("progressive") = Sub()
                                           AppendTitle("PROGRESSIVE JACKPOT")
                                           AppendBlank()
-                                          AppendBody("A growing jackpot displayed in the status bar. Match all 20 picks out of 20 drawn to win. " &
-                                                     "Jackpot contribution and triggering rules are shown in the status bar.")
+                                          AppendBody("A growing jackpot displayed in the status bar. " &
+                                                     "Any wager of $5 or more contributes 5 % of the bet to the pool.")
+                                          AppendBlank()
+                                          AppendHeading("HOW TO WIN")
+                                          AppendBody("Select Pick 8–20 and match every single number you picked. " &
+                                                     "The pool resets to a $25,000 seed after each win.")
                                       End Sub
 
         _helpContent("freegames") = Sub()
                                         AppendTitle("FREE GAMES")
                                         AppendBlank()
-                                        AppendBody("Earn a free $2 game when you match 0 numbers on a Pick 5 or higher ticket. " &
-                                                   "Free games are added to your bank automatically.")
+                                        AppendBody("Playing Pick 5–9 with a bet of $2 or more and matching zero numbers earns one free $2 game.")
+                                        AppendBlank()
+                                        AppendBody("Free games persist between sessions and are tracked in Data\free-games.json. " &
+                                                   "A free game cannot itself earn another free game.")
                                     End Sub
 
         _helpContent("firstlastball") = Sub()
-                                            AppendTitle("FIRST/LAST BALL BONUS")
+                                            AppendTitle("FIRST / LAST BALL BONUS")
                                             AppendBlank()
-                                            AppendBody("When First/Last Play is enabled (+$1 per game):" & vbCrLf &
-                                                       "  • If the 1st drawn number matches a pick  → ♥ shown in the game progress cell." & vbCrLf &
-                                                       "  • If the last drawn number matches a pick → ♦ shown in the game progress cell.")
+                                            AppendBody("Optional +$1 per game. If the 1st or 20th drawn ball is one of your picks, " &
+                                                       "you receive a flat dollar bonus on top of your regular payout.")
                                             AppendBlank()
-                                            AppendHeading("PAYOUTS")
-                                            AppendBody("  First ball match : 3× the base bet" & vbCrLf &
-                                                       "  Last ball match  : 5× the base bet" & vbCrLf &
-                                                       "  Both match       : 10× the base bet")
+                                            AppendHeading("BONUS BY PICK COUNT")
+                                            AppendBody("  Pick  1 — $75    Pick  2 — $71    Pick  3 — $67    Pick  4 — $63" & vbCrLf &
+                                                       "  Pick  5 — $59    Pick  6 — $55    Pick  7 — $51    Pick  8 — $47" & vbCrLf &
+                                                       "  Pick  9 — $43    Pick 10 — $39    Pick 11 — $35    Pick 12 — $31" & vbCrLf &
+                                                       "  Pick 13 — $27    Pick 14 — $23    Pick 15 — $20    Pick 16 — $17" & vbCrLf &
+                                                       "  Pick 17 — $14    Pick 18 — $11    Pick 19 — $8     Pick 20 — $5")
+                                            AppendBlank()
+                                            AppendBody("The bonus is independent of bet size, Multiplier Keno, and Powerball. " &
+                                                       "In a consecutive series the bonus is added flat after the series multiplier " &
+                                                       "is applied (i.e. it is not multiplied by the series bonus).")
                                         End Sub
 
         _helpContent("gamelog") = Sub()
