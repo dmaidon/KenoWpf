@@ -1,4 +1,4 @@
-' Last Edit: 2026-03-15 - WinPayoutSchedule: gold banner, payout list, 7-second auto-close paused on hover.
+' Last Edit: 2026-03-15 - WinPayoutSchedule: gold banner, payout list, 5-second auto-close paused on hover.
 Class WinPayoutSchedule
 
     Private _gameType As String = "Regular"
@@ -7,7 +7,7 @@ Class WinPayoutSchedule
     Private _payout As Decimal
     Private _betAmount As Decimal
 
-    Private _secondsLeft As Integer = 7
+    Private _secondsLeft As Integer = 5
     Private ReadOnly _timer As New System.Windows.Threading.DispatcherTimer()
 
     ' ── Row model ─────────────────────────────────────────────────────────────
@@ -104,7 +104,7 @@ Class WinPayoutSchedule
     End Sub
 
     Private Sub Win_MouseLeave(sender As Object, e As MouseEventArgs)
-        _secondsLeft = 7
+        _secondsLeft = 5
         UpdateCountdown()
         _timer.Start()
     End Sub

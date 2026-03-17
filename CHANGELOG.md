@@ -1,9 +1,17 @@
-# Last Edit: 2026-03-17 - WPF hot/cold persistence, First/Last payout fixes, AllTimeSummary bonus accuracy.
+# Last Edit: 2026-03-17 - MahApps.Metro Dark.Steel skin applied to all WPF windows.
 
 # Changelog
 
 All notable changes to this project are documented here.  
 Format: most-recent first. WPF entries are prefixed **(WPF)**, WinForms entries **(WF)**.
+
+---
+
+## [2026-03-17] — WPF MahApps.Metro Dark.Steel skin
+
+- **(WPF) MahApps.Metro 2.4.11 installed** — `Keno.Wpf.vbproj` updated via NuGet.
+- **(WPF) `Application.xaml` updated** — existing app-wide styles wrapped in a `ResourceDictionary` with `MergedDictionaries`; MahApps `Controls.xaml`, `Fonts.xaml`, and `Dark.Steel` theme loaded.
+- **(WPF) All 10 windows converted to `MetroWindow`** — `MainWindow`, `WinBonusGame`, `WinGameLog`, `WinFavoritesSlot`, `WinSessionSummary`, `WinAllTimeSummary`, `WinConsecutiveSummary`, `WinPayoutSchedule`, `WinKenoHelp`, `WinWayTicket`. Each gains `xmlns:mah`, `GlowBrush="{DynamicResource MahApps.Brushes.Accent}"`, and a 30 px height adjustment to preserve content area.
 
 ---
 

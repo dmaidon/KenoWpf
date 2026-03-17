@@ -8,8 +8,8 @@
     <StartupObject>Keno.My.MyApplication</StartupObject>
     <UseWindowsForms>true</UseWindowsForms>
     <MyType>WindowsForms</MyType>
-    <AssemblyVersion>26.3.16.310</AssemblyVersion>
-    <FileVersion>26.3.16.310</FileVersion>
+    <AssemblyVersion>26.3.17.312</AssemblyVersion>
+    <FileVersion>26.3.17.312</FileVersion>
     <ApplicationIcon>Resources\keno_2.ico</ApplicationIcon>
     <OptionStrict>On</OptionStrict>
     <Title>Keno</Title>

@@ -1,9 +1,11 @@
 <!-- Last Edit: 2026-03-15 - WinKenoHelp: TreeView topic list + FlowDocumentScrollViewer for rich content. -->
-<Window x:Class="WinKenoHelp"
+<mah:MetroWindow x:Class="WinKenoHelp"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Keno Help" Height="580" Width="700"
+        xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+        Title="Keno Help" Height="610" Width="700"
         WindowStartupLocation="CenterOwner"
+        GlowBrush="{DynamicResource MahApps.Brushes.Accent}"
         ShowInTaskbar="False">
     <Grid>
         <Grid.RowDefinitions>
@@ -42,4 +44,4 @@
                 HorizontalAlignment="Right" Width="90" Margin="0,0,12,8"
                 Click="BtnClose_Click" />
     </Grid>
-</Window>
+</mah:MetroWindow>

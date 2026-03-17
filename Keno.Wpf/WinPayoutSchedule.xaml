@@ -1,10 +1,12 @@
 <!-- Last Edit: 2026-03-15 - WinPayoutSchedule: "You Won!" gold banner; payout ListView with matched row highlighted; 7-second auto-close. -->
-<Window x:Class="WinPayoutSchedule"
+<mah:MetroWindow x:Class="WinPayoutSchedule"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="You Won!" Height="420" Width="290"
+        xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+        Title="You Won!" Height="450" Width="290"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
+        GlowBrush="{DynamicResource MahApps.Brushes.Accent}"
         ShowInTaskbar="False">
     <Grid>
         <Grid.RowDefinitions>
@@ -65,4 +67,4 @@
                 FontFamily="Segoe UI" FontSize="9" FontWeight="Bold"
                 Click="BtnClose_Click" />
     </Grid>
-</Window>
+</mah:MetroWindow>

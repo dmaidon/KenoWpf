@@ -1,11 +1,18 @@
+' Last Edit: 2026-03-16 - Added ComVisible, CLSCompliant, and AssemblyMetadata (repository URL/type).
+Imports System.Reflection
+Imports System.Runtime.InteropServices
 Imports System.Windows
 
-'The ThemeInfo attribute describes where any theme specific and generic resource dictionaries can be found.
-'1st parameter: where theme specific resource dictionaries are located
-'(used if a resource is not found in the page,
-' or application resource dictionaries)
-
-'2nd parameter: where the generic resource dictionary is located
-'(used if a resource is not found in the page,
-'app, and any theme specific resource dictionaries)
+' WPF theme dictionary locations (required by WPF infrastructure).
+' Generic dictionary is embedded in this assembly; no per-theme dictionaries.
 <Assembly: ThemeInfo(ResourceDictionaryLocation.None, ResourceDictionaryLocation.SourceAssembly)>
+
+' This assembly exposes no COM-callable types.
+<Assembly: ComVisible(False)>
+
+' All public APIs comply with the Common Language Specification.
+<Assembly: CLSCompliant(True)>
+
+' Source repository metadata — consumed by NuGet, dotnet tooling, and IDEs.
+<Assembly: AssemblyMetadata("RepositoryUrl", "https://github.com/dmaidon/KenoWpf")>
+<Assembly: AssemblyMetadata("RepositoryType", "git")>

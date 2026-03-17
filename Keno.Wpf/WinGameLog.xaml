@@ -1,9 +1,11 @@
 <!-- Last Edit: 2026-03-15 - WinGameLog: scrollable log viewer with Close and Clear File buttons. -->
-<Window x:Class="WinGameLog"
+<mah:MetroWindow x:Class="WinGameLog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Game Log" Height="520" Width="560"
+        xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+        Title="Game Log" Height="550" Width="560"
         WindowStartupLocation="CenterOwner"
+        GlowBrush="{DynamicResource MahApps.Brushes.Accent}"
         ShowInTaskbar="False">
     <Grid>
         <Grid.RowDefinitions>
@@ -41,4 +43,4 @@
                     Click="BtnClose_Click" />
         </StackPanel>
     </Grid>
-</Window>
+</mah:MetroWindow>

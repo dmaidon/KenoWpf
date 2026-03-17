@@ -4,26 +4,35 @@
              xmlns:local="clr-namespace:Keno.Wpf"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- MahApps.Metro -->
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml" />
+                <!-- Theme: Dark with Steel accent — change second segment for other accents -->
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Themes/Dark.Steel.xaml" />
+            </ResourceDictionary.MergedDictionaries>
 
-        <!-- Summary caption column: right-aligned, gray -->
-        <Style x:Key="SumCapStyle" TargetType="TextBlock">
-            <Setter Property="FontFamily" Value="Segoe UI" />
-            <Setter Property="FontSize" Value="9" />
-            <Setter Property="Foreground" Value="Gray" />
-            <Setter Property="HorizontalAlignment" Value="Right" />
-            <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="Margin" Value="0,5,8,5" />
-        </Style>
+            <!-- Summary caption column: right-aligned, gray -->
+            <Style x:Key="SumCapStyle" TargetType="TextBlock">
+                <Setter Property="FontFamily" Value="Segoe UI" />
+                <Setter Property="FontSize" Value="9" />
+                <Setter Property="Foreground" Value="Gray" />
+                <Setter Property="HorizontalAlignment" Value="Right" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="Margin" Value="0,5,8,5" />
+            </Style>
 
-        <!-- Summary value column: left-aligned, bold -->
-        <Style x:Key="SumValStyle" TargetType="TextBlock">
-            <Setter Property="FontFamily" Value="Segoe UI" />
-            <Setter Property="FontSize" Value="9" />
-            <Setter Property="FontWeight" Value="Bold" />
-            <Setter Property="HorizontalAlignment" Value="Left" />
-            <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="Margin" Value="0,5,0,5" />
-        </Style>
+            <!-- Summary value column: left-aligned, bold -->
+            <Style x:Key="SumValStyle" TargetType="TextBlock">
+                <Setter Property="FontFamily" Value="Segoe UI" />
+                <Setter Property="FontSize" Value="9" />
+                <Setter Property="FontWeight" Value="Bold" />
+                <Setter Property="HorizontalAlignment" Value="Left" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="Margin" Value="0,5,0,5" />
+            </Style>
 
+        </ResourceDictionary>
     </Application.Resources>
 </Application>

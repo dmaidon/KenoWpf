@@ -1,18 +1,31 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows</TargetFramework>
     <RootNamespace>Keno.Wpf</RootNamespace>
     <UseWPF>true</UseWPF>
-    <AssemblyVersion>26.3.16.127</AssemblyVersion>
-    <FileVersion>26.3.16.127</FileVersion>
+    <AssemblyVersion>26.3.17.164</AssemblyVersion>
+    <FileVersion>26.3.17.164</FileVersion>
     <ApplicationIcon>keno_2.ico</ApplicationIcon>
     <OptionStrict>On</OptionStrict>
     <Title>Keno</Title>
+    <Description>A full-featured Windows Keno simulator — WPF front-end on .NET 10.</Description>
+    <Company>Dennis N. Maidon</Company>
+    <Product>Keno</Product>
+    <Copyright>© 2026 Dennis N. Maidon. All rights reserved.</Copyright>
     <PackageIcon>keno_2.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <NeutralLanguage>en-US</NeutralLanguage>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <OutputPath>C:\VB18\Release\KenoWpf</OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <OutputPath>C:\VB18\Release\KenoWpf</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -45,6 +58,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Keno.Core\Keno.Core.vbproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MahApps.Metro" Version="2.4.11" />
   </ItemGroup>
 
 </Project>

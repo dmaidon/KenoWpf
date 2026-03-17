@@ -2424,7 +2424,7 @@ Partial Class FrmMain
         ' StsFiller
         ' 
         StsFiller.Name = "StsFiller"
-        StsFiller.Size = New Size(836, 29)
+        StsFiller.Size = New Size(882, 29)
         StsFiller.Spring = True
         ' 
         ' StsHelp

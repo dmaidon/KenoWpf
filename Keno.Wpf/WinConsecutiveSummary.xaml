@@ -1,10 +1,12 @@
 <!-- Last Edit: 2026-03-15 - WinConsecutiveSummary: per-game ListView + summary totals; win rows highlighted gold. -->
-<Window x:Class="WinConsecutiveSummary"
+<mah:MetroWindow x:Class="WinConsecutiveSummary"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Consecutive Games Summary" Height="520" Width="410"
+        xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+        Title="Consecutive Games Summary" Height="550" Width="410"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
+        GlowBrush="{DynamicResource MahApps.Brushes.Accent}"
         ShowInTaskbar="False">
     <Grid>
         <Grid.RowDefinitions>
@@ -80,4 +82,4 @@
                 HorizontalAlignment="Right" Width="98" Margin="0,0,12,8"
                 Click="BtnClose_Click" />
     </Grid>
-</Window>
+</mah:MetroWindow>
