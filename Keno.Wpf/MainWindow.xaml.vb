@@ -1,4 +1,4 @@
-' Last Edit: 2026-03-17 01:53 PM - ShowDrawSpeedFlyout added; RbDrawSpeed_Checked wired to FlyoutCheckboxHelp.
+' Last Edit: 2026-03-17 02:00 PM - ShowDrawSpeedFlyout SS description fixed to use vbLf line breaks.
 
 Class MainWindow
 
@@ -839,8 +839,8 @@ Class MainWindow
         Dim selected As String
         Select Case delay
             Case 1000 : selected = "Slow"
-            Case 500  : selected = "Med"
-            Case 200  : selected = "Fast"
+            Case 500 : selected = "Med"
+            Case 200 : selected = "Fast"
             Case Else : selected = "SS (Super Sonic)"
         End Select
         FlyoutCheckboxHelp.Header = "Draw Speed"
@@ -849,7 +849,10 @@ Class MainWindow
                              " Slow   1.0 s / ball" & vbLf &
                              " Med    0.5 s / ball" & vbLf &
                              " Fast   0.2 s / ball" & vbLf &
-                             " SS     instant"
+                             " SS     instant: If consecutive games are" & vbLf &
+                             "        selected, all of them play at the" & vbLf &
+                             "        same time. there is no pause" & vbLf &
+                             "        between games."
         FlyoutCheckboxHelp.IsOpen = True
     End Sub
 
