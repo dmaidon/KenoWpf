@@ -1,4 +1,4 @@
-' Last Edit: 2026-03-17 02:00 PM - ShowDrawSpeedFlyout SS description fixed to use vbLf line breaks.
+' Last Edit: 2026-03-17 02:02 PM - ShowDrawSpeedFlyout: uniform table; SS detail in description block.
 
 Class MainWindow
 
@@ -844,15 +844,16 @@ Class MainWindow
             Case Else : selected = "SS (Super Sonic)"
         End Select
         FlyoutCheckboxHelp.Header = "Draw Speed"
-        TbkFlyoutDesc.Text = $"Controls the pause between each of the 20 balls drawn per game. Currently: {selected}."
+        TbkFlyoutDesc.Text = If(delay = 0,
+            "Controls the pause between each of the 20 balls drawn per game. " &
+            "In SS mode all 20 balls draw instantly, and consecutive games run " &
+            "back-to-back with no pause between them.",
+            $"Controls the pause between each of the 20 balls drawn per game. Currently: {selected}.")
         TbkFlyoutData.Text = " Mode   Delay" & vbLf &
                              " Slow   1.0 s / ball" & vbLf &
                              " Med    0.5 s / ball" & vbLf &
                              " Fast   0.2 s / ball" & vbLf &
-                             " SS     instant: If consecutive games are" & vbLf &
-                             "        selected, all of them play at the" & vbLf &
-                             "        same time. there is no pause" & vbLf &
-                             "        between games."
+                             " SS     instant"
         FlyoutCheckboxHelp.IsOpen = True
     End Sub
 
