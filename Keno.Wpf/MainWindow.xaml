@@ -1,4 +1,4 @@
-<!-- Last Edit: 2026-03-17 02:19 PM - SbiSettings added (white on purple); FlyoutSettings (Left) with ChkFlyoutsEnabled checkbox. -->
+<!-- Last Edit: 2026-03-18 10:37 AM - ChkFlyoutsEnabled persisted via AppSettings. -->
 <mah:MetroWindow x:Class="MainWindow"
                  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                  xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
@@ -192,26 +192,49 @@
                                xml:space="preserve" />
                 </StackPanel>
             </mah:Flyout>
-                <mah:Flyout x:Name="FlyoutSettings"
+            <mah:Flyout x:Name="FlyoutSettings"
                             Position="Left"
                             Width="220"
                             Theme="Light"
                             Header="Settings">
-                    <StackPanel Margin="8,6">
-                        <CheckBox x:Name="ChkFlyoutsEnabled"
+                <StackPanel Margin="8,6">
+                    <CheckBox x:Name="ChkFlyoutsEnabled"
                                   Content="Enable flyout tips"
                                   IsChecked="True"
+                                  Checked="ChkFlyoutsEnabled_Changed"
+                                  Unchecked="ChkFlyoutsEnabled_Changed"
                                   FontFamily="Segoe UI" FontSize="10" FontWeight="Bold"
                                   Foreground="#330066"
                                   Margin="0,4,0,8" />
-                        <TextBlock TextWrapping="Wrap"
+                    <TextBlock TextWrapping="Wrap"
                                    FontFamily="Segoe UI" FontSize="9"
                                    Foreground="#444444"
                                    Text="When enabled, selecting Draw Speed, Multiplier, or First/Last Ball shows a tip panel on the right side of the window." />
-                    </StackPanel>
-                </mah:Flyout>
-            </mah:FlyoutsControl>
-        </mah:MetroWindow.Flyouts>
+                    <Separator Margin="0,10,0,8" />
+                    <TextBlock Text="Bank Repopulation"
+                               FontFamily="Segoe UI" FontSize="10" FontWeight="Bold"
+                               Foreground="#330066" Margin="0,0,0,4" />
+                    <TextBlock Text="Set amount to restore to your bank:"
+                               TextWrapping="Wrap"
+                               FontFamily="Segoe UI" FontSize="9"
+                               Foreground="#444444" Margin="0,0,0,6" />
+                    <mah:NumericUpDown x:Name="NudRepopulateAmount"
+                                       Minimum="1" Maximum="15000"
+                                       Value="10000"
+                                       Interval="500"
+                                       StringFormat="F0"
+                                       FontSize="10"
+                                       Margin="0,0,0,6" />
+                    <Button x:Name="BtnRepopulateBank"
+                            Content="Repopulate Bank"
+                            Click="BtnRepopulateBank_Click"
+                            FontSize="10"
+                            Padding="4,3"
+                            HorizontalAlignment="Stretch" />
+                </StackPanel>
+            </mah:Flyout>
+        </mah:FlyoutsControl>
+    </mah:MetroWindow.Flyouts>
 
     <Grid x:Name="FrmMain" Margin="12,12,0,0" Height="543" VerticalAlignment="Top" HorizontalAlignment="Left" Width="930">
         <Grid.Background>
@@ -347,7 +370,7 @@
                            Cursor="Hand" Padding="0"
                            MouseLeftButtonDown="SbiSummary_MouseDown">
                 <Border Background="Coral" BorderBrush="#888888" BorderThickness="1" Padding="4,0">
-                    <TextBlock x:Name="TbkAllTimeSummary" Text="Summary" FontSize="9" FontWeight="Bold" VerticalAlignment="Center" />
+                    <TextBlock x:Name="TbkAllTimeSummary" Text="All-time Summary" FontSize="9" FontWeight="Bold" VerticalAlignment="Center" />
                 </Border>
             </StatusBarItem>
             <StatusBarItem x:Name="SbiGameLog" DockPanel.Dock="Right"
@@ -469,7 +492,7 @@
         </GroupBox>
         <!-- Consecutive games — mirrors WinForms GbxConsecutiveGames 5-col layout -->
         <GroupBox x:Name="GbxConsecutiveGames" Header="Consecutive Games"
-                  Margin="1,341,7,0" VerticalAlignment="Top"
+                  Margin="3,341,9,0" VerticalAlignment="Top"
                   Background="#FFE9F6D5"
                   FontFamily="Segoe UI" FontSize="8.5" FontWeight="Bold" Height="128">
             <GroupBox.Effect>

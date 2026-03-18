@@ -1,4 +1,4 @@
-' Last Edit: 2026-03-06 - Changed default starting balance from $1,000 to $10,000. Moved to Keno.Core.
+' Last Edit: 2026-03-17 05:04 PM - Removed automatic $0 reset; repopulation is now manual via WPF Settings flyout.
 Imports System.IO
 Imports System.Text.Json
 
@@ -26,12 +26,6 @@ Public Module BankSettingsStore
     Public Function GetBankBalance() As Decimal
         Try
             Dim settings = LoadSettings()
-
-            If settings.Balance <= 0D Then
-                settings.Balance = DefaultBalance
-                SaveSettings(settings)
-            End If
-
             Return settings.Balance
         Catch ex As Exception
             LogError(ex, NameOf(GetBankBalance))

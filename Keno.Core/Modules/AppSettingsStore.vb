@@ -1,4 +1,4 @@
-' Last Edit: 2026-03-23 - Added DrawSpeedIndex persistence. Moved to Keno.Core.
+' Last Edit: 2026-03-18 10:40 AM - DrawSpeedIndex extended to include SS (index 3).
 Imports System.IO
 Imports System.Text.Json
 
@@ -50,7 +50,9 @@ Public Module AppSettingsStore
         Public Property LocationX As Integer
         Public Property LocationY As Integer
         Public Property WindowState As String
-        ''' <summary>0 = Slow, 1 = Medium, 2 = Fast</summary>
+        ''' <summary>0 = Slow, 1 = Medium, 2 = Fast, 3 = SS</summary>
         Public Property DrawSpeedIndex As Integer
+        Public Property RepopulateAmount As Decimal = 10000D
+        Public Property FlyoutsEnabled As Boolean = True
     End Class
 End Module
