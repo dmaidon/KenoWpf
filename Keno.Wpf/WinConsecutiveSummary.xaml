@@ -1,4 +1,4 @@
-<!-- Last Edit: 2026-03-17 - Win row foreground set to Navy for readability against LightGoldenrodYellow background. -->
+<!-- Last Edit: 2026-03-18 11:19 AM - Named TbkHeader; added Free Games Earned row (collapsed by default); 5th summary RowDefinition. -->
 <mah:MetroWindow x:Class="WinConsecutiveSummary"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -17,7 +17,7 @@
         </Grid.RowDefinitions>
 
         <Border Grid.Row="0" Background="SteelBlue">
-            <TextBlock Text="Consecutive Games — Results"
+            <TextBlock x:Name="TbkHeader" Text="Consecutive Games — Results"
                        FontFamily="Segoe UI" FontSize="13" FontWeight="Bold"
                        Foreground="White"
                        HorizontalAlignment="Center" VerticalAlignment="Center" />
@@ -40,9 +40,12 @@
                 <Style TargetType="ListViewItem">
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding IsWin}" Value="True">
-                                    <Setter Property="Background" Value="LightGoldenrodYellow" />
-                                    <Setter Property="Foreground" Value="Navy" />
-                                </DataTrigger>
+                            <Setter Property="Background" Value="LightGoldenrodYellow" />
+                            <Setter Property="Foreground" Value="Navy" />
+                        </DataTrigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="Foreground" Value="Black" />
+                        </Trigger>
                     </Style.Triggers>
                 </Style>
             </ListView.ItemContainerStyle>
@@ -55,6 +58,7 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -76,6 +80,12 @@
             <TextBlock x:Name="TbkTotal"    Grid.Row="3" Grid.Column="1"
                        FontFamily="Segoe UI" FontSize="9" FontWeight="Bold"
                        HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0,4" />
+
+            <TextBlock x:Name="TbkFreeGamesCaption" Grid.Row="4" Grid.Column="0"
+                       Text="Free Games Earned:"
+                       Style="{StaticResource SumCapStyle}" Visibility="Collapsed" />
+            <TextBlock x:Name="TbkFreeGames" Grid.Row="4" Grid.Column="1"
+                       Style="{StaticResource SumValStyle}" Visibility="Collapsed" />
         </Grid>
 
         <Button x:Name="BtnClose" Grid.Row="3" Content="Close"

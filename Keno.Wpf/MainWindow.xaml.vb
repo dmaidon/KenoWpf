@@ -1,4 +1,4 @@
-' Last Edit: 2026-03-17 02:19 PM - SbiSettings_MouseDown added; ChkFlyoutsEnabled guard in Show*Flyout helpers.
+' Last Edit: 2026-03-18 11:03 AM - SS consecutive: suppress individual dialogs; summary shows free games earned.
 
 Class MainWindow
 
@@ -54,6 +54,11 @@ Class MainWindow
         DrawStatsStore.EnsureDrawStats()
         RefreshStatsDisplay(DrawStatsStore.LoadStats())
         UpdateFreeGamesButton()
+        Dim appSettings = LoadAppSettings()
+        NudRepopulateAmount.Value = CDbl(If(appSettings.RepopulateAmount > 0D, appSettings.RepopulateAmount, 10000D))
+        ChkFlyoutsEnabled.IsChecked = appSettings.FlyoutsEnabled
+        Dim speedRadios = {RbDrawSpeedSlow, RbDrawSpeedMedium, RbDrawSpeedFast, RbDrawSpeedSS}
+        speedRadios(Math.Max(0, Math.Min(appSettings.DrawSpeedIndex, speedRadios.Length - 1))).IsChecked = True
     End Sub
 
     ' ── grid builder ─────────────────────────────────────────────────────────
@@ -371,6 +376,9 @@ Class MainWindow
         If NudSpecialWager IsNot Nothing Then
             NudSpecialWager.Maximum = Math.Min(5000D, CDbl(_bankBalance))
         End If
+        If BtnRepopulateBank IsNot Nothing Then
+            BtnRepopulateBank.IsEnabled = _bankBalance <= 0D
+        End If
     End Sub
 
     Private Sub UpdateJackpotDisplay()
@@ -482,7 +490,7 @@ Class MainWindow
                 Dim isFreeGameResult = (gamePayout = 0D) AndAlso IsFreeGameBonus(result.Matches, bet)
                 If isFreeGameResult Then
                     freeGameIndices.Add(i)
-                    AwardFreeGameBonus()
+                    AwardFreeGameBonus(suppressDialog:= isSuperSonic AndAlso gamesToPlay > 1)
                 ElseIf i < gamesToPlay AndAlso Not isSuperSonic Then
                     If gamePayout > 0D Then
                         WinPayoutSchedule.ShowForWin(Me, If(useBullseye, "Bullseye", "Regular"), _selectedNumbers.Count, result.Matches, gamePayout, bet)
@@ -541,7 +549,9 @@ Class MainWindow
         ' ── Show result dialogs ────────────────────────────────────────────
         Try
             If gamesToPlay > 1 Then
-                WinConsecutiveSummary.ShowSummary(Me, gameResults, bet, bonus, subtotal, totalPayout)
+                WinConsecutiveSummary.ShowSummary(Me, gameResults, bet, bonus, subtotal, totalPayout,
+                                                  freeGamesEarned:=freeGameIndices.Count,
+                                                  isSuperSonic:=isSuperSonic)
             ElseIf totalPayout > 0D Then
                 WinPayoutSchedule.ShowForWin(Me, If(useBullseye, "Bullseye", "Regular"), _selectedNumbers.Count, lastMatches, totalPayout, bet)
             End If
@@ -714,6 +724,13 @@ Class MainWindow
     ' ── draw speed
     Private Sub RbDrawSpeed_Checked(sender As Object, e As RoutedEventArgs)
         ShowDrawSpeedFlyout()
+        If Not IsLoaded Then Return
+        Dim speedRadios = {RbDrawSpeedSlow, RbDrawSpeedMedium, RbDrawSpeedFast, RbDrawSpeedSS}
+        Dim idx = Array.IndexOf(speedRadios, TryCast(sender, RadioButton))
+        If idx < 0 Then Return
+        Dim appSettings = LoadAppSettings()
+        appSettings.DrawSpeedIndex = idx
+        SaveAppSettings(appSettings)
     End Sub
 
     Private Function GetDrawDelayMs() As Integer
@@ -982,12 +999,14 @@ Class MainWindow
         Return picks >= 5 AndAlso picks <= 9
     End Function
 
-    Private Sub AwardFreeGameBonus()
+    Private Sub AwardFreeGameBonus(Optional suppressDialog As Boolean = False)
         AddFreeGame()
         _sessionFreeGamesEarned += 1
         AllTimeSummaryStore.RecordFreeGameEarned()
         UpdateFreeGamesButton()
-        WinBonusGame.ShowBonus(Me, _selectedNumbers.Count)
+        If Not suppressDialog Then
+            WinBonusGame.ShowBonus(Me, _selectedNumbers.Count)
+        End If
     End Sub
 
     Private Sub UpdateFreeGamesButton()
@@ -1079,6 +1098,24 @@ Class MainWindow
 
     Private Sub SbiSettings_MouseDown(sender As Object, e As MouseButtonEventArgs)
         FlyoutSettings.IsOpen = Not FlyoutSettings.IsOpen
+    End Sub
+
+    Private Sub ChkFlyoutsEnabled_Changed(sender As Object, e As RoutedEventArgs)
+        If Not IsLoaded Then Return
+        Dim appSettings = LoadAppSettings()
+        appSettings.FlyoutsEnabled = ChkFlyoutsEnabled.IsChecked.GetValueOrDefault(False)
+        SaveAppSettings(appSettings)
+    End Sub
+
+    Private Sub BtnRepopulateBank_Click(sender As Object, e As RoutedEventArgs)
+        Dim amount = CDec(NudRepopulateAmount.Value.GetValueOrDefault(10000D))
+        _bankBalance = amount
+        SaveBankBalance(_bankBalance)
+        UpdateBankDisplay()
+        Dim appSettings = LoadAppSettings()
+        appSettings.RepopulateAmount = amount
+        SaveAppSettings(appSettings)
+        FlyoutSettings.IsOpen = False
     End Sub
 
     Private Sub SbiHelp_MouseDown(sender As Object, e As MouseButtonEventArgs)
