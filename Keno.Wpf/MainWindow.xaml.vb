@@ -1,4 +1,4 @@
-' Last Edit: 2026-03-19 10:26 AM - Quadrant buttons toggle; 2 quads selectable for half-board play; Gold highlight when active.
+' Last Edit: 2026-03-19 10:30 AM - Quadrant selection capped at 2; must deselect one before picking another.
 
 Class MainWindow
 
@@ -1070,6 +1070,10 @@ Class MainWindow
         Dim btn = CType(sender, Button)
         Dim quadrant = CInt(btn.Tag)
         Dim nums = GetQuadrantNumbers(quadrant)
+        Dim isActive = nums.All(Function(n) _selectedNumbers.Contains(n))
+
+        ' Cap at 2 active quadrants — must deselect one before selecting another.
+        If Not isActive AndAlso CountActiveQuadrants() >= 2 Then Return
 
         If ChkWayTicket.IsChecked = True Then ChkWayTicket.IsChecked = False
         If _isBullseyeActive Then
@@ -1077,8 +1081,7 @@ Class MainWindow
             BtnBullseye.Background = Brushes.MistyRose
         End If
 
-        ' Toggle: deselect quadrant when all its numbers are already picked; otherwise add them.
-        If nums.All(Function(n) _selectedNumbers.Contains(n)) Then
+        If isActive Then
             For Each n In nums
                 _selectedNumbers.Remove(n)
                 _kenoButtons(n).Background = BrushDefault
@@ -1097,6 +1100,10 @@ Class MainWindow
         UpdateWayTicketSummary()
         UpdateWagerPreview()
     End Sub
+
+    Private Function CountActiveQuadrants() As Integer
+        Return Enumerable.Range(1, 4).Count(Function(q) GetQuadrantNumbers(q).All(Function(n) _selectedNumbers.Contains(n)))
+    End Function
 
     Private Sub UpdateQuadrantButtonStates()
         Dim qBtns = {BtnQuadrant1, BtnQuadrant2, BtnQuadrant3, BtnQuadrant4}
