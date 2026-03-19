@@ -1,4 +1,4 @@
-' Last Edit: 2026-03-19 10:30 AM - Quadrant selection capped at 2; must deselect one before picking another.
+' Last Edit: 2026-03-19 10:33 AM - Guard _playedLabels indexing against >20 picks (2-quadrant half-board).
 
 Class MainWindow
 
@@ -491,7 +491,7 @@ Class MainWindow
                 Dim isFreeGameResult = (gamePayout = 0D) AndAlso IsFreeGameBonus(result.Matches, bet)
                 If isFreeGameResult Then
                     freeGameIndices.Add(i)
-                    AwardFreeGameBonus(suppressDialog:= isSuperSonic AndAlso gamesToPlay > 1)
+                    AwardFreeGameBonus(suppressDialog:=isSuperSonic AndAlso gamesToPlay > 1)
                 ElseIf i < gamesToPlay AndAlso Not isSuperSonic Then
                     If gamePayout > 0D Then
                         WinPayoutSchedule.ShowForWin(Me, If(useBullseye, "Bullseye", "Regular"), _selectedNumbers.Count, result.Matches, gamePayout, bet)
@@ -575,7 +575,7 @@ Class MainWindow
             kvp.Value.Background = If(_selectedNumbers.Contains(kvp.Key), BrushUserPick, BrushDefault)
         Next
 
-        For i = 0 To sortedPicks.Length - 1
+        For i = 0 To Math.Min(sortedPicks.Length, _playedLabels.Length) - 1
             _playedLabels(i).Background = BrushPlayedDefault
         Next
 
@@ -589,7 +589,7 @@ Class MainWindow
             _kenoButtons(num).Background = If(_selectedNumbers.Contains(num), BrushMatch, BrushDraw)
 
             Dim pickIdx = Array.IndexOf(sortedPicks, num)
-            If pickIdx >= 0 Then
+            If pickIdx >= 0 AndAlso pickIdx < _playedLabels.Length Then
                 _playedLabels(pickIdx).Background = BrushMatch
             End If
 
@@ -640,7 +640,7 @@ Class MainWindow
         Next
 
         Dim sorted = _selectedNumbers.ToArray()
-        For i = 0 To sorted.Length - 1
+        For i = 0 To Math.Min(sorted.Length, _playedLabels.Length) - 1
             _playedLabels(i).Background = If(draw.Contains(sorted(i)), BrushMatch, BrushPlayedDefault)
         Next
     End Sub
