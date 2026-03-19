@@ -1,4 +1,4 @@
-' Last Edit: 2026-03-18 11:03 AM - SS consecutive: suppress individual dialogs; summary shows free games earned.
+' Last Edit: 2026-03-19 10:26 AM - Quadrant buttons toggle; 2 quads selectable for half-board play; Gold highlight when active.
 
 Class MainWindow
 
@@ -215,6 +215,7 @@ Class MainWindow
         ResetGamePlayDisplay()
         UpdatePlayedGrid()
         UpdateStatusBar()
+        UpdateQuadrantButtonStates()
     End Sub
 
     ' ── status bar ───────────────────────────────────────────────────────────
@@ -1068,16 +1069,42 @@ Class MainWindow
         If TypeOf sender IsNot Button Then Return
         Dim btn = CType(sender, Button)
         Dim quadrant = CInt(btn.Tag)
-        ResetGrid()
-        For Each n In GetQuadrantNumbers(quadrant)
-            _selectedNumbers.Add(n)
-            _kenoButtons(n).Background = BrushUserPick
-        Next
+        Dim nums = GetQuadrantNumbers(quadrant)
+
+        If ChkWayTicket.IsChecked = True Then ChkWayTicket.IsChecked = False
+        If _isBullseyeActive Then
+            _isBullseyeActive = False
+            BtnBullseye.Background = Brushes.MistyRose
+        End If
+
+        ' Toggle: deselect quadrant when all its numbers are already picked; otherwise add them.
+        If nums.All(Function(n) _selectedNumbers.Contains(n)) Then
+            For Each n In nums
+                _selectedNumbers.Remove(n)
+                _kenoButtons(n).Background = BrushDefault
+            Next
+        Else
+            For Each n In nums
+                _selectedNumbers.Add(n)
+                _kenoButtons(n).Background = BrushUserPick
+            Next
+        End If
+
+        UpdateQuadrantButtonStates()
         UpdatePayoutScheduleDisplay()
         UpdatePlayedGrid()
         UpdateStatusBar()
         UpdateWayTicketSummary()
         UpdateWagerPreview()
+    End Sub
+
+    Private Sub UpdateQuadrantButtonStates()
+        Dim qBtns = {BtnQuadrant1, BtnQuadrant2, BtnQuadrant3, BtnQuadrant4}
+        For q = 1 To 4
+            Dim nums = GetQuadrantNumbers(q)
+            qBtns(q - 1).Background = If(nums.All(Function(n) _selectedNumbers.Contains(n)),
+                                          Brushes.Gold, Brushes.Orange)
+        Next
     End Sub
 
     Private Shared Function GetQuadrantNumbers(quadrant As Integer) As Integer()
