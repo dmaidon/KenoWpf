@@ -1,4 +1,4 @@
-<!-- Last Edit: 2026-03-19 01:47 PM - NudSpecialWager spiced up with WagerNudStyle (DarkOrange border, cream bg, navy bold text). -->
+<!-- Last Edit: 2026-03-19 01:49 PM - NudSpecialWager styled inline (removed WagerNudStyle; BasedOn MahApps.Styles.NumericUpDown not available without Controls.xaml merge). -->
 <mah:MetroWindow x:Class="MainWindow"
                  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                  xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
@@ -170,18 +170,7 @@
                 </Setter.Value>
             </Setter>
         </Style>
-        <!-- Custom wager NumericUpDown — DarkOrange border ties to LblWagerTotal; cream bg + navy bold for legibility. -->
-        <Style x:Key="WagerNudStyle" TargetType="mah:NumericUpDown"
-               BasedOn="{StaticResource MahApps.Styles.NumericUpDown}">
-            <Setter Property="BorderThickness"           Value="2" />
-            <Setter Property="BorderBrush"               Value="DarkOrange" />
-            <Setter Property="Background"                Value="#FFF8EED8" />
-            <Setter Property="Foreground"                Value="Navy" />
-            <Setter Property="FontWeight"                Value="Bold" />
-            <Setter Property="Padding"                   Value="2,0" />
-            <Setter Property="HorizontalContentAlignment" Value="Center" />
-        </Style>
-    </Window.Resources>
+        </Window.Resources>
 
     <mah:MetroWindow.Flyouts>
         <mah:FlyoutsControl>
@@ -496,13 +485,18 @@
                     <mah:NumericUpDown
                         Grid.Column="1"
                         x:Name="NudSpecialWager"
-                        Style="{StaticResource WagerNudStyle}"
                         Minimum="0.05"
                         Maximum="5000"
                         Interval="0.05"
                         NumericInputMode="Decimal"
                         StringFormat="F2"
                         FontSize="9"
+                        FontWeight="Bold"
+                        Foreground="Navy"
+                        Background="#FFF8EED8"
+                        BorderBrush="DarkOrange"
+                        BorderThickness="2"
+                        HorizontalContentAlignment="Center"
                         ValueChanged="NudSpecialWager_ValueChanged" />
                 </Grid>
             </StackPanel>
