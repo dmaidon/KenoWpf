@@ -1,4 +1,4 @@
-' Last Edit: 2026-03-19 10:44 AM - Half-board uses Left/Right or Top/Bottom area payout scale for display and calculation.
+' Last Edit: 2026-03-19 10:49 AM - Hoist gameMode before game loop; mid-loop ShowForWin now uses correct mode for halves.
 
 Class MainWindow
 
@@ -427,6 +427,9 @@ Class MainWindow
 
         Dim isSuperSonic = (GetDrawDelayMs() = 0)
         Dim halfType = GetHalfType()
+        Dim gameMode = If(useBullseye, "Bullseye",
+                          If(halfType = "TopBottom", "Top/Bottom Half",
+                          If(halfType = "LeftRight", "Left/Right Half", "Regular")))
         BtnPlay.IsEnabled = False
         BtnCLEAR.IsEnabled = False
         ResetGamePlayDisplay()
@@ -503,7 +506,7 @@ Class MainWindow
                     AwardFreeGameBonus(suppressDialog:=isSuperSonic AndAlso gamesToPlay > 1)
                 ElseIf i < gamesToPlay AndAlso Not isSuperSonic Then
                     If gamePayout > 0D Then
-                        WinPayoutSchedule.ShowForWin(Me, If(useBullseye, "Bullseye", "Regular"), _selectedNumbers.Count, result.Matches, gamePayout, bet)
+                        WinPayoutSchedule.ShowForWin(Me, gameMode, _selectedNumbers.Count, result.Matches, gamePayout, bet)
                     Else
                         Await Task.Delay(3000)
                     End If
@@ -545,9 +548,6 @@ Class MainWindow
         UpdateFreeGamesButton()
 
         ' ── game log ──────────────────────────────────────────────────────────
-        Dim gameMode = If(useBullseye, "Bullseye",
-                          If(halfType = "TopBottom", "Top/Bottom Half",
-                          If(halfType = "LeftRight", "Left/Right Half", "Regular")))
         If gamesToPlay > 1 Then
             AppendBatch(gameMode, bet,
                         gameResults.Select(Function(r) (r.Matched, r.Payout, freeGameIndices.Contains(r.Index), r.Multiplier, r.FirstLastBonus)),

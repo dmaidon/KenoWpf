@@ -1,4 +1,4 @@
-' Last Edit: 2026-03-15 - WinPayoutSchedule: gold banner, payout list, 5-second auto-close paused on hover.
+' Last Edit: 2026-03-19 10:49 AM - Route payout entries to area/bullseye tables for half-board and bullseye game types.
 Class WinPayoutSchedule
 
     Private _gameType As String = "Regular"
@@ -44,21 +44,22 @@ Class WinPayoutSchedule
         TbkWin.Text = $"You Won {_payout:C2}!"
 
         Dim gameTitle As String
+        Dim entries As Dictionary(Of Integer, Decimal)
         Select Case _gameType
-            Case "Regular"
-                gameTitle = $"Pick {_pickedCount} Payout Schedule"
             Case "Bullseye"
                 gameTitle = "Bullseye Payout Schedule"
-            Case "TopBottom"
-                gameTitle = "Top / Bottom Payout Schedule"
-            Case "LeftRight"
-                gameTitle = "Left / Right Payout Schedule"
-            Case Else
-                gameTitle = "Quadrant Payout Schedule"
+                entries = GetBullseyePayoutScheduleEntries()
+            Case "Top/Bottom Half"
+                gameTitle = "Top/Bottom Half Payout Schedule"
+                entries = GetAreaPayoutScheduleEntries("TopBottom")
+            Case "Left/Right Half"
+                gameTitle = "Left/Right Half Payout Schedule"
+                entries = GetAreaPayoutScheduleEntries("LeftRight")
+            Case Else   ' "Regular"
+                gameTitle = $"Pick {_pickedCount} Payout Schedule"
+                entries = GetPayoutScheduleEntries(_pickedCount)
         End Select
         TbkGameInfo.Text = $"{gameTitle}  —  Matched: {_matchedCount}"
-
-        Dim entries = GetPayoutScheduleEntries(_pickedCount)
         Dim rows = entries.Where(Function(kvp) kvp.Value > 0D) _
                           .OrderByDescending(Function(kvp) kvp.Key) _
                           .Select(Function(kvp)
