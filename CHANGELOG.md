@@ -1,9 +1,22 @@
-# Last Edit: 2026-03-17 01:44 PM - Flyout for Multiplier Keno and First/Last Ball checkboxes added.
+# Last Edit: 2026-03-19 11:00 AM - 2026-03-19 half-board quadrant, area payout routing, SS consecutive polish section added.
 
 # Changelog
 
 All notable changes to this project are documented here.  
 Format: most-recent first. WPF entries are prefixed **(WPF)**, WinForms entries **(WF)**.
+
+---
+
+## [2026-03-19] — WPF Half-board quadrant play, area payout routing, SS consecutive polish
+
+- **(WPF) `BtnQuadrant_Click` — toggle** — clicking an active Q-button now deselects it; at most 2 quadrants may be active simultaneously (third click blocked via `CountActiveQuadrants() >= 2`).
+- **(WPF) `UpdateQuadrantButtonStates`** — called after every quadrant toggle; unchecks and disables `ChkFirstLastPlay` when a half-board (2-quadrant) selection is active; re-enables on return to 0–1 quadrant or CLEAR.
+- **(WPF) `GetHalfType`** — returns `"TopBottom"` for same-row pairs (Q1+Q2, Q3+Q4), `"LeftRight"` for all other two-quadrant combinations including diagonals (Q1+Q3, Q2+Q4, Q1+Q4, Q2+Q3), and `Nothing` when 0 or 1 quadrant is active.
+- **(WPF) Half-board area payout routing** — `UpdatePayoutScheduleDisplay` and `BtnPlay_Click` route through `GetAreaPayoutScheduleEntries` / `GetAreaPayout` using `GetHalfType`; `gameMode` set to `"Top/Bottom Half"` or `"Left/Right Half"` and hoisted before the game loop.
+- **(WPF) `WinPayoutSchedule` entries fix** — `WinPayoutSchedule_Loaded` Select Case rewritten: `"Bullseye"` → `GetBullseyePayoutScheduleEntries()`; `"Top/Bottom Half"` → `GetAreaPayoutScheduleEntries("TopBottom")`; `"Left/Right Half"` → `GetAreaPayoutScheduleEntries("LeftRight")`; all others → `GetPayoutScheduleEntries(_pickedCount)`.
+- **(WPF) `_playedLabels` bounds guard** — `Math.Min(index, _playedLabels.Length - 1)` guard added in `DrawSingleGameAnimated` to prevent `IndexOutOfRangeException` with 40 numbers in play.
+- **(WPF) `AwardFreeGameBonus` — Super Sonic suppression** — `Optional suppressDialog As Boolean = False` added; bonus popup is skipped when `True` (used inside the Super Sonic consecutive loop to prevent per-game dialog interruptions).
+- **(WPF) `WinConsecutiveSummary` — Super Sonic enhancements** — `freeGamesEarned As Integer` and `isSuperSonic As Boolean` added to `ShowSummary`; Super Sonic series displays a ⚡ header block; Free Games Earned row shown when `freeGamesEarned > 0`.
 
 ---
 

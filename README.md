@@ -1,4 +1,4 @@
-# Last Edit: 2026-03-17 01:21 PM - Free $2 Game section updated: button enable note added.
+# Last Edit: 2026-03-19 11:00 AM - Quadrant Play section updated for toggle/2-cap/area payout routing; Game Modes table updated.
 
 # 🎰 Keno
 
@@ -149,7 +149,8 @@ Your picks fill the two rows of numbered boxes below the grid (slots 1–10 top,
 
 ### Quadrant Play
 
-Click **Q1 / Q2 / Q3 / Q4** to select a quadrant (20 numbers each):
+Click a **Q1 / Q2 / Q3 / Q4** button to **toggle** that quadrant on or off (20 numbers each).  
+Click a selected button again to deselect it. **At most 2 quadrants may be active at once.**
 
 ```
 +----------+----------+
@@ -159,15 +160,18 @@ Click **Q1 / Q2 / Q3 / Q4** to select a quadrant (20 numbers each):
 +----------+----------+
 ```
 
-| Selection | Coverage |
-|-----------|----------|
-| Single Q  | 20 numbers |
-| Q1 + Q2   | Top half — 40 numbers |
-| Q3 + Q4   | Bottom half — 40 numbers |
-| Q1 + Q3   | Left half — 40 numbers |
-| Q2 + Q4   | Right half — 40 numbers |
+| Selection | Coverage | Payout scale |
+|-----------|----------|--------------|
+| Single Q  | 20 numbers | Regular Pick 20 |
+| Q1 + Q2   | Top half — 40 numbers | Top/Bottom Half |
+| Q3 + Q4   | Bottom half — 40 numbers | Top/Bottom Half |
+| Q1 + Q3   | Left half — 40 numbers | Left/Right Half |
+| Q2 + Q4   | Right half — 40 numbers | Left/Right Half |
+| Q1 + Q4   | Diagonal — 40 numbers | Left/Right Half |
+| Q2 + Q3   | Diagonal — 40 numbers | Left/Right Half |
 
-> Quadrant play and number picks are mutually exclusive — selecting one clears the other.
+> Quadrant / half selections and manual number picks are mutually exclusive — selecting one clears the other.  
+> **First / Last Ball** is unavailable during half-board (2-quadrant) play.
 
 ---
 
@@ -187,9 +191,9 @@ Keno, or adjust consecutive count — so you always know the full cost before cl
 |------|-----------------|-----------------|
 | Regular | Pick 1–20 numbers manually or via Quick Pick | Your picks |
 | Bullseye | Click **Play Bullseye** | 8 fixed: 1, 10, 35, 36, 45, 46, 71, 80 |
-| Top / Bottom | Click **Top Half** or **Bottom Half** | All 40 numbers in your half |
-| Left / Right | Click **Left Half** or **Right Half** | All 40 numbers in your half |
-| Quadrant | Click one or two Q-labels | 20 or 40 numbers |
+| Quadrant | Toggle a Q-button (Q1–Q4); max 2 active | 20 numbers |
+| Top / Bottom Half | Select **Q1+Q2** or **Q3+Q4** | 40 numbers |
+| Left / Right Half | Select any other pair of Q-buttons | 40 numbers |
 | Way Ticket | Tick **Way Ticket**, then assign groups | Groups × sub-tickets |
 
 Draw animation highlights:

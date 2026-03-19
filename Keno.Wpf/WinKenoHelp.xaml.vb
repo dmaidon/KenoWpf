@@ -1,4 +1,4 @@
-' Last Edit: 2026-03-17 01:21 PM - freegames topic expanded to match WinForms detail (Earning, Button, Session Tracking).
+' Last Edit: 2026-03-19 11:00 AM - Quadrants topic updated for toggle/2-cap/area payout/First-Last restriction; firstlastball topic notes half-board restriction.
 Class WinKenoHelp
 
     Private ReadOnly _helpContent As New Dictionary(Of String, Action)()
@@ -229,18 +229,24 @@ Class WinKenoHelp
                                    End Sub
 
         _helpContent("quadrants") = Sub()
-                                        AppendTitle("QUADRANTS / HALVES")
-                                        AppendBlank()
-                                        AppendBody("The Quick Select buttons (Q1–Q4, Top Half, Bottom Half, Left Half, Right Half) " &
-                                                   "fill your picks with a predefined region of the board instantly.")
-                                        AppendBlank()
-                                        AppendHeading("SELECTION SIZES")
-                                        AppendBody("  Single quadrant (Q1, Q2, Q3, or Q4) — 20 numbers" & vbCrLf &
-                                                   "  Two quadrants (e.g. Q1+Q2, Top, Left)  — 40 numbers")
-                                        AppendBlank()
-                                        AppendBody("Quadrant/Half selections and manual number picks are mutually exclusive — " &
-                                                   "selecting one clears the other.")
-                                    End Sub
+                                         AppendTitle("QUADRANTS / HALVES")
+                                         AppendBlank()
+                                         AppendBody("Click a Q-button (Q1–Q4) to toggle a 20-number quadrant on or off. " &
+                                                    "Click a selected button again to deselect it. " &
+                                                    "At most 2 quadrants may be active simultaneously.")
+                                         AppendBlank()
+                                         AppendHeading("QUADRANT LAYOUT")
+                                         AppendBody("  Q1 — top-left    (numbers  1–20)    Q2 — top-right   (numbers 21–40)" & vbCrLf &
+                                                    "  Q3 — bottom-left (numbers 41–60)    Q4 — bottom-right (numbers 61–80)")
+                                         AppendBlank()
+                                         AppendHeading("HALF-BOARD COMBINATIONS & PAYOUT SCALE")
+                                         AppendBody("  Q1+Q2 or Q3+Q4 (same row) → Top/Bottom Half payout scale" & vbCrLf &
+                                                    "  All other pairs (Q1+Q3, Q2+Q4, Q1+Q4, Q2+Q3) → Left/Right Half payout scale")
+                                         AppendBlank()
+                                         AppendBody("Quadrant / half selections and manual number picks are mutually exclusive — " &
+                                                    "selecting one clears the other." & vbCrLf &
+                                                    "First / Last Ball bonus is not available during half-board (2-quadrant) play.")
+                                     End Sub
 
         _helpContent("bank") = Sub()
                                    AppendTitle("BANK & WINNINGS")
@@ -335,11 +341,13 @@ Class WinKenoHelp
                                                        "  Pick  9 — $43    Pick 10 — $39    Pick 11 — $35    Pick 12 — $31" & vbCrLf &
                                                        "  Pick 13 — $27    Pick 14 — $23    Pick 15 — $20    Pick 16 — $17" & vbCrLf &
                                                        "  Pick 17 — $14    Pick 18 — $11    Pick 19 — $8     Pick 20 — $5")
-                                            AppendBlank()
-                                            AppendBody("The bonus is independent of bet size, Multiplier Keno, and Powerball. " &
-                                                       "In a consecutive series the bonus is added flat after the series multiplier " &
-                                                       "is applied (i.e. it is not multiplied by the series bonus).")
-                                        End Sub
+                                                AppendBlank()
+                                                AppendBody("The bonus is independent of bet size, Multiplier Keno, and Powerball. " &
+                                                           "In a consecutive series the bonus is added flat after the series multiplier " &
+                                                           "is applied (i.e. it is not multiplied by the series bonus).")
+                                                AppendBlank()
+                                                AppendBody("Note: First / Last Ball is unavailable when 2 quadrants (half-board) are active.")
+                                            End Sub
 
         _helpContent("gamelog") = Sub()
                                       AppendTitle("GAME LOG")
