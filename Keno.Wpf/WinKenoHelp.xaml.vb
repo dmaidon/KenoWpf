@@ -1,4 +1,4 @@
-' Last Edit: 2026-03-19 11:36 AM - FlowDocument.Background set to White so dark text is readable under Dark.Steel theme.
+' Last Edit: 2026-03-19 11:39 AM - Wager topic: added bank-cap note for combined total wager.
 Class WinKenoHelp
 
     Private ReadOnly _helpContent As New Dictionary(Of String, Action)()
@@ -146,6 +146,7 @@ Class WinKenoHelp
                                     AppendBlank()
                                     AppendHeading("CUSTOM WAGER")
                                     AppendBody("Enter any amount in the custom wager field to override the radio buttons.")
+                                    AppendBody("The combined total wager — including any side-bet add-ons (Multiplier, Powerball, First/Last Ball) — cannot exceed your current bank balance.")
                                     AppendBlank()
                                     AppendHeading("LIVE WAGER PREVIEW")
                                     AppendBody("The Wager Total label updates live as you change picks, wager, consecutive count, or special play options.")
