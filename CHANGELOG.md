@@ -1,4 +1,4 @@
-# Last Edit: 2026-03-19 11:00 AM - 2026-03-19 half-board quadrant, area payout routing, SS consecutive polish section added.
+# Last Edit: 2026-03-19 11:40 AM - Two additional 2026-03-19 items added (help readability fix, wager bank-cap note).
 
 # Changelog
 
@@ -16,7 +16,8 @@ Format: most-recent first. WPF entries are prefixed **(WPF)**, WinForms entries 
 - **(WPF) `WinPayoutSchedule` entries fix** — `WinPayoutSchedule_Loaded` Select Case rewritten: `"Bullseye"` → `GetBullseyePayoutScheduleEntries()`; `"Top/Bottom Half"` → `GetAreaPayoutScheduleEntries("TopBottom")`; `"Left/Right Half"` → `GetAreaPayoutScheduleEntries("LeftRight")`; all others → `GetPayoutScheduleEntries(_pickedCount)`.
 - **(WPF) `_playedLabels` bounds guard** — `Math.Min(index, _playedLabels.Length - 1)` guard added in `DrawSingleGameAnimated` to prevent `IndexOutOfRangeException` with 40 numbers in play.
 - **(WPF) `AwardFreeGameBonus` — Super Sonic suppression** — `Optional suppressDialog As Boolean = False` added; bonus popup is skipped when `True` (used inside the Super Sonic consecutive loop to prevent per-game dialog interruptions).
-- **(WPF) `WinConsecutiveSummary` — Super Sonic enhancements** — `freeGamesEarned As Integer` and `isSuperSonic As Boolean` added to `ShowSummary`; Super Sonic series displays a ⚡ header block; Free Games Earned row shown when `freeGamesEarned > 0`.
+- **(WPF) `WinKenoHelp` content unreadable under Dark.Steel** — `FlowDocumentScrollViewer` given `Background="White"` in XAML; `FlowDocument.Background = Brushes.White` set in code-behind so the existing dark-navy/teal/near-black text is readable regardless of theme.
+- **(WPF) Help — Wager topic: bank-cap note** — added sentence under Custom Wager clarifying that the combined total wager (including Multiplier, Powerball, and First/Last Ball side-bets) cannot exceed the current bank balance.
 
 ---
 
