@@ -1,4 +1,4 @@
-<!-- Last Edit: 2026-03-18 10:37 AM - ChkFlyoutsEnabled persisted via AppSettings. -->
+<!-- Last Edit: 2026-03-19 01:47 PM - NudSpecialWager spiced up with WagerNudStyle (DarkOrange border, cream bg, navy bold text). -->
 <mah:MetroWindow x:Class="MainWindow"
                  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                  xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
@@ -169,6 +169,17 @@
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
+        </Style>
+        <!-- Custom wager NumericUpDown — DarkOrange border ties to LblWagerTotal; cream bg + navy bold for legibility. -->
+        <Style x:Key="WagerNudStyle" TargetType="mah:NumericUpDown"
+               BasedOn="{StaticResource MahApps.Styles.NumericUpDown}">
+            <Setter Property="BorderThickness"           Value="2" />
+            <Setter Property="BorderBrush"               Value="DarkOrange" />
+            <Setter Property="Background"                Value="#FFF8EED8" />
+            <Setter Property="Foreground"                Value="Navy" />
+            <Setter Property="FontWeight"                Value="Bold" />
+            <Setter Property="Padding"                   Value="2,0" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
         </Style>
     </Window.Resources>
 
@@ -453,11 +464,11 @@
                   HorizontalAlignment="Center" VerticalAlignment="Top"
                   Margin="0,157,0,0" Width="150"
                   Background="{DynamicResource {x:Static SystemColors.GradientInactiveCaptionBrushKey}}"
-                  FontFamily="Segoe UI" FontSize="10" FontWeight="Bold" Height="219" Grid.Column="2">
+                  FontFamily="Segoe UI" FontSize="10" FontWeight="Bold" Height="207" Grid.Column="2">
             <GroupBox.Effect>
                 <DropShadowEffect />
             </GroupBox.Effect>
-            <StackPanel Margin="4,2,4,4">
+            <StackPanel Margin="4,0,4,0" Height="148">
                 <UniformGrid Columns="2">
                     <RadioButton x:Name="RbWager1"   Content="$1"   Tag="1"   GroupName="Wager" IsChecked="True" Checked="RbWager_Checked" Margin="0,1" Foreground="Navy" />
                     <RadioButton x:Name="RbWager25"  Content="$25"  Tag="25"  GroupName="Wager" Checked="RbWager_Checked" Margin="0,1" Foreground="Navy" />
@@ -482,11 +493,17 @@
                     </Grid.ColumnDefinitions>
                     <Label Grid.Column="0" Content="Custom:" FontSize="9" FontWeight="Normal"
                            Padding="0,0,4,0" VerticalAlignment="Center" Foreground="Black" />
-                    <mah:NumericUpDown Grid.Column="1" x:Name="NudSpecialWager"
-                                       Minimum="0.05" Maximum="5000"
-                                       Interval="0.05" NumericInputMode="Decimal" StringFormat="F2"
-                                       FontSize="9" HorizontalContentAlignment="Center"
-                                       ValueChanged="NudSpecialWager_ValueChanged" />
+                    <mah:NumericUpDown
+                        Grid.Column="1"
+                        x:Name="NudSpecialWager"
+                        Style="{StaticResource WagerNudStyle}"
+                        Minimum="0.05"
+                        Maximum="5000"
+                        Interval="0.05"
+                        NumericInputMode="Decimal"
+                        StringFormat="F2"
+                        FontSize="9"
+                        ValueChanged="NudSpecialWager_ValueChanged" />
                 </Grid>
             </StackPanel>
         </GroupBox>
@@ -561,7 +578,7 @@
         <!-- Draw speed selector — mirrors WinForms TableLayoutPanel2 -->
         <GroupBox x:Name="GbxDrawSpeed" Header="Draw Speed"
                   HorizontalAlignment="Center" VerticalAlignment="Top"
-                  Margin="0,397,0,0"
+                  Margin="0,387,0,0"
                   Background="#FFC0FFC0" FontFamily="Segoe UI" FontSize="9" FontWeight="Bold" Grid.Column="2" Height="78" Width="119">
             <GroupBox.Effect>
                 <DropShadowEffect />
