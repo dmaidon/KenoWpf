@@ -1,4 +1,4 @@
-' Last Edit: 2026-03-19 10:49 AM - Hoist gameMode before game loop; mid-loop ShowForWin now uses correct mode for halves.
+' Last Edit: 2026-03-19 10:53 AM - Diagonal quadrant pairs use LeftRight payout schedule.
 
 Class MainWindow
 
@@ -1116,17 +1116,16 @@ Class MainWindow
         Return Enumerable.Range(1, 4).Count(Function(q) GetQuadrantNumbers(q).All(Function(n) _selectedNumbers.Contains(n)))
     End Function
 
-    ' Returns the area-payout key when exactly 2 adjacent quadrants form a half, Nothing otherwise.
+    ' Returns the area-payout key when exactly 2 quadrants are active, Nothing otherwise.
     ' Q1=top-left  Q2=top-right  Q3=bottom-left  Q4=bottom-right
-    ' Same row  → "TopBottom";  Same column → "LeftRight";  Diagonal → Nothing.
+    ' Same row  → "TopBottom";  Same column or diagonal → "LeftRight".
     Private Function GetHalfType() As String
         If CountActiveQuadrants() <> 2 Then Return Nothing
         Dim active = Enumerable.Range(1, 4).Where(Function(q) GetQuadrantNumbers(q).All(Function(n) _selectedNumbers.Contains(n))).ToList()
         If active.Count <> 2 Then Return Nothing
         Dim a = active(0), b = active(1)   ' always a < b (ascending Range)
         If (a = 1 AndAlso b = 2) OrElse (a = 3 AndAlso b = 4) Then Return "TopBottom"
-        If (a = 1 AndAlso b = 3) OrElse (a = 2 AndAlso b = 4) Then Return "LeftRight"
-        Return Nothing   ' diagonal — no standard area payout
+        Return "LeftRight"   ' same column (1+3, 2+4) or diagonal (1+4, 2+3)
     End Function
 
     Private Sub UpdateQuadrantButtonStates()
