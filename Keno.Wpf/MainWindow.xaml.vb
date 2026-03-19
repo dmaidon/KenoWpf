@@ -1,4 +1,4 @@
-' Last Edit: 2026-03-19 10:33 AM - Guard _playedLabels indexing against >20 picks (2-quadrant half-board).
+' Last Edit: 2026-03-19 10:38 AM - First/Last disabled for half-board (2 quadrants); re-enabled on CLEAR or single-quad.
 
 Class MainWindow
 
@@ -1112,6 +1112,13 @@ Class MainWindow
             qBtns(q - 1).Background = If(nums.All(Function(n) _selectedNumbers.Contains(n)),
                                           Brushes.Gold, Brushes.Orange)
         Next
+
+        ' First/Last is incompatible with half-board (2 active quadrants).
+        Dim isHalf = CountActiveQuadrants() >= 2
+        If isHalf AndAlso ChkFirstLastPlay.IsChecked = True Then
+            ChkFirstLastPlay.IsChecked = False
+        End If
+        ChkFirstLastPlay.IsEnabled = Not isHalf
     End Sub
 
     Private Shared Function GetQuadrantNumbers(quadrant As Integer) As Integer()
