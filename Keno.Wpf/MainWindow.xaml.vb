@@ -1,4 +1,4 @@
-' Last Edit: 2026-03-19 10:38 AM - First/Last disabled for half-board (2 quadrants); re-enabled on CLEAR or single-quad.
+' Last Edit: 2026-03-19 10:44 AM - Half-board uses Left/Right or Top/Bottom area payout scale for display and calculation.
 
 Class MainWindow
 
@@ -320,8 +320,14 @@ Class MainWindow
 
         Dim betAmount = GetSelectedBetAmount()
         If betAmount <= 0D Then betAmount = 1D
-        Dim entries = If(_isBullseyeActive, GetBullseyePayoutScheduleEntries(), GetPayoutScheduleEntries(pickCount))
-        TbkPayoutHeader.Text = If(_isBullseyeActive, "Payout — Bullseye", $"Payout — Pick {pickCount}")
+        Dim halfType = GetHalfType()
+        Dim entries = If(_isBullseyeActive, GetBullseyePayoutScheduleEntries(),
+                         If(halfType IsNot Nothing, GetAreaPayoutScheduleEntries(halfType),
+                            GetPayoutScheduleEntries(pickCount)))
+        TbkPayoutHeader.Text = If(_isBullseyeActive, "Payout — Bullseye",
+                               If(halfType = "TopBottom", "Payout — Top/Bottom Half",
+                               If(halfType = "LeftRight", "Payout — Left/Right Half",
+                                  $"Payout — Pick {pickCount}")))
 
         Dim doc As New FlowDocument() With {
             .PagePadding = New Thickness(4),
@@ -420,6 +426,7 @@ Class MainWindow
         Dim freeGameIndices As New HashSet(Of Integer)()
 
         Dim isSuperSonic = (GetDrawDelayMs() = 0)
+        Dim halfType = GetHalfType()
         BtnPlay.IsEnabled = False
         BtnCLEAR.IsEnabled = False
         ResetGamePlayDisplay()
@@ -432,6 +439,8 @@ Class MainWindow
                     gamePayout = GetWayTicketPayout(result.Draw, bet)
                 ElseIf useBullseye Then
                     gamePayout = GetBullseyePayout(result.Matches) * bet
+                ElseIf halfType IsNot Nothing Then
+                    gamePayout = GetAreaPayout(halfType, result.Matches) * bet
                 Else
                     gamePayout = GetPayout(_selectedNumbers.Count, result.Matches) * bet
                 End If
@@ -536,7 +545,9 @@ Class MainWindow
         UpdateFreeGamesButton()
 
         ' ── game log ──────────────────────────────────────────────────────────
-        Dim gameMode = If(useBullseye, "Bullseye", "Regular")
+        Dim gameMode = If(useBullseye, "Bullseye",
+                          If(halfType = "TopBottom", "Top/Bottom Half",
+                          If(halfType = "LeftRight", "Left/Right Half", "Regular")))
         If gamesToPlay > 1 Then
             AppendBatch(gameMode, bet,
                         gameResults.Select(Function(r) (r.Matched, r.Payout, freeGameIndices.Contains(r.Index), r.Multiplier, r.FirstLastBonus)),
@@ -554,7 +565,7 @@ Class MainWindow
                                                   freeGamesEarned:=freeGameIndices.Count,
                                                   isSuperSonic:=isSuperSonic)
             ElseIf totalPayout > 0D Then
-                WinPayoutSchedule.ShowForWin(Me, If(useBullseye, "Bullseye", "Regular"), _selectedNumbers.Count, lastMatches, totalPayout, bet)
+                WinPayoutSchedule.ShowForWin(Me, gameMode, _selectedNumbers.Count, lastMatches, totalPayout, bet)
             End If
         Catch ex As Exception
             MessageBox.Show($"Result dialog error: {ex.Message}{Environment.NewLine}{ex.StackTrace}",
@@ -1103,6 +1114,19 @@ Class MainWindow
 
     Private Function CountActiveQuadrants() As Integer
         Return Enumerable.Range(1, 4).Count(Function(q) GetQuadrantNumbers(q).All(Function(n) _selectedNumbers.Contains(n)))
+    End Function
+
+    ' Returns the area-payout key when exactly 2 adjacent quadrants form a half, Nothing otherwise.
+    ' Q1=top-left  Q2=top-right  Q3=bottom-left  Q4=bottom-right
+    ' Same row  → "TopBottom";  Same column → "LeftRight";  Diagonal → Nothing.
+    Private Function GetHalfType() As String
+        If CountActiveQuadrants() <> 2 Then Return Nothing
+        Dim active = Enumerable.Range(1, 4).Where(Function(q) GetQuadrantNumbers(q).All(Function(n) _selectedNumbers.Contains(n))).ToList()
+        If active.Count <> 2 Then Return Nothing
+        Dim a = active(0), b = active(1)   ' always a < b (ascending Range)
+        If (a = 1 AndAlso b = 2) OrElse (a = 3 AndAlso b = 4) Then Return "TopBottom"
+        If (a = 1 AndAlso b = 3) OrElse (a = 2 AndAlso b = 4) Then Return "LeftRight"
+        Return Nothing   ' diagonal — no standard area payout
     End Function
 
     Private Sub UpdateQuadrantButtonStates()
