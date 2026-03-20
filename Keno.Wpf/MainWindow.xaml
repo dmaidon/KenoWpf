@@ -170,7 +170,7 @@
                 </Setter.Value>
             </Setter>
         </Style>
-        </Window.Resources>
+    </Window.Resources>
 
     <mah:MetroWindow.Flyouts>
         <mah:FlyoutsControl>
@@ -318,8 +318,8 @@
                 </UniformGrid>
             </StackPanel>
         </Border>
-        <Button x:Name="BtnPlay" Content="PLAY" Click="BtnPlay_Click" HorizontalAlignment="Left" Margin="52,432,0,0" VerticalAlignment="Top" Width="71" Background="#FFEE614E" FontWeight="Bold" Height="20" RenderTransformOrigin="2.93,2.101" Grid.Column="1" />
-        <Button x:Name="BtnCLEAR" Content="CLEAR" Click="BtnClear_Click" HorizontalAlignment="Left" Margin="213,433,0,0" VerticalAlignment="Top" Width="71" Background="#FFEECF4E" FontWeight="Bold" Height="20" Grid.Column="1" />
+        <Button x:Name="BtnPlay" Content="PLAY" Click="BtnPlay_Click" HorizontalAlignment="Left" Margin="52,448,0,0" VerticalAlignment="Top" Width="71" Background="#FFEE614E" FontWeight="Bold" Height="20" RenderTransformOrigin="2.93,2.101" Grid.Column="1" />
+        <Button x:Name="BtnCLEAR" Content="CLEAR" Click="BtnClear_Click" HorizontalAlignment="Left" Margin="213,449,0,0" VerticalAlignment="Top" Width="71" Background="#FFEECF4E" FontWeight="Bold" Height="20" Grid.Column="1" />
         <Button x:Name="BtnFreeGames" Content="Free Games Won (0)" Tag="Free Games Won ({0})" Click="BtnFreeGames_Click" HorizontalAlignment="Center" Margin="0,379,0,0" VerticalAlignment="Top" Background="#FF075907" FontSize="9" Height="16" Width="164" Grid.Column="1" RenderTransformOrigin="0.5,4.362" IsEnabled="False" BorderBrush="#FFDD0A0A" />
         <StatusBar x:Name="StatBar1" VerticalAlignment="Bottom" Margin="0,0,0,10" Grid.ColumnSpan="4" Height="21" Background="#FFDCF8F8" Foreground="Black" HorizontalAlignment="Left" Width="920">
             <StatusBar.Effect>
@@ -704,5 +704,6 @@
                 </StackPanel>
             </ScrollViewer>
         </GroupBox>
+        <UniformGrid x:Name="FreeGamesPlay" Columns="10" Rows="1" Height="28" Grid.Column="1" Margin="38,409,37,107" Width="250" />
     </Grid>
 </mah:MetroWindow>

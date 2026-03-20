@@ -1,4 +1,4 @@
-' Last Edit: 2026-03-19 11:39 AM - Wager topic: added bank-cap note for combined total wager.
+' Last Edit: 2026-03-20 05:02 AM - Free Games topic rewritten: queue mechanics, PLAY dispatch, no add-ons, CLEAR cancels.
 Class WinKenoHelp
 
     Private ReadOnly _helpContent As New Dictionary(Of String, Action)()
@@ -317,13 +317,18 @@ Class WinKenoHelp
                                                    "  • If none of your picks match the draw (0 matches), one free game" & vbCrLf &
                                                    "    credit is awarded automatically.")
                                         AppendBlank()
-                                        AppendHeading("FREE GAME BUTTON")
-                                        AppendBody("When free game credits are available the green 'Free Games Won (N)' button " &
-                                                   "becomes enabled. Click it to play a free game round — no wager is " &
-                                                   "deducted from your bank.")
+                                        AppendHeading("QUEUING FREE GAMES")
+                                        AppendBody("When credits are available, the green 'Free Games Won (N)' button is enabled." & vbCrLf &
+                                                   "Each click stages one game in the 10-cell queue strip below the keno grid." & vbCrLf &
+                                                   "Staged cells light up gold. The button label shows credits still available to stage.")
                                         AppendBlank()
-                                        AppendBody("Free games use the same number selection as your current picks. " &
-                                                   "Your free game count decreases by one with each free play.")
+                                        AppendHeading("PLAYING FREE GAMES")
+                                        AppendBody("Once you have staged as many games as you want, click PLAY. All queued games " &
+                                                   "run straight through at the selected draw speed — no popups or delays between them. " &
+                                                   "Each cell turns green for a win or red-coral for a loss as it completes." & vbCrLf & vbCrLf &
+                                                   "Free games use your current number selection and always use a $2 wager. " &
+                                                   "No add-ons (Multiplier, Powerball, First/Last Ball) are applied. " &
+                                                   "Clicking CLEAR cancels any staged games without consuming the credits.")
                                         AppendBlank()
                                         AppendHeading("SESSION TRACKING")
                                         AppendBody("The total free games earned in the current session is recorded in the " &

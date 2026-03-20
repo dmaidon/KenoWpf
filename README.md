@@ -1,4 +1,4 @@
-# Last Edit: 2026-03-19 11:00 AM - Quadrant Play section updated for toggle/2-cap/area payout routing; Game Modes table updated.
+# Last Edit: 2026-03-20 05:02 AM - Free $2 Game section rewritten: queue-up behaviour, 10-cell strip, straight-through PLAY, CLEAR cancels.
 
 # 🎰 Keno
 
@@ -396,8 +396,15 @@ All payouts are **multipliers × bet**. A 5x multiplier on a $10 bet returns $50
 ### Free $2 Game
 
 Playing **Pick 5–9** with a bet of **$2 or more** and matching **zero numbers** earns one free $2 game.  
-Free games persist between sessions and cannot be earned while playing a free game.  
-The green **Free Games Won (N)** button becomes enabled when credits are available; click it to play immediately using your current number selection.
+Free games persist between sessions and cannot be earned while playing a free game.
+
+**Queuing free games:**  
+When credits are available the green **Free Games Won (N)** button becomes enabled.  
+Each click stages one game in the 10-cell queue strip below the keno grid (cells light up gold).  
+The button label counts down the remaining credits still available to stage.  
+Once you have queued as many as you want, click **PLAY** — all queued games run straight through at the selected draw speed with no popups or delays between them.  
+Each cell turns **green** for a win or **red** for a loss as it completes.  
+Clicking **CLEAR** cancels any staged games and returns the credits to the pool.
 
 ---
 

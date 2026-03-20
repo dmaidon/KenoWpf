@@ -1,4 +1,4 @@
-' Last Edit: 2026-03-19 10:53 AM - Diagonal quadrant pairs use LeftRight payout schedule.
+' Last Edit: 2026-03-20 05:00 AM - PlayQueuedFreeGamesAsync: removed inter-game delays, win popups, and final payout dialog — free games play straight through.
 
 Class MainWindow
 
@@ -17,6 +17,8 @@ Class MainWindow
     Private ReadOnly _selectedNumbers As New SortedSet(Of Integer)()
     Private ReadOnly _playedLabels(19) As Label   ' 20 display slots (0-based)
     Private ReadOnly _gamePlayLabels(19) As Label  ' consecutive-game progress cells (0-based)
+    Private ReadOnly _freeGameCells(9) As Label    ' free-game queue slots (0-based, 10 cells)
+    Private _freeGamesQueued As Integer = 0        ' number of free games the user has staged to play
 
     Private _bankBalance As Decimal
     Private _jackpotBalance As Decimal
@@ -43,6 +45,7 @@ Class MainWindow
         BuildKenoGrid()
         BuildPlayedGrid()
         BuildGamePlayGrid()
+        BuildFreeGamesGrid()
         SbiCpy.Content = cpy
         _bankBalance = GetBankBalance()
         _sessionStartBalance = _bankBalance
@@ -112,6 +115,32 @@ Class MainWindow
             _gamePlayLabels(i) = lbl
             TlpGamePlay.Children.Add(lbl)
         Next
+    End Sub
+
+    ' ── free-games queue grid builder ────────────────────────────────────────
+    Private Sub BuildFreeGamesGrid()
+        For i = 0 To 9
+            Dim lbl As New Label() With {
+                .Content = (i + 1).ToString(),
+                .Style = CType(FindResource("GamePlayStyle"), Style)
+            }
+            _freeGameCells(i) = lbl
+            FreeGamesPlay.Children.Add(lbl)
+        Next
+    End Sub
+
+    ' Refreshes all 10 free-game queue cells; queued slots are Gold, empty slots default.
+    Private Sub UpdateFreeGamesGrid()
+        For i = 0 To 9
+            _freeGameCells(i).Content = (i + 1).ToString()
+            _freeGameCells(i).Background = If(i < _freeGamesQueued, Brushes.Gold, SystemColors.ControlBrush)
+        Next
+    End Sub
+
+    ' Marks a single cell (0-based) with a win/loss colour after it has been played.
+    Private Sub UpdateFreeGameCellResult(cellIndex As Integer, isWin As Boolean)
+        If cellIndex < 0 OrElse cellIndex > 9 Then Return
+        _freeGameCells(cellIndex).Background = If(isWin, Brushes.LightGreen, Brushes.LightCoral)
     End Sub
 
     Private Sub UpdateGamePlayDisplay(gameIndex As Integer)
@@ -213,6 +242,8 @@ Class MainWindow
         LblWinnings.Content = "$0"
         LblWagerTotal.Content = "$0"
         ResetGamePlayDisplay()
+        _freeGamesQueued = 0
+        UpdateFreeGamesGrid()
         UpdatePlayedGrid()
         UpdateStatusBar()
         UpdateQuadrantButtonStates()
@@ -406,6 +437,11 @@ Class MainWindow
 
     ' ── play / clear ─────────────────────────────────────────────────────────
     Private Async Sub BtnPlay_Click(sender As Object, e As RoutedEventArgs)
+        If _freeGamesQueued > 0 Then
+            Await PlayQueuedFreeGamesAsync()
+            Return
+        End If
+
         If _selectedNumbers.Count = 0 Then Return
         _replayNumbers = _selectedNumbers.ToArray()
 
@@ -953,56 +989,71 @@ Class MainWindow
         UpdateWagerPreview()
     End Sub
 
-    Private Async Sub BtnFreeGames_Click(sender As Object, e As RoutedEventArgs)
+    Private Sub BtnFreeGames_Click(sender As Object, e As RoutedEventArgs)
+        Dim available = GetFreeGames()
+        If available <= 0 OrElse _freeGamesQueued >= available OrElse _freeGamesQueued >= 10 Then Return
+
+        _freeGamesQueued += 1
+        UpdateFreeGamesGrid()
+        UpdateFreeGamesButton()
+    End Sub
+
+    Private Async Function PlayQueuedFreeGamesAsync() As Task
+        If _selectedNumbers.Count = 0 Then Return
+
+        Dim gamesToPlay = _freeGamesQueued
+        Const FreeGameBet As Decimal = 2D
+        Dim gameMode = If(_isBullseyeActive, "Bullseye", "Regular")
+        Dim totalPayout = 0D
+
+        BtnPlay.IsEnabled = False
+        BtnCLEAR.IsEnabled = False
+        BtnFreeGames.IsEnabled = False
+        LblWinnings.Content = "$0"
+
         Try
-            If _selectedNumbers.Count = 0 OrElse GetFreeGames() <= 0 Then Return
+            For i = 0 To gamesToPlay - 1
+                UseFreeGame()
 
-            UseFreeGame()
-            BtnPlay.IsEnabled = False
-            BtnCLEAR.IsEnabled = False
-            BtnFreeGames.IsEnabled = False
-            LblWinnings.Content = "$0"
+                Dim result = Await DrawSingleGameAnimated()
 
-            Const FreeGameBet As Decimal = 2D
-            Dim result = Await DrawSingleGameAnimated()
-            Dim gameMode = If(_isBullseyeActive, "Bullseye", "Regular")
+                Dim gamePayout As Decimal
+                If _isBullseyeActive Then
+                    gamePayout = GetBullseyePayout(result.Matches) * FreeGameBet
+                Else
+                    gamePayout = GetPayout(_selectedNumbers.Count, result.Matches) * FreeGameBet
+                End If
 
-            Dim gamePayout As Decimal
-            If _isBullseyeActive Then
-                gamePayout = GetBullseyePayout(result.Matches) * FreeGameBet
-            Else
-                gamePayout = GetPayout(_selectedNumbers.Count, result.Matches) * FreeGameBet
-            End If
+                totalPayout += gamePayout
+                LblWinnings.Content = totalPayout.ToString("C2")
 
-            LblWinnings.Content = gamePayout.ToString("C2")
-            _lastMatches = result.Matches
-            _lastPayout = gamePayout
+                UpdateFreeGameCellResult(i, gamePayout > 0D)
+                UpdateDrawStats(result.Draw, gamePayout > 0D)
 
-            _bankBalance += gamePayout
-            SaveBankBalance(_bankBalance)
-            UpdateBankDisplay()
+                _bankBalance += gamePayout
+                SaveBankBalance(_bankBalance)
+                UpdateBankDisplay()
 
-            AllTimeSummaryStore.RecordGame(FreeGameBet, gamePayout)
-            _sessionGamesPlayed += 1
-            If gamePayout > 0D Then _sessionWins += 1
-            If gamePayout > _sessionBestPayout Then _sessionBestPayout = gamePayout
-            _sessionTotalWagered += FreeGameBet
+                AllTimeSummaryStore.RecordGame(FreeGameBet, gamePayout)
+                _sessionGamesPlayed += 1
+                If gamePayout > 0D Then _sessionWins += 1
+                If gamePayout > _sessionBestPayout Then _sessionBestPayout = gamePayout
+                _sessionTotalWagered += FreeGameBet
 
-            AppendGame($"Free Game ({gameMode})", FreeGameBet, result.Matches, gamePayout, 1, False, 0D)
-            UpdateStatusBar()
-            UpdatePayoutScheduleDisplay()
-
-            If gamePayout > 0D Then
-                WinPayoutSchedule.ShowForWin(Me, gameMode, _selectedNumbers.Count, result.Matches, gamePayout, FreeGameBet)
-            End If
+                AppendGame($"Free Game ({gameMode})", FreeGameBet, result.Matches, gamePayout, 1, False, 0D)
+                UpdateStatusBar()
+                UpdatePayoutScheduleDisplay()
+            Next
         Catch ex As Exception
             MessageBox.Show($"Free game error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error)
         Finally
+            _freeGamesQueued = 0
             BtnPlay.IsEnabled = True
             BtnCLEAR.IsEnabled = True
             UpdateFreeGamesButton()
+            UpdateFreeGamesGrid()
         End Try
-    End Sub
+    End Function
 
     Private Function IsFreeGameBonus(matchedCount As Integer, betAmount As Decimal) As Boolean
         If betAmount < 2D Then Return False
@@ -1023,9 +1074,10 @@ Class MainWindow
 
     Private Sub UpdateFreeGamesButton()
         Dim count = GetFreeGames()
+        Dim remaining = count - _freeGamesQueued
         Dim template = TryCast(BtnFreeGames.Tag, String)
-        BtnFreeGames.Content = If(template IsNot Nothing, String.Format(template, count), $"Free Games Won ({count})")
-        BtnFreeGames.IsEnabled = count > 0 AndAlso BtnPlay.IsEnabled
+        BtnFreeGames.Content = If(template IsNot Nothing, String.Format(template, remaining), $"Free Games Won ({remaining})")
+        BtnFreeGames.IsEnabled = remaining > 0 AndAlso _freeGamesQueued < 10 AndAlso BtnPlay.IsEnabled
     End Sub
 
     Private Sub BtnPlayFavorites_Click()

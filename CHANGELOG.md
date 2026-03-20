@@ -1,4 +1,4 @@
-# Last Edit: 2026-03-19 11:40 AM - Two additional 2026-03-19 items added (help readability fix, wager bank-cap note).
+# Last Edit: 2026-03-20 05:00 AM - Two 2026-03-20 entries added (free-game queue UI, straight-through play).
 
 # Changelog
 
@@ -6,6 +6,14 @@ All notable changes to this project are documented here.
 Format: most-recent first. WPF entries are prefixed **(WPF)**, WinForms entries **(WF)**.
 
 ---
+
+## [2026-03-20] — WPF Free-game queue grid + straight-through play
+
+- **(WPF) `FreeGamesPlay` — 10 numbered queue cells** — `BuildFreeGamesGrid()` populates the existing `UniformGrid` with 10 `Label` cells (styled via `GamePlayStyle`) at startup. `UpdateFreeGamesGrid()` colours queued slots **Gold**, empty slots default. `UpdateFreeGameCellResult(i, isWin)` paints each cell **LightGreen** (win) or **LightCoral** (loss) as it completes.
+- **(WPF) `BtnFreeGames_Click` — enqueue instead of play** — each click stages one free game (max 10, capped at available count); no game is drawn immediately. `UpdateFreeGamesButton()` now shows `count − queued` remaining and disables when all available games are queued or the 10-cell cap is reached.
+- **(WPF) `BtnPlay_Click` — free-games dispatch** — when `_freeGamesQueued > 0`, `BtnPlay` calls `PlayQueuedFreeGamesAsync()` and returns; normal consecutive-game path unchanged otherwise.
+- **(WPF) `PlayQueuedFreeGamesAsync()` — straight-through play** — plays all queued games in sequence at the selected draw-animation speed; no inter-game delays, no win popups, no final payout dialog. Each game calls `UseFreeGame()`, draws, computes a flat `$2` payout, updates bank/stats/log, and paints its queue cell with the win/loss colour. Queue and grid reset in `Finally`.
+- **(WPF) `ResetGrid` (CLEAR)** — also resets `_freeGamesQueued` to 0 and refreshes the free-game grid.
 
 ## [2026-03-19] — WPF Half-board quadrant play, area payout routing, SS consecutive polish
 
