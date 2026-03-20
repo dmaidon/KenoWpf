@@ -1,4 +1,4 @@
-' Last Edit: 2026-03-20 05:00 AM - PlayQueuedFreeGamesAsync: removed inter-game delays, win popups, and final payout dialog — free games play straight through.
+' Last Edit: 2026-03-20 05:36 AM - BtnFreeGames_Click: one click now stages all available free games (up to 10) instead of one per click; fixes regular-game path running when queue was not staged.
 
 Class MainWindow
 
@@ -991,9 +991,9 @@ Class MainWindow
 
     Private Sub BtnFreeGames_Click(sender As Object, e As RoutedEventArgs)
         Dim available = GetFreeGames()
-        If available <= 0 OrElse _freeGamesQueued >= available OrElse _freeGamesQueued >= 10 Then Return
+        If available <= 0 Then Return
 
-        _freeGamesQueued += 1
+        _freeGamesQueued = Math.Min(available, 10)
         UpdateFreeGamesGrid()
         UpdateFreeGamesButton()
     End Sub
@@ -1001,10 +1001,19 @@ Class MainWindow
     Private Async Function PlayQueuedFreeGamesAsync() As Task
         If _selectedNumbers.Count = 0 Then Return
 
-        Dim gamesToPlay = _freeGamesQueued
+        Dim gamesToPlay = Math.Min(_freeGamesQueued, GetFreeGames())
+        If gamesToPlay <= 0 Then
+            _freeGamesQueued = 0
+            UpdateFreeGamesGrid()
+            UpdateFreeGamesButton()
+            Return
+        End If
+
         Const FreeGameBet As Decimal = 2D
         Dim gameMode = If(_isBullseyeActive, "Bullseye", "Regular")
         Dim totalPayout = 0D
+
+        UseFreeGames(gamesToPlay)
 
         BtnPlay.IsEnabled = False
         BtnCLEAR.IsEnabled = False
@@ -1013,8 +1022,6 @@ Class MainWindow
 
         Try
             For i = 0 To gamesToPlay - 1
-                UseFreeGame()
-
                 Dim result = Await DrawSingleGameAnimated()
 
                 Dim gamePayout As Decimal

@@ -1,4 +1,4 @@
-' Last Edit: 2026-03-04 - Added free games persistence store. Moved to Keno.Core.
+' Last Edit: 2026-03-20 05:25 AM - Added UseFreeGames(count) for atomic batch deduction.
 Imports System.IO
 Imports System.Text.Json
 
@@ -34,6 +34,16 @@ Public Module FreeGamesStore
             End If
         Catch ex As Exception
             LogError(ex, NameOf(UseFreeGame))
+        End Try
+    End Sub
+
+    ''' <summary>Deducts <paramref name="count"/> free games in a single atomic disk write.</summary>
+    Public Sub UseFreeGames(count As Integer)
+        Try
+            Dim current = GetFreeGames()
+            SaveFreeGames(Math.Max(0, current - count))
+        Catch ex As Exception
+            LogError(ex, NameOf(UseFreeGames))
         End Try
     End Sub
 
