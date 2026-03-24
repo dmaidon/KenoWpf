@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Last Edit: 2026-03-24 12:04 PM - Initial Keno game board scaffold: top bar, wager selector, 8x10 number grid, picks/drawn displays, PLAY/CLEAR. -->
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Keno.Android.MainPage"
+             Title="Keno"
+             BackgroundColor="#F0F0F0">
+
+    <Grid RowDefinitions="Auto,Auto,*,Auto,Auto"
+          RowSpacing="0">
+
+        <!-- Row 0: Top info bar — Bank / Wager / Picks -->
+        <Grid Grid.Row="0"
+              ColumnDefinitions="*,*,*"
+              BackgroundColor="#2196A6"
+              Padding="8,4">
+            <VerticalStackLayout Grid.Column="0" Spacing="0">
+                <Label Text="BANK"
+                       FontSize="9" FontAttributes="Bold" TextColor="White" />
+                <Label x:Name="LblBank"
+                       Text="$10,000.00"
+                       FontSize="13" FontAttributes="Bold" TextColor="#80FFE0" />
+            </VerticalStackLayout>
+            <VerticalStackLayout Grid.Column="1" Spacing="0" HorizontalOptions="Center">
+                <Label Text="WAGER"
+                       FontSize="9" FontAttributes="Bold" TextColor="White"
+                       HorizontalOptions="Center" />
+                <Label x:Name="LblWagerTotal"
+                       Text="$1.00"
+                       FontSize="13" FontAttributes="Bold" TextColor="Orange"
+                       HorizontalOptions="Center" />
+            </VerticalStackLayout>
+            <VerticalStackLayout Grid.Column="2" Spacing="0" HorizontalOptions="End">
+                <Label Text="PICKS"
+                       FontSize="9" FontAttributes="Bold" TextColor="White"
+                       HorizontalOptions="End" />
+                <Label x:Name="LblPicks"
+                       Text="0"
+                       FontSize="13" FontAttributes="Bold" TextColor="#FFFF80"
+                       HorizontalOptions="End" />
+            </VerticalStackLayout>
+        </Grid>
+
+        <!-- Row 1: Wager selector — preset buttons built in code-behind -->
+        <ScrollView Grid.Row="1"
+                    Orientation="Horizontal"
+                    HorizontalScrollBarVisibility="Never"
+                    BackgroundColor="#D8EAF4"
+                    HeightRequest="40">
+            <HorizontalStackLayout x:Name="WagerButtonsLayout"
+                                   Spacing="4"
+                                   Padding="6,5" />
+        </ScrollView>
+
+        <!-- Row 2: 8×10 number board — 80 cells built in code-behind -->
+        <Border Grid.Row="2"
+                x:Name="NumberGridContainer"
+                Stroke="#888888"
+                StrokeThickness="1"
+                Margin="3,3,3,0" />
+
+        <!-- Row 3: Selected picks (top) + drawn numbers (bottom) — both built in code-behind -->
+        <Grid Grid.Row="3"
+              RowDefinitions="Auto,Auto"
+              RowSpacing="2"
+              Margin="3,2,3,0">
+            <Border Grid.Row="0"
+                    x:Name="PicksGridContainer"
+                    Stroke="#888888"
+                    StrokeThickness="1" />
+            <Border Grid.Row="1"
+                    x:Name="DrawnGridContainer"
+                    Stroke="#888888"
+                    StrokeThickness="1" />
+        </Grid>
+
+        <!-- Row 4: PLAY / CLEAR + status strip -->
+        <Grid Grid.Row="4"
+              RowDefinitions="Auto,Auto"
+              RowSpacing="2"
+              Padding="4,4,4,6">
+            <Grid Grid.Row="0"
+                  ColumnDefinitions="*,*,*"
+                  ColumnSpacing="6">
+                <Button Grid.Column="0"
+                        x:Name="BtnPlay"
+                        Text="PLAY"
+                        BackgroundColor="#EE614E"
+                        TextColor="White"
+                        FontAttributes="Bold"
+                        FontSize="16"
+                        HeightRequest="46"
+                        CornerRadius="6"
+                        Clicked="BtnPlay_Clicked" />
+                <Button Grid.Column="1"
+                        x:Name="BtnReplay"
+                        Text="REPLAY"
+                        BackgroundColor="#5B8ED6"
+                        TextColor="White"
+                        FontAttributes="Bold"
+                        FontSize="14"
+                        HeightRequest="46"
+                        CornerRadius="6"
+                        IsEnabled="False"
+                        Clicked="BtnReplay_Clicked" />
+                <Button Grid.Column="2"
+                        x:Name="BtnClear"
+                        Text="CLEAR"
+                        BackgroundColor="#EECF4E"
+                        TextColor="#333333"
+                        FontAttributes="Bold"
+                        FontSize="16"
+                        HeightRequest="46"
+                        CornerRadius="6"
+                        Clicked="BtnClear_Clicked" />
+            </Grid>
+            <Grid Grid.Row="1"
+                  ColumnDefinitions="*,*,*"
+                  Padding="2,0">
+                <Label Grid.Column="0"
+                       x:Name="LblMatches"
+                       Text="Matches: —"
+                       FontSize="11" FontAttributes="Bold" TextColor="Navy" />
+                <Label Grid.Column="1"
+                       x:Name="LblPayout"
+                       Text="Payout: $0.00"
+                       FontSize="11" FontAttributes="Bold" TextColor="#006600"
+                       HorizontalOptions="Center" />
+                <Label Grid.Column="2"
+                       x:Name="LblStreak"
+                       Text="Streak: —"
+                       FontSize="11" FontAttributes="Bold" TextColor="Navy"
+                       HorizontalOptions="End" />
+            </Grid>
+        </Grid>
+    </Grid>
+
+</ContentPage>

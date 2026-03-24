@@ -1,4 +1,4 @@
-' Last Edit: 2026-03-13 - AppendBatch: exclude FirstLast flat bonuses from consecutive multiplier in Final Payout Calculation. Moved to Keno.Core.
+' Last Edit: 2026-03-20 06:43 AM - AppendFreeGameBatch: log free-game sessions as a consecutive-game block identical in shape to AppendBatch.
 Imports System.IO
 
 Public Module GameLogStore
@@ -50,6 +50,34 @@ Public Module GameLogStore
             File.AppendAllLines(LogFilePath, lines)
         Catch ex As Exception
             LogError(ex, NameOf(AppendBatch))
+        End Try
+    End Sub
+
+    Public Sub AppendFreeGameBatch(gameMode As String, betAmount As Decimal, results As IEnumerable(Of (Matched As Integer, Payout As Decimal)))
+        Try
+            Directory.CreateDirectory(DatDir)
+            Dim list = results.ToList()
+            Dim lines As New List(Of String)()
+            Dim timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+            lines.Add($"[ {list.Count}-Consecutive Free Game{If(list.Count = 1, "", "s")}")
+            For Each r In list
+                lines.Add($"{timestamp} | {gameMode} | Bet: {betAmount:C2} | Match: {r.Matched} | Payout: {r.Payout:C2}")
+            Next
+            Dim winList = list.Where(Function(r) r.Payout > 0D).ToList()
+            Dim winCount = winList.Count
+            lines.Add("Final Payout Calculation:")
+            If winCount = 0 Then
+                lines.Add("  0 wins")
+                lines.Add("  Total Payout: $0.00")
+            Else
+                Dim total = winList.Sum(Function(r) r.Payout)
+                lines.Add($"  {winCount} win(s) subtotal = {total:C2}")
+                lines.Add($"  Total Payout: {total:C2}")
+            End If
+            lines.Add("End Group ]")
+            File.AppendAllLines(LogFilePath, lines)
+        Catch ex As Exception
+            LogError(ex, NameOf(AppendFreeGameBatch))
         End Try
     End Sub
 

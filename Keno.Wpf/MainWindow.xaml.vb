@@ -1,4 +1,4 @@
-' Last Edit: 2026-03-20 05:36 AM - BtnFreeGames_Click: one click now stages all available free games (up to 10) instead of one per click; fixes regular-game path running when queue was not staged.
+' Last Edit: 2026-03-24 05:29 AM - RtbPayoutSchedule now shows 1ST/LST bonus row when First/Last play is enabled.
 
 Class MainWindow
 
@@ -28,6 +28,7 @@ Class MainWindow
     Private _wayTicketGroups As List(Of List(Of Integer)) = Nothing
     Private _wayTicketKingNumber As Integer = 0
     Private _isBullseyeActive As Boolean = False
+    Private _lastFirstLastBonus As Decimal = 0D
     Private Shared ReadOnly BullseyeNumbers As Integer() = {1, 10, 35, 36, 45, 46, 71, 80}
 
     ' ── session tracking ─────────────────────────────────────────────────────
@@ -208,7 +209,7 @@ Class MainWindow
 
         If _isBullseyeActive Then
             _isBullseyeActive = False
-            BtnBullseye.Background = Brushes.MistyRose
+            BtnBullseye.Background = Brushes.Coral
         End If
 
         UpdatePayoutScheduleDisplay()
@@ -225,25 +226,29 @@ Class MainWindow
         Return b
     End Function
 
-    Private Sub ResetGrid()
+    Private Sub ResetGrid(Optional preserveFreeGames As Boolean = False)
         If ChkWayTicket IsNot Nothing AndAlso ChkWayTicket.IsChecked = True Then
             ChkWayTicket.IsChecked = False
         End If
         _wayTicketGroups = Nothing
         _wayTicketKingNumber = 0
         _isBullseyeActive = False
-        BtnBullseye.Background = Brushes.MistyRose
+        BtnBullseye.Background = Brushes.Coral
         For Each kvp In _kenoButtons
             kvp.Value.Background = BrushDefault
         Next
         _selectedNumbers.Clear()
         _lastMatches = -1
         _lastPayout = 0D
+        _lastFirstLastBonus = 0D
         LblWinnings.Content = "$0"
         LblWagerTotal.Content = "$0"
         ResetGamePlayDisplay()
-        _freeGamesQueued = 0
-        UpdateFreeGamesGrid()
+        If Not preserveFreeGames Then
+            _freeGamesQueued = 0
+            UpdateFreeGamesGrid()
+            UpdateFreeGamesButton()
+        End If
         UpdatePlayedGrid()
         UpdateStatusBar()
         UpdateQuadrantButtonStates()
@@ -384,6 +389,21 @@ Class MainWindow
             doc.Blocks.Add(MakeScheduleLine(line, Brushes.Black, bold:=False))
         Next
 
+        ' First/Last Ball bonus row
+        If ChkFirstLastPlay.IsChecked = True AndAlso Not _isBullseyeActive AndAlso halfType Is Nothing AndAlso pickCount > 0 Then
+            Dim flBonus = GetFirstLastBallBonus(pickCount)
+            If flBonus > 0D Then
+                Dim isFlWin = _lastMatches >= 0 AndAlso _lastFirstLastBonus > 0D
+                doc.Blocks.Add(MakeScheduleLine(
+                    New String("-"c, HitsColWidth + WinColWidth),
+                    Brushes.Gray, bold:=False))
+                doc.Blocks.Add(MakeScheduleLine(
+                    "1ST/LST".PadRight(HitsColWidth) & ("+" & flBonus.ToString("C2")).PadLeft(WinColWidth),
+                    If(isFlWin, Brushes.Black, Brushes.Teal), bold:=isFlWin,
+                    If(isFlWin, Brushes.Gold, Nothing)))
+            End If
+        End If
+
         doc.Blocks.Add(MakeScheduleLine(
             New String("-"c, HitsColWidth + WinColWidth),
             Brushes.Gray, bold:=False))
@@ -396,16 +416,18 @@ Class MainWindow
         RtbPayoutSchedule.Document = doc
     End Sub
 
-    Private Shared Function MakeScheduleLine(text As String, fg As Brush, bold As Boolean) As Paragraph
+    Private Shared Function MakeScheduleLine(text As String, fg As Brush, bold As Boolean, Optional bg As Brush = Nothing) As Paragraph
         Dim run As New Run(text) With {
             .Foreground = fg,
             .FontWeight = If(bold, FontWeights.Bold, FontWeights.Normal)
         }
-        Return New Paragraph(run) With {
+        Dim para As New Paragraph(run) With {
             .Margin = New Thickness(0),
             .Padding = New Thickness(0),
             .LineHeight = 14
         }
+        If bg IsNot Nothing Then para.Background = bg
+        Return para
     End Function
 
     ' ── bank display ─────────────────────────────────────────────────────────
@@ -555,6 +577,7 @@ Class MainWindow
 
         Dim subtotal = totalPayout
         Dim totalFirstLastBonus = gameResults.Sum(Function(r) r.FirstLastBonus)
+        _lastFirstLastBonus = totalFirstLastBonus
         Dim bonus = GetConsecutiveBonus()
         totalPayout = (subtotal - totalFirstLastBonus) * bonus + totalFirstLastBonus
 
@@ -809,7 +832,7 @@ Class MainWindow
     Private Sub BtnQuickPick_Click(sender As Object, e As RoutedEventArgs)
         Dim n As Integer = CInt(NudQuickPickCount.Value.GetValueOrDefault(1))
 
-        ResetGrid()
+        ResetGrid(preserveFreeGames:=True)
         Dim pool As New List(Of Integer)()
         For i = 1 To 80 : pool.Add(i) : Next
         Do While _selectedNumbers.Count < n
@@ -991,9 +1014,9 @@ Class MainWindow
 
     Private Sub BtnFreeGames_Click(sender As Object, e As RoutedEventArgs)
         Dim available = GetFreeGames()
-        If available <= 0 Then Return
+        If available <= 0 OrElse _freeGamesQueued >= available OrElse _freeGamesQueued >= 10 Then Return
 
-        _freeGamesQueued = Math.Min(available, 10)
+        _freeGamesQueued += 1
         UpdateFreeGamesGrid()
         UpdateFreeGamesButton()
     End Sub
@@ -1001,7 +1024,10 @@ Class MainWindow
     Private Async Function PlayQueuedFreeGamesAsync() As Task
         If _selectedNumbers.Count = 0 Then Return
 
-        Dim gamesToPlay = Math.Min(_freeGamesQueued, GetFreeGames())
+        ' Trust the staged count — BtnFreeGames_Click already validated GetFreeGames() >= _freeGamesQueued
+        ' at each click, so re-reading the disk here can only return a stale/lower value and play
+        ' fewer games than the user staged.
+        Dim gamesToPlay = _freeGamesQueued
         If gamesToPlay <= 0 Then
             _freeGamesQueued = 0
             UpdateFreeGamesGrid()
@@ -1019,6 +1045,9 @@ Class MainWindow
         BtnCLEAR.IsEnabled = False
         BtnFreeGames.IsEnabled = False
         LblWinnings.Content = "$0"
+        LblWagerTotal.Content = "$0"
+
+        Dim freeGameResults As New List(Of (Matched As Integer, Payout As Decimal))()
 
         Try
             For i = 0 To gamesToPlay - 1
@@ -1047,18 +1076,23 @@ Class MainWindow
                 If gamePayout > _sessionBestPayout Then _sessionBestPayout = gamePayout
                 _sessionTotalWagered += FreeGameBet
 
-                AppendGame($"Free Game ({gameMode})", FreeGameBet, result.Matches, gamePayout, 1, False, 0D)
+                freeGameResults.Add((result.Matches, gamePayout))
                 UpdateStatusBar()
                 UpdatePayoutScheduleDisplay()
             Next
         Catch ex As Exception
             MessageBox.Show($"Free game error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error)
         Finally
+            If freeGameResults.Count > 0 Then
+                AppendFreeGameBatch(gameMode, FreeGameBet, freeGameResults)
+            End If
             _freeGamesQueued = 0
+            _lastFirstLastBonus = 0D
             BtnPlay.IsEnabled = True
             BtnCLEAR.IsEnabled = True
             UpdateFreeGamesButton()
             UpdateFreeGamesGrid()
+            LblWagerTotal.Content = (gamesToPlay * FreeGameBet).ToString("C2")
         End Try
     End Function
 
@@ -1097,7 +1131,7 @@ Class MainWindow
                             "Play Favorites", MessageBoxButton.OK, MessageBoxImage.Information)
             Return
         End If
-        ResetGrid()
+        ResetGrid(preserveFreeGames:=True)
         For Each n In favs.Take(20)
 
             Dim value As Button = Nothing
@@ -1120,7 +1154,7 @@ Class MainWindow
                             MessageBoxButton.OK, MessageBoxImage.Information)
             Return
         End If
-        ResetGrid()
+        ResetGrid(preserveFreeGames:=True)
         For Each n In _replayNumbers
             Dim value As Button = Nothing
             If _kenoButtons.TryGetValue(n, value) Then
@@ -1148,7 +1182,7 @@ Class MainWindow
         If ChkWayTicket.IsChecked = True Then ChkWayTicket.IsChecked = False
         If _isBullseyeActive Then
             _isBullseyeActive = False
-            BtnBullseye.Background = Brushes.MistyRose
+            BtnBullseye.Background = Brushes.Coral
         End If
 
         If isActive Then
