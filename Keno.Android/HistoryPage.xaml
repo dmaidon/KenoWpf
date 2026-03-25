@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Last Edit: 2026-03-25 08:05 AM - Game history page: SESSION and ALL TIME tabs, built in code-behind. -->
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Keno.Android.HistoryPage"
+             BackgroundColor="#F0F0F0">
+
+    <Grid RowDefinitions="Auto,Auto,*" RowSpacing="0">
+
+        <!-- Row 0: Header -->
+        <Grid ColumnDefinitions="*,Auto"
+              BackgroundColor="#2196A6"
+              Padding="12,8,4,8">
+            <Label Text="GAME HISTORY"
+                   FontSize="16" FontAttributes="Bold" TextColor="White"
+                   VerticalOptions="Center" />
+            <Button Grid.Column="1"
+                    x:Name="BtnClose"
+                    Text="✕"
+                    BackgroundColor="Transparent"
+                    BorderWidth="0"
+                    TextColor="White"
+                    FontSize="18" FontAttributes="Bold"
+                    WidthRequest="46" HeightRequest="46"
+                    Padding="0"
+                    Clicked="BtnClose_Clicked" />
+        </Grid>
+
+        <!-- Row 1: Tab strip -->
+        <Grid Grid.Row="1"
+              ColumnDefinitions="*,*"
+              BackgroundColor="#1A7A8A"
+              ColumnSpacing="0">
+            <Button x:Name="BtnTabSession"
+                    Grid.Column="0"
+                    Text="SESSION"
+                    BackgroundColor="White"
+                    TextColor="#2196A6"
+                    FontAttributes="Bold" FontSize="12"
+                    HeightRequest="38" CornerRadius="0"
+                    BorderWidth="0"
+                    Clicked="BtnTabSession_Clicked" />
+            <Button x:Name="BtnTabAllTime"
+                    Grid.Column="1"
+                    Text="ALL TIME"
+                    BackgroundColor="Transparent"
+                    TextColor="White"
+                    FontAttributes="Bold" FontSize="12"
+                    HeightRequest="38" CornerRadius="0"
+                    BorderWidth="0"
+                    Clicked="BtnTabAllTime_Clicked" />
+        </Grid>
+
+        <!-- Row 2: Session panel (default visible) -->
+        <ScrollView x:Name="SessionScrollView"
+                    Grid.Row="2"
+                    VerticalScrollBarVisibility="Always">
+            <VerticalStackLayout x:Name="SessionContent"
+                                 Spacing="1"
+                                 Padding="4,6,4,8" />
+        </ScrollView>
+
+        <!-- Row 2: All-time panel (toggled by IsVisible) -->
+        <ScrollView x:Name="AllTimeScrollView"
+                    Grid.Row="2"
+                    IsVisible="False">
+            <VerticalStackLayout x:Name="AllTimeContent"
+                                 Spacing="10"
+                                 Padding="12,12,12,12" />
+        </ScrollView>
+    </Grid>
+</ContentPage>

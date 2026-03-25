@@ -1,10 +1,67 @@
-# Last Edit: 2026-03-24 05:44 PM - Add UI scaffold and game loop entries.
+# Last Edit: 2026-03-25 02:21 PM - Add payout schedule sheet and in-app help.
 
 # Changelog — Keno.Android (MAUI)
 
 All notable changes to the MAUI / mobile project are documented here.  
 Format: most-recent first. Entries are prefixed **(MAUI)**.  
 See the [root CHANGELOG](../CHANGELOG.md) for WPF and WinForms history.
+
+---
+
+## [2026-03-25] — Payout Schedule Sheet, In-App Help
+
+- **(MAUI) `PayoutSchedulePage.xaml/cs` — new modal page** — accessible from the hamburger menu (☰ → Payout Schedule); interactive pick-count selector (1–20) in a horizontal strip; per-pick payout table with CATCH / PAYS / AT $5 columns built from `KenoPayouts.GetPayoutScheduleEntries()`; rows sorted highest-catch first with 0-catch special entry at the bottom; multipliers ≥ ×1,000 shown in gold, lower wins in green.
+- **(MAUI) `HelpPage.xaml/cs` — new modal page** — accessible from the hamburger menu (☰ → How to Play); 10 scrollable sections: The Board, Wager, Quick Pick, PLAY/REPLAY/CLEAR, Consecutive Games (with bonus tier table), Side Bets, Draw Speed, Favorites, Bank & Replenish, Reading the Top Bar.
+- **(MAUI) `MainPage.xaml.cs` — hamburger menu** — `BtnMenu_Clicked` now opens a `DisplayActionSheet` with three options: **Game History**, **Payout Schedule**, **How to Play**.
+
+---
+
+## [2026-03-25] — Persistent Bank & Settings, Replenish Button, Custom Wager
+
+- **(MAUI) `MainPage.xaml.cs` — persistent bank balance** — `_bankBalance` is saved to `Preferences.Default` (key `bank_balance`) in `UpdateStatus()` — every wager deduction and payout credit is immediately durable across app restarts.
+- **(MAUI) `MainPage.xaml.cs` — persistent settings** — `LoadSettings()` restores wager, side-bet toggles (Multiplier / Powerball / First-Last), Quick Pick count, draw speed, and consecutive games count from `Preferences.Default` on every launch. Each handler saves its own key on change.
+- **(MAUI) `MainPage.xaml` — REPLENISH BANK button** — full-width green button (`BtnReplenish`) added as a third row inside the play section; `IsVisible = false` by default; appears automatically when `_bankBalance ≤ $0`. Offers three action-sheet options: **+$1,000** / **+$5,000** / **Reset to $10,000**.
+- **(MAUI) `MainPage.xaml.cs` — CUSTOM wager button** — added at the end of the horizontal wager strip; tapping opens `DisplayPromptAsync`; any amount ≥ $0.01 is accepted; the button label updates to show the entered amount; selection and bank-cap clamping behave identically to preset buttons.
+
+---
+
+## [2026-03-25] — Consecutive Games, Bank Cap, Play Speeds
+
+- **(MAUI) `MainPage.xaml` — GAMES row** — stepper (`−`/count/`+`) placed above the Quick Pick row; count ranges 1–20; a `LblBonusDisplay` label to the right shows the active consecutive bonus (×1.1 / ×1.25 / ×1.5 / ×1.75) when applicable.
+- **(MAUI) `MainPage.xaml` — SPEED row** — four pill-buttons (SLOW / MED / FAST / SS) placed above PLAY/REPLAY/CLEAR; active pill highlights in teal (#2196A6); default is **FAST** (200 ms/ball).
+- **(MAUI) `MainPage.xaml.cs` — multi-game loop in `PlayGameAsync`** — deducts `EffectiveWager × gamesToPlay` from bank up front; runs up to 20 consecutive games; accumulates payout + First/Last bonus separately; applies the consecutive bonus formula `(totalPayout − totalFirstLastBonus) × bonus + totalFirstLastBonus` at the very end (mirrors WPF).
+- **(MAUI) `MainPage.xaml.cs` — bank cap / auto-clamp** — `ClampGamesToBalance()` called on wager change, Multiplier toggle, First/Last toggle, and Games `+` press; reduces `_consecutiveGames` so `EffectiveWager × games ≤ bank`; PLAY also re-clamps in case of any race.
+- **(MAUI) `MainPage.xaml.cs` — `GetConsecutiveBonus()`** — returns ×1.0 (1–4 games), ×1.1 (5–7), ×1.25 (8–11), ×1.5 (12–16), ×1.75 (17–20).
+- **(MAUI) `MainPage.xaml.cs` — `SetPlayUiEnabled(bool)`** — replaces all scattered `btn.IsEnabled` lines; disables/re-enables 17 controls atomically including the new GAMES stepper and SPEED pills.
+- **(MAUI) `MainPage.xaml.cs` — `UpdateStatus()` total wager display** — top-bar WAGER label shows `EffectiveWager × consecutiveGames` when more than one game is queued so the player always sees the full commit.
+- **(MAUI) `MainPage.xaml.cs` — inter-game pause** — 600 ms delay between games when speed is not SS; no pause after the final game.
+
+---
+
+## [2026-03-25] — Scroll, Quick Pick, Side Bets (Multiplier / Powerball / First-Last), Favorites
+
+- **(MAUI) `MainPage.xaml` — scrollable layout** — outer `Grid` reduced to 2 rows (`Auto` top bar + `*` `ScrollView`); all gameplay content sits inside a `VerticalStackLayout` inside the `ScrollView` so the full board is reachable on any screen size.
+- **(MAUI) `MainPage.xaml` — Quick Pick row** — compact `Grid` between the wager strip and the number board; `−`/`+` stepper adjusts count 1–20; **PICK** button clears and auto-selects that many numbers using a Fisher-Yates shuffle.
+- **(MAUI) `MainPage.xaml` — Side Bets row** — three toggle-pill Buttons (MULTIPLIER / POWERBALL / FIRST-LAST) above a three-column info strip; each pill lights up in its accent color (purple / red / orange) when active.
+- **(MAUI) `MainPage.xaml` — Favorites row** — `FAV` label plus three `★N` Buttons; each tap opens a `DisplayActionSheet` (Save / Load / Clear); button shows pick count when a slot is occupied.
+- **(MAUI) `MainPage.xaml.cs` — `EffectiveWager` property** — computed `_currentWager + $1 × Multiplier + $1 × First/Last`; used for bank deduction, top-bar display, and `GameRecord`; Powerball adds no cost (payout multiplier only).
+- **(MAUI) `MainPage.xaml.cs` — Multiplier side bet** — `DrawMultiplier()` weighted draw (×1 45% / ×2 30% / ×3 13% / ×5 9% / ×10 3%) scales base payout; current value shown in info strip after each game.
+- **(MAUI) `MainPage.xaml.cs` — Powerball side bet** — draws a random 1–80 ball after each game; if the ball is in the player's picks the payout is multiplied ×4; drawn ball number shown in info strip.
+- **(MAUI) `MainPage.xaml.cs` — First/Last side bet** — if the first or last ball drawn matches any pick, `KenoPayouts.GetFirstLastBallBonus(pickedCount)` (from **Keno.Core**) is added as a flat cash bonus on top of the (optionally multiplied) base payout.
+- **(MAUI) `MainPage.xaml.cs` — Favorites persistence** — `UpdateFavoriteButtons()` reads `Preferences.Default` keys `fav_0`–`fav_2` (comma-separated sorted numbers); `HandleFavoriteAsync()` presents Save / Load / Clear action sheet; Load calls `BtnClear_Clicked` then restores cells.
+- **(MAUI) `MainPage.xaml.cs` — play guard improvements** — Quick Pick stepper, side-bet pills, and all three FAV buttons are disabled for the duration of `PlayGameAsync` and re-enabled in `finally`.
+- **(MAUI) `MainPage.xaml.cs` — CLEAR reset** — `_lastMultiplierValue` and `_lastPowerballNumber` reset to defaults on CLEAR; `UpdateSideBetInfo()` called to refresh info strip.
+
+---
+
+## [2026-03-25] — Game history viewer: SESSION tab + ALL TIME tab + hamburger menu
+
+- **(MAUI) `GameRecord.cs` — new immutable record** — `record GameRecord(DateTime Time, int Picked, int Matched, decimal Wager, decimal Payout)` with computed `Net` and `IsWin`; stored in the in-memory `_sessionHistory` list on `MainPage`.
+- **(MAUI) `HistoryPage.xaml` — new modal page** — teal header bar with GAME HISTORY title and ✕ close button; two-button tab strip (SESSION / ALL TIME); overlapping `ScrollView` panels toggled by `IsVisible`; content built entirely in code-behind.
+- **(MAUI) `HistoryPage.xaml.cs` — history page code-behind** — `BuildSessionContent()` renders a 4-column summary card (Games / Wins / Wagered / Net) followed by per-game rows (newest first) showing game #, time, pick→match, wager→payout, and WIN/LOSE badge; `BuildAllTimeContent()` reads `Preferences.Default` keys (`at_games`, `at_wins`, `at_wagered`, `at_won`, `at_best_win`) and renders stat-box pairs; `BtnClose_Clicked` calls `Navigation.PopModalAsync()`.
+- **(MAUI) `MainPage.xaml` — hamburger menu button** — top bar column definitions changed from `*,*,*` to `*,*,*,Auto`; `BtnMenu` (☰, 44×44, transparent) added at column 3.
+- **(MAUI) `MainPage.xaml.cs` — session + all-time tracking** — added `_sessionHistory = []` field; after each game appends a `GameRecord` to the list and increments `Preferences.Default` all-time counters; `BtnMenu_Clicked` opens `HistoryPage(_sessionHistory)` with `Navigation.PushModalAsync`.
+- **(MAUI) `Keno.Android.csproj` — version bump + icon update** — `AssemblyVersion`/`FileVersion` bumped to `26.3.25.28`; `MauiIcon` updated with `ForegroundFile="Resources\AppIcon\appiconfg.svg"` and `Color="#8b0000"`; `HistoryPage.xaml` added to `MauiXaml` item group; stale absolute `keno_2.png` path reference removed.
 
 ---
 

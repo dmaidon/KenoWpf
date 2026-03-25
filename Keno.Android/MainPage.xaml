@@ -1,17 +1,16 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<!-- Last Edit: 2026-03-24 12:04 PM - Initial Keno game board scaffold: top bar, wager selector, 8x10 number grid, picks/drawn displays, PLAY/CLEAR. -->
+<!-- Last Edit: 2026-03-25 01:45 PM - Add persistent bank/settings, replenish button, custom wager. -->
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Keno.Android.MainPage"
              Title="Keno"
              BackgroundColor="#F0F0F0">
 
-    <Grid RowDefinitions="Auto,Auto,*,Auto,Auto"
-          RowSpacing="0">
+    <Grid RowDefinitions="Auto,*" RowSpacing="0">
 
-        <!-- Row 0: Top info bar — Bank / Wager / Picks -->
+        <!-- Row 0: Top info bar — Bank / Wager / Picks (fixed) -->
         <Grid Grid.Row="0"
-              ColumnDefinitions="*,*,*"
+              ColumnDefinitions="*,*,*,Auto"
               BackgroundColor="#2196A6"
               Padding="8,4">
             <VerticalStackLayout Grid.Column="0" Spacing="0">
@@ -39,100 +38,351 @@
                        FontSize="13" FontAttributes="Bold" TextColor="#FFFF80"
                        HorizontalOptions="End" />
             </VerticalStackLayout>
+            <Button Grid.Column="3"
+                    x:Name="BtnMenu"
+                    Text="&#x2630;"
+                    BackgroundColor="Transparent"
+                    BorderWidth="0"
+                    TextColor="White"
+                    FontSize="20"
+                    WidthRequest="44"
+                    HeightRequest="44"
+                    Padding="0"
+                    VerticalOptions="Center"
+                    Clicked="BtnMenu_Clicked" />
         </Grid>
 
-        <!-- Row 1: Wager selector — preset buttons built in code-behind -->
-        <ScrollView Grid.Row="1"
-                    Orientation="Horizontal"
-                    HorizontalScrollBarVisibility="Never"
-                    BackgroundColor="#D8EAF4"
-                    HeightRequest="40">
-            <HorizontalStackLayout x:Name="WagerButtonsLayout"
-                                   Spacing="4"
-                                   Padding="6,5" />
+        <!-- Row 1: Scrollable content -->
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Spacing="0">
+
+                <!-- Wager selector — preset buttons built in code-behind -->
+                <ScrollView Orientation="Horizontal"
+                            HorizontalScrollBarVisibility="Never"
+                            BackgroundColor="#D8EAF4"
+                            HeightRequest="40">
+                    <HorizontalStackLayout x:Name="WagerButtonsLayout"
+                                           Spacing="4"
+                                           Padding="6,5" />
+                </ScrollView>
+
+                <!-- Consecutive games row — −/count/+ stepper + bonus label -->
+                <Grid ColumnDefinitions="Auto,*"
+                      BackgroundColor="#E4F0E8"
+                      Padding="8,5"
+                      ColumnSpacing="6">
+                    <Label Grid.Column="0"
+                           Text="GAMES"
+                           FontSize="10" FontAttributes="Bold"
+                           TextColor="#2196A6"
+                           VerticalOptions="Center" />
+                    <Grid Grid.Column="1"
+                          ColumnDefinitions="Auto,Auto,Auto,*"
+                          ColumnSpacing="2">
+                        <Button x:Name="BtnGamesMinus"
+                                Text="−"
+                                FontSize="15" FontAttributes="Bold"
+                                BackgroundColor="#90A4AE"
+                                TextColor="White"
+                                WidthRequest="32" HeightRequest="28"
+                                Padding="0" CornerRadius="4"
+                                Clicked="BtnGamesMinus_Clicked" />
+                        <Label x:Name="LblGamesCount"
+                               Grid.Column="1"
+                               Text="1"
+                               FontSize="13" FontAttributes="Bold"
+                               TextColor="#333333"
+                               WidthRequest="34"
+                               HorizontalTextAlignment="Center"
+                               VerticalOptions="Center" />
+                        <Button x:Name="BtnGamesPlus"
+                                Grid.Column="2"
+                                Text="+"
+                                FontSize="15" FontAttributes="Bold"
+                                BackgroundColor="#90A4AE"
+                                TextColor="White"
+                                WidthRequest="32" HeightRequest="28"
+                                Padding="0" CornerRadius="4"
+                                Clicked="BtnGamesPlus_Clicked" />
+                        <Label x:Name="LblBonusDisplay"
+                               Grid.Column="3"
+                               Text=""
+                               FontSize="10" FontAttributes="Bold"
+                               TextColor="#4CAF50"
+                               HorizontalOptions="End"
+                               VerticalOptions="Center" />
+                    </Grid>
+                </Grid>
+
+                <!-- Quick Pick row — −/count/+ stepper + PICK button -->
+                <Grid ColumnDefinitions="Auto,*,Auto"
+                      BackgroundColor="#EBF2FA"
+                      Padding="8,5"
+                      ColumnSpacing="6">
+                    <Label Grid.Column="0"
+                           Text="QUICK PICK"
+                           FontSize="10" FontAttributes="Bold"
+                           TextColor="#2196A6"
+                           VerticalOptions="Center" />
+                    <Grid Grid.Column="1"
+                          ColumnDefinitions="Auto,Auto,Auto"
+                          HorizontalOptions="Center"
+                          ColumnSpacing="2">
+                        <Button x:Name="BtnAutoPickMinus"
+                                Text="−"
+                                FontSize="15" FontAttributes="Bold"
+                                BackgroundColor="#90A4AE"
+                                TextColor="White"
+                                WidthRequest="32" HeightRequest="28"
+                                Padding="0" CornerRadius="4"
+                                Clicked="BtnAutoPickMinus_Clicked" />
+                        <Label x:Name="LblAutoPickCount"
+                               Grid.Column="1"
+                               Text="5"
+                               FontSize="13" FontAttributes="Bold"
+                               TextColor="#333333"
+                               WidthRequest="34"
+                               HorizontalTextAlignment="Center"
+                               VerticalOptions="Center" />
+                        <Button x:Name="BtnAutoPickPlus"
+                                Grid.Column="2"
+                                Text="+"
+                                FontSize="15" FontAttributes="Bold"
+                                BackgroundColor="#90A4AE"
+                                TextColor="White"
+                                WidthRequest="32" HeightRequest="28"
+                                Padding="0" CornerRadius="4"
+                                Clicked="BtnAutoPickPlus_Clicked" />
+                    </Grid>
+                    <Button Grid.Column="2"
+                            x:Name="BtnAutoPick"
+                            Text="PICK"
+                            FontSize="11" FontAttributes="Bold"
+                            BackgroundColor="#2196A6"
+                            TextColor="White"
+                            HeightRequest="28"
+                            Padding="12,0"
+                            CornerRadius="4"
+                            Clicked="BtnAutoPick_Clicked" />
+                </Grid>
+
+                <!-- 8×10 number board — 80 cells built in code-behind -->
+                <Border x:Name="NumberGridContainer"
+                        Stroke="#888888"
+                        StrokeThickness="1"
+                        HeightRequest="280"
+                        Margin="3,3,3,0" />
+
+                <!-- Selected picks (top) + drawn numbers (bottom) — both built in code-behind -->
+                <Grid RowDefinitions="Auto,Auto"
+                      RowSpacing="2"
+                      Margin="3,2,3,0">
+                    <Border Grid.Row="0"
+                            x:Name="PicksGridContainer"
+                            Stroke="#888888"
+                            StrokeThickness="1" />
+                    <Border Grid.Row="1"
+                            x:Name="DrawnGridContainer"
+                            Stroke="#888888"
+                            StrokeThickness="1" />
+                </Grid>
+
+                <!-- Side bets — Multiplier / Powerball / First-Last toggle pills -->
+                <Grid ColumnDefinitions="*,*,*"
+                      Padding="4,6,4,0"
+                      ColumnSpacing="4">
+                    <Button x:Name="BtnSideBetMultiplier"
+                            Text="MULTIPLIER"
+                            FontSize="10" FontAttributes="Bold"
+                            BackgroundColor="#607D8B"
+                            TextColor="White"
+                            HeightRequest="34" CornerRadius="6"
+                            Clicked="BtnSideBetMultiplier_Clicked" />
+                    <Button Grid.Column="1"
+                            x:Name="BtnSideBetPowerball"
+                            Text="POWERBALL"
+                            FontSize="10" FontAttributes="Bold"
+                            BackgroundColor="#607D8B"
+                            TextColor="White"
+                            HeightRequest="34" CornerRadius="6"
+                            Clicked="BtnSideBetPowerball_Clicked" />
+                    <Button Grid.Column="2"
+                            x:Name="BtnSideBetFirstLast"
+                            Text="FIRST/LAST"
+                            FontSize="10" FontAttributes="Bold"
+                            BackgroundColor="#607D8B"
+                            TextColor="White"
+                            HeightRequest="34" CornerRadius="6"
+                            Clicked="BtnSideBetFirstLast_Clicked" />
+                </Grid>
+
+                <!-- Side bet info strip — cost hint / live draw values -->
+                <Grid ColumnDefinitions="*,*,*"
+                      Padding="4,1,4,4">
+                    <Label x:Name="LblMultiplierInfo"
+                           Text="+$1 · ×1"
+                           FontSize="9" TextColor="#607D8B"
+                           HorizontalTextAlignment="Center" />
+                    <Label Grid.Column="1"
+                           x:Name="LblPowerballInfo"
+                           Text="×4 if match"
+                           FontSize="9" TextColor="#607D8B"
+                           HorizontalTextAlignment="Center" />
+                    <Label Grid.Column="2"
+                           x:Name="LblFirstLastInfo"
+                           Text="+$1 · bonus"
+                           FontSize="9" TextColor="#607D8B"
+                           HorizontalTextAlignment="Center" />
+                </Grid>
+
+                <!-- Favorites — 3 named slots (tap → Save / Load / Clear action sheet) -->
+                <Grid ColumnDefinitions="Auto,*,*,*"
+                      Padding="4,0,4,4"
+                      ColumnSpacing="4">
+                    <Label Grid.Column="0"
+                           Text="FAV"
+                           FontSize="10" FontAttributes="Bold"
+                           TextColor="#555555"
+                           VerticalOptions="Center" />
+                    <Button x:Name="BtnFav0"
+                            Grid.Column="1"
+                            FontSize="10" FontAttributes="Bold"
+                            BackgroundColor="#B0BEC5"
+                            TextColor="White"
+                            HeightRequest="30" CornerRadius="5"
+                            Clicked="BtnFav0_Clicked" />
+                    <Button x:Name="BtnFav1"
+                            Grid.Column="2"
+                            FontSize="10" FontAttributes="Bold"
+                            BackgroundColor="#B0BEC5"
+                            TextColor="White"
+                            HeightRequest="30" CornerRadius="5"
+                            Clicked="BtnFav1_Clicked" />
+                    <Button x:Name="BtnFav2"
+                            Grid.Column="3"
+                            FontSize="10" FontAttributes="Bold"
+                            BackgroundColor="#B0BEC5"
+                            TextColor="White"
+                            HeightRequest="30" CornerRadius="5"
+                            Clicked="BtnFav2_Clicked" />
+                </Grid>
+
+                <!-- Draw speed row — SLOW / MED / FAST / SS pills -->
+                <Grid ColumnDefinitions="Auto,*,*,*,*"
+                      Padding="4,2,4,4"
+                      ColumnSpacing="4">
+                    <Label Grid.Column="0"
+                           Text="SPEED"
+                           FontSize="10" FontAttributes="Bold"
+                           TextColor="#555555"
+                           VerticalOptions="Center" />
+                    <Button x:Name="BtnSpeedSlow"
+                            Grid.Column="1"
+                            Text="SLOW"
+                            FontSize="9" FontAttributes="Bold"
+                            BackgroundColor="#90A4AE"
+                            TextColor="White"
+                            HeightRequest="28" CornerRadius="5"
+                            Clicked="BtnSpeedSlow_Clicked" />
+                    <Button x:Name="BtnSpeedMed"
+                            Grid.Column="2"
+                            Text="MED"
+                            FontSize="9" FontAttributes="Bold"
+                            BackgroundColor="#90A4AE"
+                            TextColor="White"
+                            HeightRequest="28" CornerRadius="5"
+                            Clicked="BtnSpeedMed_Clicked" />
+                    <Button x:Name="BtnSpeedFast"
+                            Grid.Column="3"
+                            Text="FAST"
+                            FontSize="9" FontAttributes="Bold"
+                            BackgroundColor="#90A4AE"
+                            TextColor="White"
+                            HeightRequest="28" CornerRadius="5"
+                            Clicked="BtnSpeedFast_Clicked" />
+                    <Button x:Name="BtnSpeedSS"
+                            Grid.Column="4"
+                            Text="SS"
+                            FontSize="9" FontAttributes="Bold"
+                            BackgroundColor="#90A4AE"
+                            TextColor="White"
+                            HeightRequest="28" CornerRadius="5"
+                            Clicked="BtnSpeedSS_Clicked" />
+                </Grid>
+
+                <!-- PLAY / REPLAY / CLEAR + status strip -->
+                <Grid RowDefinitions="Auto,Auto,Auto"
+                      RowSpacing="2"
+                      Padding="4,4,4,8">
+                    <Grid Grid.Row="0"
+                          ColumnDefinitions="*,*,*"
+                          ColumnSpacing="6">
+                        <Button Grid.Column="0"
+                                x:Name="BtnPlay"
+                                Text="PLAY"
+                                BackgroundColor="#EE614E"
+                                TextColor="White"
+                                FontAttributes="Bold"
+                                FontSize="16"
+                                HeightRequest="46"
+                                CornerRadius="6"
+                                Clicked="BtnPlay_Clicked" />
+                        <Button Grid.Column="1"
+                                x:Name="BtnReplay"
+                                Text="REPLAY"
+                                BackgroundColor="#5B8ED6"
+                                TextColor="White"
+                                FontAttributes="Bold"
+                                FontSize="14"
+                                HeightRequest="46"
+                                CornerRadius="6"
+                                IsEnabled="False"
+                                Clicked="BtnReplay_Clicked" />
+                        <Button Grid.Column="2"
+                                x:Name="BtnClear"
+                                Text="CLEAR"
+                                BackgroundColor="#EECF4E"
+                                TextColor="#333333"
+                                FontAttributes="Bold"
+                                FontSize="16"
+                                HeightRequest="46"
+                                CornerRadius="6"
+                                Clicked="BtnClear_Clicked" />
+                    </Grid>
+                    <Grid Grid.Row="1"
+                          ColumnDefinitions="*,*,*"
+                          Padding="2,0">
+                        <Label Grid.Column="0"
+                               x:Name="LblMatches"
+                               Text="Matches: —"
+                               FontSize="11" FontAttributes="Bold" TextColor="Navy" />
+                        <Label Grid.Column="1"
+                               x:Name="LblPayout"
+                               Text="Payout: $0.00"
+                               FontSize="11" FontAttributes="Bold" TextColor="#006600"
+                               HorizontalOptions="Center" />
+                        <Label Grid.Column="2"
+                               x:Name="LblStreak"
+                               Text="Streak: —"
+                               FontSize="11" FontAttributes="Bold" TextColor="Navy"
+                               HorizontalOptions="End" />
+                    </Grid>
+                    <Button Grid.Row="2"
+                            x:Name="BtnReplenish"
+                            Text="REPLENISH BANK"
+                            BackgroundColor="#2E7D32"
+                            TextColor="White"
+                            FontAttributes="Bold"
+                            FontSize="14"
+                            HeightRequest="42"
+                            CornerRadius="6"
+                            IsVisible="False"
+                            Clicked="BtnReplenish_Clicked" />
+                </Grid>
+
+            </VerticalStackLayout>
         </ScrollView>
 
-        <!-- Row 2: 8×10 number board — 80 cells built in code-behind -->
-        <Border Grid.Row="2"
-                x:Name="NumberGridContainer"
-                Stroke="#888888"
-                StrokeThickness="1"
-                Margin="3,3,3,0" />
-
-        <!-- Row 3: Selected picks (top) + drawn numbers (bottom) — both built in code-behind -->
-        <Grid Grid.Row="3"
-              RowDefinitions="Auto,Auto"
-              RowSpacing="2"
-              Margin="3,2,3,0">
-            <Border Grid.Row="0"
-                    x:Name="PicksGridContainer"
-                    Stroke="#888888"
-                    StrokeThickness="1" />
-            <Border Grid.Row="1"
-                    x:Name="DrawnGridContainer"
-                    Stroke="#888888"
-                    StrokeThickness="1" />
-        </Grid>
-
-        <!-- Row 4: PLAY / CLEAR + status strip -->
-        <Grid Grid.Row="4"
-              RowDefinitions="Auto,Auto"
-              RowSpacing="2"
-              Padding="4,4,4,6">
-            <Grid Grid.Row="0"
-                  ColumnDefinitions="*,*,*"
-                  ColumnSpacing="6">
-                <Button Grid.Column="0"
-                        x:Name="BtnPlay"
-                        Text="PLAY"
-                        BackgroundColor="#EE614E"
-                        TextColor="White"
-                        FontAttributes="Bold"
-                        FontSize="16"
-                        HeightRequest="46"
-                        CornerRadius="6"
-                        Clicked="BtnPlay_Clicked" />
-                <Button Grid.Column="1"
-                        x:Name="BtnReplay"
-                        Text="REPLAY"
-                        BackgroundColor="#5B8ED6"
-                        TextColor="White"
-                        FontAttributes="Bold"
-                        FontSize="14"
-                        HeightRequest="46"
-                        CornerRadius="6"
-                        IsEnabled="False"
-                        Clicked="BtnReplay_Clicked" />
-                <Button Grid.Column="2"
-                        x:Name="BtnClear"
-                        Text="CLEAR"
-                        BackgroundColor="#EECF4E"
-                        TextColor="#333333"
-                        FontAttributes="Bold"
-                        FontSize="16"
-                        HeightRequest="46"
-                        CornerRadius="6"
-                        Clicked="BtnClear_Clicked" />
-            </Grid>
-            <Grid Grid.Row="1"
-                  ColumnDefinitions="*,*,*"
-                  Padding="2,0">
-                <Label Grid.Column="0"
-                       x:Name="LblMatches"
-                       Text="Matches: —"
-                       FontSize="11" FontAttributes="Bold" TextColor="Navy" />
-                <Label Grid.Column="1"
-                       x:Name="LblPayout"
-                       Text="Payout: $0.00"
-                       FontSize="11" FontAttributes="Bold" TextColor="#006600"
-                       HorizontalOptions="Center" />
-                <Label Grid.Column="2"
-                       x:Name="LblStreak"
-                       Text="Streak: —"
-                       FontSize="11" FontAttributes="Bold" TextColor="Navy"
-                       HorizontalOptions="End" />
-            </Grid>
-        </Grid>
     </Grid>
 
 </ContentPage>

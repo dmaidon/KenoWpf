@@ -5,8 +5,8 @@
     <TargetFramework>net10.0-windows</TargetFramework>
     <RootNamespace>Keno.Wpf</RootNamespace>
     <UseWPF>true</UseWPF>
-    <AssemblyVersion>26.3.24.261</AssemblyVersion>
-    <FileVersion>26.3.24.261</FileVersion>
+    <AssemblyVersion>26.3.25.271</AssemblyVersion>
+    <FileVersion>26.3.25.271</FileVersion>
     <ApplicationIcon>keno_2.ico</ApplicationIcon>
     <OptionStrict>On</OptionStrict>
     <NoWarn>BC40026</NoWarn>

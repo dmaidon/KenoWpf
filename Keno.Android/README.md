@@ -1,4 +1,4 @@
-# Last Edit: 2026-03-24 05:44 PM - Updated status/roadmap to reflect implemented game UI; updated project structure notes.
+# Last Edit: 2026-03-25 02:21 PM - Add payout schedule sheet and in-app help.
 
 # 📱 Keno — MAUI / Mobile
 
@@ -101,7 +101,9 @@ select the target device/emulator from the toolbar, and press **F5**.
 Keno.Android\
 ├── App.xaml(.cs)               — Application entry point, resource dictionaries
 ├── AppShell.xaml(.cs)          — Navigation shell
-├── MainPage.xaml(.cs)          — Main game page (playable — board, wager, draw, replay)
+├── GameRecord.cs               — Immutable record for a single completed game (session history)
+├── HistoryPage.xaml(.cs)       — Modal game history: SESSION per-game rows + ALL TIME stat cards
+├── MainPage.xaml(.cs)          — Main game page (playable — board, wager, draw, replay, history)
 ├── MauiProgram.cs              — Dependency injection / services registration
 ├── Platforms\
 │   ├── Android\
@@ -164,36 +166,45 @@ The MAUI version redirects all file I/O to platform-safe locations via
 
 ## Status & Roadmap
 
-> **🟢 Core game loop playable on Android.**  
-> The 8×10 board, wager selector, draw animation, and PLAY / REPLAY / CLEAR buttons are fully functional.
+> **🟢 Core game loop fully playable on Android.**  
+> Board, wager selector (preset + custom), draw animation, PLAY / REPLAY / CLEAR, Quick Pick, three side bets, 3-slot Favorites, game history viewer, consecutive games (1–20 with series bonus), four draw speeds, persistent bank & settings, and an automatic bank replenish button are all functional.
 
 ### Implemented
 
-- [x] 8×10 number board with tap-to-select (up to 15 picks)
-- [x] Wager selector — 14 preset amounts ($1 – $200)
-- [x] Draw animation — 20 balls revealed one-by-one (80 ms/ball), board highlights matches
+- [x] 8×10 number board with tap-to-select (up to 20 picks)
+- [x] Quick Pick — −/+/PICK stepper auto-selects 1–20 random numbers
+- [x] Wager selector — 14 preset amounts ($1 – $200) **+ CUSTOM wager entry**
+- [x] Draw animation — 20 balls revealed one-by-one at selected speed, board highlights matches
 - [x] PLAY button — deducts wager, draws, shows payout via `KenoPayouts.GetPayout`
 - [x] REPLAY button — re-selects last picks and auto-plays with same wager
 - [x] CLEAR button — resets board, picks, drawn strip, and status labels
-- [x] In-memory bank balance ($10,000 starting, win/loss tracked per game)
+- [x] **Persistent bank balance** — saved to `Preferences.Default` after every game; survives app restarts
+- [x] **Persistent settings** — wager, side-bet toggles, Quick Pick count, draw speed, and consecutive games all restored on next launch
+- [x] **REPLENISH BANK button** — appears automatically when balance hits $0; offers +$1,000 / +$5,000 / Reset to $10,000
 - [x] Win / Loss streak counter
-- [x] Top bar: Bank · Wager · Picks counts (live)
+- [x] Top bar: Bank · Wager (total for all queued games) · Picks counts (live)
 - [x] Status strip: Matches · Payout · Streak (per-game)
+- [x] **Multiplier side bet** — +$1/game; weighted ×1–×10 draw scales base payout
+- [x] **Powerball side bet** — free; random 1–80 ball drawn; ×4 payout if ball is a pick
+- [x] **First/Last side bet** — +$1/game; flat `KenoPayouts.GetFirstLastBallBonus` cash bonus if first or last drawn ball is a pick
+- [x] **Favorites (3 slots)** — tap any ★ button to Save / Load / Clear pick sets via action sheet; persisted with `Preferences.Default`
+- [x] Hamburger menu (☰) in top bar opens game history modal
+- [x] SESSION history — per-game rows (time, pick→match, wager→payout, WIN/LOSE badge) with summary card
+- [x] ALL TIME stats — Games / Win Rate / Total Wagered / Total Won / Net P&L / Best Win persisted via `Preferences.Default`
+- [x] **Consecutive games (1–20)** — GAMES stepper queues 1–20 games per PLAY; cost auto-clamped so total wager never exceeds bank; series bonus ×1.1–×1.75 applied at end
+- [x] **Bank cap / auto-clamp** — games count reduced automatically when wager × games would exceed balance; triggered on wager change, Multiplier/First-Last toggle, and Games `+` press
+- [x] **Draw speed** — SLOW (1 s/ball) / MED (0.5 s/ball) / FAST (0.2 s/ball) / SS (instant); FAST is the default
 
 ### Planned (WPF parity)
 
+- [x] **Payout schedule sheet** — ☰ → Payout Schedule; pick-count selector (1–20); CATCH / PAYS / AT $5 table via `KenoPayouts.GetPayoutScheduleEntries()`
+- [x] **In-app help** — ☰ → How to Play; 10 sections: board, wager, Quick Pick, PLAY/REPLAY/CLEAR, consecutive games + bonus table, side bets, draw speed, favorites, bank/replenish, top bar
 - [ ] Regular, Bullseye, Quadrant, and Half-board game modes
 - [ ] Way Ticket / King Ticket
-- [ ] Multiplier Keno, Powerball, First/Last Ball side-bets
-- [ ] Consecutive games (2–20) with series bonus
 - [ ] Free games queue
 - [ ] Progressive Jackpot
 - [ ] Payout schedule sheet
-- [ ] Session summary and All-Time history
 - [ ] Hot & Cold number stats
-- [ ] Favorites (3 slots)
-- [ ] Game history log viewer
-- [ ] Persistent bank / settings (via `FileSystem.AppDataDirectory`)
 - [ ] In-app help
 
 ---
