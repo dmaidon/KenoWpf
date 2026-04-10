@@ -1,4 +1,4 @@
-// Last Edit: 2026-03-25 02:21 PM - In-app help code-behind: 10 sections covering all game features.
+// Last Edit: Apr 10, 2026 15:15 - Clarify multiplier side-bet fee example and net-win behavior guidance.
 using Microsoft.Maui.Controls.Shapes;
 
 namespace Keno.Android;
@@ -43,7 +43,7 @@ public partial class HelpPage : ContentPage
         AddBonusTable();
 
         AddSection("Side Bets");
-        AddBullet("MULTIPLIER (+$1)", "A weighted ×1–×10 multiplier is drawn before each game and applied to your base payout. The multiplier draw favors lower values.");
+        AddBullet("MULTIPLIER (+$1 or 3%)", "A weighted ×1–×10 multiplier is drawn before each game and applied to your base payout. The fee is max($1.00, 3% of your base wager) per game (example: $200 base wager = $6.00 fee). The multiplier draw favors lower values.");
         AddBullet("POWERBALL (free)",  "A random ball 1–80 is drawn. If it matches any of your picks, your payout is multiplied by ×4. No extra cost.");
         AddBullet("FIRST/LAST (+$1)",  "If the first or last ball drawn is one of your picks, you receive a flat cash bonus (Pick 1 = $75 down to Pick 20 = $5).");
 

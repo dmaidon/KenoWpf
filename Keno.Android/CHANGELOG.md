@@ -1,10 +1,39 @@
-# Last Edit: 2026-03-25 02:21 PM - Add payout schedule sheet and in-app help.
+# Last Edit: Apr 10, 2026 15:15 - Clarify multiplier pricing examples in help and README.
 
 # Changelog — Keno.Android (MAUI)
 
 All notable changes to the MAUI / mobile project are documented here.  
 Format: most-recent first. Entries are prefixed **(MAUI)**.  
 See the [root CHANGELOG](../CHANGELOG.md) for WPF and WinForms history.
+
+---
+
+## [2026-04-10] — Documentation/help clarification pass
+
+- **(MAUI) `HelpPage.xaml.cs` — multiplier fee example** — side-bet help text now includes a concrete example (`$200` base wager = `$6.00` multiplier fee) for easier understanding of the new pricing rule.
+- **(MAUI) `README.md` — net-win guidance note** — added concise guidance that `2×` (or higher) multiplier outcomes at `$200` base wager generally improve winning outcomes after the multiplier fee, depending on base payout.
+
+---
+
+## [2026-04-10] — Multiplier side-bet pricing update
+
+- **(MAUI) `MainPage.xaml.cs` — dynamic multiplier fee** — changed per-game multiplier surcharge from a flat `$1` to `max($1.00, 3% of base wager)` (rounded to cents); this fee now feeds `EffectiveWager`, bank-cap clamping, and top-bar wager totals.
+- **(MAUI) `MainPage.xaml.cs` — side-bet info refresh** — multiplier info label now displays the current computed dollar fee and updates immediately when wager changes (preset or custom).
+- **(MAUI) `HelpPage.xaml.cs` — help text alignment** — updated side-bet documentation to match the new multiplier pricing rule.
+
+---
+
+## [2026-04-10] — Menu/history display reliability improvements
+
+- **(MAUI) `MainPage.xaml.cs` — menu navigation hardening** — `BtnMenu_Clicked` now prevents re-entry while busy, briefly delays after `DisplayActionSheetAsync` so Android dialog teardown completes, and wraps modal push in guarded exception handling.
+- **(MAUI) `HistoryPage.xaml.cs` — session list render cap** — limits rendered session rows to the latest 200 with a footer note when truncated, preventing large-session UI stalls when opening Game History.
+
+---
+
+## [2026-04-10] — Android launch crash fix (MaterialComponents)
+
+- **(MAUI) `Platforms/Android/Resources/values/styles.xml` — new theme resource file** — added explicit `Maui.MainTheme` and `Maui.SplashTheme` definitions inheriting from MAUI base themes, including `postSplashScreenTheme`, to ensure Android controls receive a valid Material text appearance context.
+- **(MAUI) `Platforms/Android/Resources/values/colors.xml` — splash color resource** — added `maui_splash_color` used by the splash theme so theme inflation resolves all required resources at startup.
 
 ---
 

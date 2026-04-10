@@ -1,4 +1,4 @@
-# Last Edit: 2026-03-25 02:21 PM - Add payout schedule sheet and in-app help.
+# Last Edit: Apr 10, 2026 15:15 - Clarify multiplier pricing examples and net-win guidance.
 
 # 📱 Keno — MAUI / Mobile
 
@@ -108,6 +108,7 @@ Keno.Android\
 ├── Platforms\
 │   ├── Android\
 │   │   ├── MainActivity.cs     — Android activity
+│   │   ├── Resources\values\styles.xml — MAUI splash/main Android themes
 │   │   └── MainApplication.cs  — Android application class
 │   ├── iOS\
 │   ├── MacCatalyst\
@@ -171,6 +172,11 @@ The MAUI version redirects all file I/O to platform-safe locations via
 
 ### Implemented
 
+- [x] **Android theme hardening** — added `Maui.SplashTheme` and `Maui.MainTheme` resource styles (MaterialComponents-compatible via MAUI base themes) plus `maui_splash_color` to resolve startup crash: `Java.Lang.IllegalArgumentException` requiring valid `TextAppearance`
+- [x] **History/menu reliability hardening** — menu modal navigation now prevents re-entry and waits briefly after action sheet close before opening modal pages; session history rendering is capped to recent rows to keep Game History responsive on large sessions
+- [x] **Dynamic multiplier pricing** — multiplier side-bet fee is now `max($1.00, 3% of base wager)` per game (for example, a `$200` base wager uses a `$6.00` multiplier fee)
+- [x] **Multiplier net guidance** — at a `$200` base wager, a `2×` (or higher) multiplier typically produces a stronger winning outcome after the `$6.00` fee, depending on the base payout result
+
 - [x] 8×10 number board with tap-to-select (up to 20 picks)
 - [x] Quick Pick — −/+/PICK stepper auto-selects 1–20 random numbers
 - [x] Wager selector — 14 preset amounts ($1 – $200) **+ CUSTOM wager entry**
@@ -184,7 +190,7 @@ The MAUI version redirects all file I/O to platform-safe locations via
 - [x] Win / Loss streak counter
 - [x] Top bar: Bank · Wager (total for all queued games) · Picks counts (live)
 - [x] Status strip: Matches · Payout · Streak (per-game)
-- [x] **Multiplier side bet** — +$1/game; weighted ×1–×10 draw scales base payout
+- [x] **Multiplier side bet** — fee is `max($1.00, 3% of base wager)` per game; weighted ×1–×10 draw scales base payout
 - [x] **Powerball side bet** — free; random 1–80 ball drawn; ×4 payout if ball is a pick
 - [x] **First/Last side bet** — +$1/game; flat `KenoPayouts.GetFirstLastBallBonus` cash bonus if first or last drawn ball is a pick
 - [x] **Favorites (3 slots)** — tap any ★ button to Save / Load / Clear pick sets via action sheet; persisted with `Preferences.Default`
