@@ -1,4 +1,4 @@
-# Last Edit: Apr 10, 2026 15:15 - Clarify multiplier pricing examples and net-win guidance.
+# Last Edit: Apr 11, 2026 10:07 - Clarify REPLAY keeps current options until CLEAR.
 
 # 📱 Keno — MAUI / Mobile
 
@@ -182,8 +182,8 @@ The MAUI version redirects all file I/O to platform-safe locations via
 - [x] Wager selector — 14 preset amounts ($1 – $200) **+ CUSTOM wager entry**
 - [x] Draw animation — 20 balls revealed one-by-one at selected speed, board highlights matches
 - [x] PLAY button — deducts wager, draws, shows payout via `KenoPayouts.GetPayout`
-- [x] REPLAY button — re-selects last picks and auto-plays with same wager
-- [x] CLEAR button — resets board, picks, drawn strip, and status labels
+- [x] REPLAY button — re-selects last picks and auto-plays while preserving current wager, games count, and side-bet options
+- [x] CLEAR button — resets board, picks, drawn strip, status labels, wager ($1), games (1), and side-bet toggles (off)
 - [x] **Persistent bank balance** — saved to `Preferences.Default` after every game; survives app restarts
 - [x] **Persistent settings** — wager, side-bet toggles, Quick Pick count, draw speed, and consecutive games all restored on next launch
 - [x] **REPLENISH BANK button** — appears automatically when balance hits $0; offers +$1,000 / +$5,000 / Reset to $10,000

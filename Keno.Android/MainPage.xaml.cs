@@ -1,4 +1,4 @@
-// Last Edit: 2026-03-25 01:45 PM - Add persistent bank/settings, replenish button, custom wager.
+// Last Edit: Apr 11, 2026 10:04 - Internal board resets no longer clear wager/games/side-bet options.
 using Keno.Core;
 
 namespace Keno.Android;
@@ -79,6 +79,7 @@ public partial class MainPage : ContentPage
     private bool _useFirstLast;
     private int _lastMultiplierValue = 1;
     private int _lastPowerballNumber;
+    private bool _isMenuBusy;
 
     public MainPage()
     {
@@ -407,6 +408,7 @@ public partial class MainPage : ContentPage
 
         ClampGamesToBalance();
         UpdateBonusDisplay();
+        UpdateSideBetInfo();
         Preferences.Default.Set(PrefWager, (double)_currentWager);
         UpdateStatus();
     }
@@ -421,8 +423,9 @@ public partial class MainPage : ContentPage
     {
         if (_lastPickedNumbers.Length == 0) return;
 
-        // Restore board to the last set of picks, then play immediately
-        BtnClear_Clicked(null, EventArgs.Empty);
+        // Restore board to the last set of picks, then play immediately.
+        ResetRoundState();
+
         foreach (int n in _lastPickedNumbers)
         {
             _selectedNumbers.Add(n);
@@ -561,22 +564,53 @@ public partial class MainPage : ContentPage
 
     private async void BtnMenu_Clicked(object? sender, EventArgs e)
     {
-        string? action = await DisplayActionSheetAsync("Menu", "Cancel", null,
-            "Game History", "Payout Schedule", "How to Play");
+        if (_isMenuBusy) return;
 
-        ContentPage? page = action switch
+        try
         {
-            "Game History" => new HistoryPage(_sessionHistory),
-            "Payout Schedule" => new PayoutSchedulePage(),
-            "How to Play" => new HelpPage(),
-            _ => null
-        };
+            _isMenuBusy = true;
+            BtnMenu.IsEnabled = false;
 
-        if (page is not null)
-            await Navigation.PushModalAsync(page);
+            string? action = await DisplayActionSheetAsync("Menu", "Cancel", null,
+                "Game History", "Payout Schedule", "How to Play");
+
+            ContentPage? page = action switch
+            {
+                "Game History" => new HistoryPage(_sessionHistory),
+                "Payout Schedule" => new PayoutSchedulePage(),
+                "How to Play" => new HelpPage(),
+                _ => null
+            };
+
+            if (page is not null)
+            {
+                // Let the action-sheet dialog fully close before pushing modal content.
+                await Task.Delay(120);
+                await Navigation.PushModalAsync(page);
+            }
+        }
+        catch (InvalidOperationException ex)
+        {
+            await DisplayAlertAsync("Menu", ex.Message, "OK");
+        }
+        finally
+        {
+            BtnMenu.IsEnabled = true;
+            _isMenuBusy = false;
+        }
     }
 
     private void BtnClear_Clicked(object? sender, EventArgs e)
+    {
+        ResetRoundState();
+        ResetWagerToDefault();
+        ResetGameSettingsToDefault();
+
+        UpdateSideBetInfo();
+        UpdateStatus();
+    }
+
+    private void ResetRoundState()
     {
         // Reset all 80 cells (drawn-but-not-picked cells also need clearing)
         for (int n = 1; n <= 80; n++)
@@ -596,8 +630,49 @@ public partial class MainPage : ContentPage
         LblStreak.Text = "Streak: —";
         _lastMultiplierValue = 1;
         _lastPowerballNumber = 0;
-        UpdateSideBetInfo();
-        UpdateStatus();
+    }
+
+    private void ResetWagerToDefault()
+    {
+        _currentWager = 1m;
+        _activeWagerBtn?.BackgroundColor = WagerDefault;
+
+        if (_customWagerBtn is not null)
+        {
+            _customWagerBtn.Text = "CUSTOM";
+            _customWagerBtn.BackgroundColor = WagerDefault;
+        }
+
+        _activeWagerBtn = null;
+        foreach (IView child in WagerButtonsLayout)
+        {
+            if (child is not Button btn || btn.CommandParameter is not decimal amount || amount != 1m)
+                continue;
+
+            _activeWagerBtn = btn;
+            btn.BackgroundColor = WagerActive;
+            break;
+        }
+
+        Preferences.Default.Set(PrefWager, (double)_currentWager);
+    }
+
+    private void ResetGameSettingsToDefault()
+    {
+        _consecutiveGames = 1;
+        LblGamesCount.Text = _consecutiveGames.ToString();
+        UpdateBonusDisplay();
+        Preferences.Default.Set(PrefGames, _consecutiveGames);
+
+        _useMultiplier = false;
+        _usePowerball = false;
+        _useFirstLast = false;
+        BtnSideBetMultiplier.BackgroundColor = SideBetOff;
+        BtnSideBetPowerball.BackgroundColor = SideBetOff;
+        BtnSideBetFirstLast.BackgroundColor = SideBetOff;
+        Preferences.Default.Set(PrefMultiplier, _useMultiplier);
+        Preferences.Default.Set(PrefPowerball, _usePowerball);
+        Preferences.Default.Set(PrefFirstLast, _useFirstLast);
     }
 
     // ── Display helpers
@@ -717,9 +792,10 @@ public partial class MainPage : ContentPage
     /// <summary>Updates the three info labels below the side-bet pills.</summary>
     private void UpdateSideBetInfo()
     {
+        decimal multiplierFee = MultiplierSideBetFee;
         LblMultiplierInfo.Text = _useMultiplier
-            ? (_lastMultiplierValue > 1 ? $"+$1 · ×{_lastMultiplierValue}" : "+$1 · ×1")
-            : "+$1 · ×1";
+            ? (_lastMultiplierValue > 1 ? $"+{multiplierFee:C2} · ×{_lastMultiplierValue}" : $"+{multiplierFee:C2} · ×1")
+            : $"+{multiplierFee:C2} · ×1";
         LblMultiplierInfo.TextColor = _useMultiplier ? SideBetMultiplierOn : SideBetOff;
 
         LblPowerballInfo.Text = (_usePowerball && _lastPowerballNumber > 0)
@@ -743,8 +819,11 @@ public partial class MainPage : ContentPage
 
     // ── Favorites (3 slots via Preferences) ──────────────────────────────────
 
-    /// <summary>Total per-game cost including active side-bet surcharges (+$1 each for Multiplier and First/Last).</summary>
-    private decimal EffectiveWager => _currentWager + (_useMultiplier ? 1m : 0m) + (_useFirstLast ? 1m : 0m);
+    /// <summary>Multiplier side-bet fee per game: max($1, 3% of base wager), rounded to cents.</summary>
+    private decimal MultiplierSideBetFee => Math.Max(1m, Math.Round(_currentWager * 0.03m, 2));
+
+    /// <summary>Total per-game cost including side-bet surcharges (Multiplier max($1,3%) and First/Last +$1).</summary>
+    private decimal EffectiveWager => _currentWager + (_useMultiplier ? MultiplierSideBetFee : 0m) + (_useFirstLast ? 1m : 0m);
 
     /// <summary>Refreshes the three FAV button labels and colors from Preferences.</summary>
     private void UpdateFavoriteButtons()
@@ -798,13 +877,14 @@ public partial class MainPage : ContentPage
 
                 case "Load":
                     int[] nums = [.. raw.Split(',').Select(int.Parse)];
-                    BtnClear_Clicked(null, EventArgs.Empty);
+                    ResetRoundState();
                     foreach (int n in nums)
                     {
                         _selectedNumbers.Add(n);
                         _numberLabels[n].BackgroundColor = CellSelected;
                     }
                     UpdatePicksDisplay();
+                    UpdateSideBetInfo();
                     UpdateStatus();
                     break;
 
@@ -873,6 +953,7 @@ public partial class MainPage : ContentPage
 
         ClampGamesToBalance();
         UpdateBonusDisplay();
+        UpdateSideBetInfo();
         Preferences.Default.Set(PrefWager, (double)_currentWager);
         UpdateStatus();
     }

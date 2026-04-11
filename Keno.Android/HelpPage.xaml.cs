@@ -1,4 +1,4 @@
-// Last Edit: Apr 10, 2026 15:15 - Clarify multiplier side-bet fee example and net-win behavior guidance.
+// Last Edit: Apr 11, 2026 10:07 - Clarify REPLAY keeps current options until CLEAR is pressed.
 using Microsoft.Maui.Controls.Shapes;
 
 namespace Keno.Android;
@@ -35,8 +35,8 @@ public partial class HelpPage : ContentPage
 
         AddSection("PLAY / REPLAY / CLEAR");
         AddBullet("PLAY",   "Deducts the total wager from your bank, draws 20 balls, and pays out based on how many of your picks match the draw.");
-        AddBullet("REPLAY", "Re-selects your last picks and immediately plays a new game with the same wager — no need to tap numbers again.");
-        AddBullet("CLEAR",  "Resets the board, pick/draw strips, and status labels without deducting from your bank.");
+        AddBullet("REPLAY", "Re-selects your last picks and immediately plays a new game while keeping your current wager, games count, and side-bet options.");
+        AddBullet("CLEAR",  "Resets the board, pick/draw strips, wager ($1), games (1), and side-bet toggles (off) without deducting from your bank.");
 
         AddSection("Consecutive Games");
         AddParagraph("Use the GAMES stepper (1–20) to queue multiple games in a single PLAY. The same picks are used for every game in the run. A series bonus multiplier is applied to the combined payout at the end:");

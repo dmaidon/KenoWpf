@@ -1,10 +1,25 @@
-# Last Edit: Apr 10, 2026 15:15 - Clarify multiplier pricing examples in help and README.
+# Last Edit: Apr 11, 2026 10:07 - Separate internal board reset from CLEAR defaults reset.
 
 # Changelog — Keno.Android (MAUI)
 
 All notable changes to the MAUI / mobile project are documented here.  
 Format: most-recent first. Entries are prefixed **(MAUI)**.  
 See the [root CHANGELOG](../CHANGELOG.md) for WPF and WinForms history.
+
+---
+
+## [2026-04-11] — Replay/options persistence correction
+
+- **(MAUI) `MainPage.xaml.cs` — reset flow split** — added an internal round-only reset path used by REPLAY/favorite-load so board/picks/draw visuals reset without clearing wager, consecutive games, or side-bet toggles.
+- **(MAUI) `MainPage.xaml.cs` — CLEAR remains authoritative** — full defaults reset (wager `$1`, games `1`, side bets off) now applies only when the user taps **CLEAR**.
+- **(MAUI) `HelpPage.xaml.cs` + `README.md` — REPLAY wording update** — documentation now explicitly states that REPLAY preserves current options until CLEAR is pressed.
+
+---
+
+## [2026-04-11] — CLEAR reset consistency fix
+
+- **(MAUI) `MainPage.xaml.cs` — CLEAR defaults restore** — `BtnClear_Clicked` now restores base wager to `$1`, resets consecutive games to `1`, and turns off Multiplier/Powerball/First-Last side bets, while preserving the existing board/picks/draw/status reset behavior.
+- **(MAUI) `HelpPage.xaml.cs` — CLEAR help text alignment** — updated the PLAY/REPLAY/CLEAR section to document the expanded CLEAR reset behavior.
 
 ---
 
