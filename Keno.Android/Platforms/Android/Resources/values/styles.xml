@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Last Edit: Apr 10, 2026 12:45 - Add MaterialComponents-compatible MAUI Android themes to prevent TextAppearance crash. -->
+<resources>
+  <style name="Maui.MainTheme" parent="Maui.MainTheme.Base">
+    <item name="android:windowBackground">@android:color/white</item>
+  </style>
+
+  <style name="Maui.SplashTheme" parent="Maui.SplashTheme.Base">
+    <item name="maui_splash">true</item>
+    <item name="maui_splash_color">@color/maui_splash_color</item>
+    <item name="maui_splash_drawable">@drawable/maui_splash_image</item>
+    <item name="postSplashScreenTheme">@style/Maui.MainTheme</item>
+  </style>
+</resources>

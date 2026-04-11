@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Last Edit: Apr 10, 2026 12:45 - Add MAUI splash color used by Android splash theme. -->
 <resources>
+    <color name="maui_splash_color">#512BD4</color>
     <color name="colorPrimary">#512BD4</color>
     <color name="colorPrimaryDark">#2B0B98</color>
     <color name="colorAccent">#2B0B98</color>

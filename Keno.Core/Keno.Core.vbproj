@@ -4,8 +4,8 @@
     <RootNamespace>Keno.Core</RootNamespace>
     <TargetFramework>net10.0</TargetFramework>
     <OptionStrict>On</OptionStrict>
-    <AssemblyVersion>26.3.25.33</AssemblyVersion>
-    <FileVersion>26.3.25.33</FileVersion>
+    <AssemblyVersion>26.4.11.36</AssemblyVersion>
+    <FileVersion>26.4.11.36</FileVersion>
   </PropertyGroup>
 
 </Project>

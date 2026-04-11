@@ -1,10 +1,12 @@
-// Last Edit: 2026-03-25 08:43 AM - History page code-behind: session game list + all-time stat cards.
+// Last Edit: Apr 10, 2026 15:05 - Limit rendered session rows to keep history page responsive on Android.
 using Microsoft.Maui.Controls.Shapes;
 
 namespace Keno.Android;
 
 public partial class HistoryPage : ContentPage
 {
+    private const int MaxSessionRows = 200;
+
     // ── Tab colors ────────────────────────────────────────────────────────────
     private static readonly Color TabActiveBg = Colors.White;
 
@@ -56,9 +58,27 @@ public partial class HistoryPage : ContentPage
         SessionContent.Add(BuildSummaryCard(_session.Count, winCount, totalWagered, totalWon, net));
         SessionContent.Add(new BoxView { HeightRequest = 1, BackgroundColor = Color.FromArgb("#CCCCCC"), Margin = new Thickness(0, 2) });
 
-        // Newest game first
-        for (int i = _session.Count - 1; i >= 0; i--)
-            SessionContent.Add(BuildSessionRow(i + 1, _session[i], i % 2 == 0 ? RowEven : RowOdd));
+        int firstIndexToShow = Math.Max(0, _session.Count - MaxSessionRows);
+        int rowIndex = 0;
+
+        // Newest game first (limited to recent rows for UI performance)
+        for (int i = _session.Count - 1; i >= firstIndexToShow; i--)
+        {
+            SessionContent.Add(BuildSessionRow(i + 1, _session[i], rowIndex % 2 == 0 ? RowEven : RowOdd));
+            rowIndex++;
+        }
+
+        if (_session.Count > MaxSessionRows)
+        {
+            SessionContent.Add(new Label
+            {
+                Text = $"Showing latest {MaxSessionRows} of {_session.Count} games.",
+                TextColor = Colors.Gray,
+                FontSize = 11,
+                HorizontalTextAlignment = TextAlignment.Center,
+                Margin = new Thickness(0, 8, 0, 0)
+            });
+        }
     }
 
     private static View BuildSummaryCard(int games, int wins, decimal wagered, decimal won, decimal net)
