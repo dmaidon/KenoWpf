@@ -1,4 +1,4 @@
-# Last Edit: 2026-03-20 05:02 AM - Free $2 Game section rewritten: queue-up behaviour, 10-cell strip, straight-through PLAY, CLEAR cancels.
+# Last Edit: 2026-10-17 - Structure, tests, shortcuts, loss limit, CSV export, draw speeds, atomic data files.
 
 # 🎰 Keno
 
@@ -52,6 +52,8 @@ KenoWpf.slnx
 ├── Keno.Core\          — Shared business logic (payouts, stores, globals)
 │   ├── Globals.vb
 │   ├── Modules\
+│   │   ├── GameEngine.vb          (draw, scoring, wager cost, bonuses)
+│   │   ├── PickSelection.vb       (picks, Bullseye, quadrants, Way groups)
 │   │   ├── KenoPayouts.vb
 │   │   ├── AllTimeSummaryStore.vb
 │   │   ├── AppSettingsStore.vb
@@ -62,7 +64,12 @@ KenoWpf.slnx
 │   │   ├── GameLogStore.vb
 │   │   └── ProgressiveJackpotStore.vb
 │
+├── Keno.Core.Tests\    — xUnit tests for Keno.Core (GameEngine, PickSelection, game log)
+│
+├── Directory.Build.props — shared author / company / copyright
+│
 ├── Keno.Wpf\           — WPF front-end (net10.0-windows) ← PRIMARY
+│   ├── ViewModels\     — ObservableObject, MainViewModel, EqualsConverter
 │   ├── MainWindow.xaml(.vb)
 │   ├── WinBonusGame.xaml(.vb)
 │   ├── WinPayoutSchedule.xaml(.vb)
@@ -110,6 +117,13 @@ dotnet run --project Keno.Wpf
 dotnet run --project Keno
 ```
 
+```powershell
+# Run the unit tests
+dotnet test Keno.Core.Tests
+```
+
+Desktop builds are written to `C:\VB26\Release\Keno`.
+
 Or open `KenoWpf.slnx` in Visual Studio, set **Keno.Wpf** as the startup project, and press **F5**.
 
 ---
@@ -134,7 +148,10 @@ Or open `KenoWpf.slnx` in Visual Studio, set **Keno.Wpf** as the startup project
 | Hot & Cold stats | Top-5 most / least frequent numbers over the last 15 draws |
 | Session Summary | Net P/L, win rate, best payout, return % shown on close |
 | All-Time History | Cumulative stats across every session |
-| Game History Log | Every game written to `Data\game-log.txt` |
+| Game History Log | Every game written to `Data\game-log.txt`; Export CSV; rotates at 5 MB |
+| Session Loss Limit | Optional warning before a play that would push the session loss past your limit |
+| Keyboard Shortcuts | F5 Play, Esc Clear, F2 Quick Pick, F1 Help |
+| Draw Speed | Slow 1.0 s, Medium 0.5 s, Fast 0.15 s per ball, or SS (instant) |
 | In-App Help | Searchable topic tree covering all features |
 
 ---
@@ -464,6 +481,8 @@ Every game is appended to `Data\game-log.txt`:
 2026-03-16 14:05:45 | Free Game (Bullseye) | Bet: $2.00 | Matched: 6 | Multiplier: 1x | Payout: $75.00
 ```
 
+Use **Export CSV** in the Game Log window to save the games as a `.csv` file. When the log passes 5 MB it is moved to `game-log-<date>.txt` and a new one is started; the viewer shows the latest 2000 lines.
+
 Consecutive series group multiple game lines under a shared timestamp and close with:
 
 ```
@@ -478,7 +497,7 @@ End Group ]
 
 ## Data Files
 
-All runtime data is stored relative to the application binary (`AppContext.BaseDirectory`):
+All runtime data is stored relative to the application binary (`AppContext.BaseDirectory`). Files are written atomically (temp file, then replace):
 
 | File | Contents |
 |------|----------|
@@ -486,10 +505,11 @@ All runtime data is stored relative to the application binary (`AppContext.BaseD
 | `Data\all-time-summary.json` | Cumulative stats across all sessions |
 | `Data\draw-stats.json` | Per-number frequency, win/loss streaks |
 | `Data\bank-settings.json` | Current bank balance |
-| `Data\app-settings.json` | Draw speed, last-used preferences |
+| `Data\app-settings.json` | Draw speed, flyout tips, repopulate amount, session loss limit |
 | `Data\favorites.json` | 3-slot favorites |
 | `Data\jackpot.json` | Current progressive jackpot pool |
 | `Logs\err_MMMdd.log` | Daily error log (last 10 days retained) |
+| `*.json.bad` | Copy of a data file that could not be read, kept before defaults are used |
 
 ---
 

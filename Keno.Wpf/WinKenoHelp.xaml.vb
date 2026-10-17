@@ -159,12 +159,23 @@ Class WinKenoHelp
                                       AppendBlank()
                                       AppendHeading("RESULTS")
                                       AppendBody("After 20 numbers are drawn the Winnings label shows your payout and winnings are added to your bank.")
+                                      AppendBlank()
+                                      AppendHeading("KEYBOARD SHORTCUTS")
+                                      AppendBody("  F5  : Play" & vbCrLf &
+                                                 "  Esc : Clear" & vbCrLf &
+                                                 "  F2  : Quick Pick" & vbCrLf &
+                                                 "  F1  : Help")
+                                      AppendBlank()
+                                      AppendHeading("CLOSING DURING A GAME")
+                                      AppendBody("If you close the window while games are being drawn, the draw stops, " &
+                                                 "the games already played are paid, and the wager for the unplayed games is refunded.")
                                   End Sub
 
         _helpContent("consecutive") = Sub()
                                           AppendTitle("CONSECUTIVE GAMES")
                                           AppendBlank()
-                                          AppendBody("Queue 2–20 games to be played automatically using the same picks and wager.")
+                                          AppendBody("Queue 2–20 games to be played automatically using the same picks and wager. " &
+                                                     "Win and bonus popups shown between games close by themselves after 3 seconds.")
                                           AppendBlank()
                                           AppendHeading("BONUS MULTIPLIER")
                                           AppendBody("  5–7 games  : 1.1×" & vbCrLf &
@@ -254,7 +265,10 @@ Class WinKenoHelp
                                    AppendTitle("BANK & WINNINGS")
                                    AppendBlank()
                                    AppendBody("Your bank balance persists between sessions. Winnings are added and wagers are deducted automatically. " &
-                                              "The bank is saved to disk after every game.")
+                                              "The full wager is deducted before the first draw and the payout is added when the games finish. " &
+                                               "The bank is saved to disk after every game." & vbCrLf & vbCrLf &
+                                               "SESSION LOSS LIMIT: in Settings you can set a dollar limit (0 = off). " &
+                                               "Before a play that would push this session's net loss past the limit you are asked to confirm.")
                                End Sub
 
         _helpContent("statistics") = Sub()
@@ -290,7 +304,8 @@ Class WinKenoHelp
                                         AppendBody("Controls how fast draws animate:" & vbCrLf &
                                                    "  Slow   — 1000 ms per number" & vbCrLf &
                                                    "  Medium —  500 ms per number" & vbCrLf &
-                                                   "  Fast   —  100 ms per number")
+                                                   "  Fast   —  150 ms per number" & vbCrLf &
+                                                   "  SS     —  instant (Super Sonic)")
                                     End Sub
 
         _helpContent("progressive") = Sub()
@@ -360,7 +375,9 @@ Class WinKenoHelp
                                       AppendTitle("GAME LOG")
                                       AppendBlank()
                                       AppendBody("The Game Log records every draw result to disk. Open it from the status bar. " &
-                                                 "Use Clear File to permanently delete the log. Entries include date, picks, matches, and payout.")
+                                                 "Use Export CSV to save the games as a spreadsheet file, or Clear File to permanently delete the log. " &
+                                                  "Entries include date, mode, bet, matches, multiplier, and payout. " &
+                                                  "The log moves to a dated file once it passes 5 MB, and the viewer shows the most recent 2000 lines.")
                                   End Sub
     End Sub
 
