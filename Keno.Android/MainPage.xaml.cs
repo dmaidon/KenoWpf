@@ -86,6 +86,7 @@ public partial class MainPage : ContentPage
         InitializeComponent();
         var version = typeof(MainPage).Assembly.GetName().Version?.ToString() ?? "?";
         Title = $"Keno  v{version}";
+        LblVersion.Text = $"v{version}";
         BuildNumberGrid();
         BuildPicksGrid();
         BuildDrawnGrid();

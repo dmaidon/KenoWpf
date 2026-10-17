@@ -38,18 +38,22 @@
                        FontSize="13" FontAttributes="Bold" TextColor="#FFFF80"
                        HorizontalOptions="End" />
             </VerticalStackLayout>
-            <Button Grid.Column="3"
-                    x:Name="BtnMenu"
-                    Text="&#x2630;"
-                    BackgroundColor="Transparent"
-                    BorderWidth="0"
-                    TextColor="White"
-                    FontSize="20"
-                    WidthRequest="44"
-                    HeightRequest="44"
-                    Padding="0"
-                    VerticalOptions="Center"
-                    Clicked="BtnMenu_Clicked" />
+            <VerticalStackLayout Grid.Column="3" Spacing="0" VerticalOptions="Center">
+                <Button x:Name="BtnMenu"
+                        Text="&#x2630;"
+                        BackgroundColor="Transparent"
+                        BorderWidth="0"
+                        TextColor="White"
+                        FontSize="20"
+                        WidthRequest="44"
+                        HeightRequest="36"
+                        Padding="0"
+                        HorizontalOptions="End"
+                        Clicked="BtnMenu_Clicked" />
+                <Label x:Name="LblVersion"
+                       FontSize="8" TextColor="#CCFFFFFF"
+                       HorizontalOptions="End" />
+            </VerticalStackLayout>
         </Grid>
 
         <!-- Row 1: Scrollable content -->
