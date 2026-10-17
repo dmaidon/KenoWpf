@@ -17,7 +17,7 @@ Class MainWindow
     Private Shared ReadOnly BrushPowerball As SolidColorBrush = Freeze(Colors.OrangeRed)
 
     Private ReadOnly _kenoButtons As New Dictionary(Of Integer, Button)(80)
-    Private ReadOnly _selectedNumbers As New SortedSet(Of Integer)()
+    Private ReadOnly Sel As New PickSelection()
     Private ReadOnly _playedLabels(19) As Label   ' 20 display slots (0-based)
     Private ReadOnly _gamePlayLabels(19) As Label  ' consecutive-game progress cells (0-based)
     Private ReadOnly _freeGameCells(9) As Label    ' free-game queue slots (0-based, 10 cells)
@@ -28,11 +28,7 @@ Class MainWindow
     Private _lastMatches As Integer = -1
     Private _lastPayout As Decimal
     Private _replayNumbers As Integer() = Array.Empty(Of Integer)()
-    Private _wayTicketGroups As List(Of List(Of Integer)) = Nothing
-    Private _wayTicketKingNumber As Integer = 0
-    Private _isBullseyeActive As Boolean = False
     Private _lastFirstLastBonus As Decimal = 0D
-    Private Shared ReadOnly BullseyeNumbers As Integer() = {1, 10, 35, 36, 45, 46, 71, 80}
 
     ' ── session tracking ─────────────────────────────────────────────────────
     Private _sessionStartBalance As Decimal
@@ -187,7 +183,7 @@ Class MainWindow
     End Sub
 
     Private Sub UpdatePlayedGrid()
-        Dim sorted = _selectedNumbers.ToArray()
+        Dim sorted = Sel.Numbers.ToArray()
         For i = 0 To 19
             _playedLabels(i).Content = If(i < sorted.Length, sorted(i).ToString(), String.Empty)
             _playedLabels(i).Background = BrushPlayedDefault
@@ -200,20 +196,18 @@ Class MainWindow
         Dim btn = CType(sender, Button)
         Dim num = CInt(btn.Tag)
 
-        If _selectedNumbers.Remove(num) Then
-            btn.Background = BrushDefault
-        ElseIf _selectedNumbers.Count < 20 Then
-            _selectedNumbers.Add(num)
-            btn.Background = BrushUserPick
-        End If
-
+        Sel.Toggle(num)
         If Vm.UseWayTicket Then Vm.UseWayTicket = False
+        OnSelectionChanged()
+    End Sub
 
-        If _isBullseyeActive Then
-            _isBullseyeActive = False
-            BtnBullseye.Background = Brushes.Coral
-        End If
-
+    ' Repaints the grid and refreshes every display that depends on the current picks.
+    Private Sub OnSelectionChanged()
+        For Each kvp In _kenoButtons
+            kvp.Value.Background = If(Sel.Contains(kvp.Key), BrushUserPick, BrushDefault)
+        Next
+        BtnBullseye.Background = If(Sel.IsBullseye, Brushes.Gold, Brushes.Coral)
+        UpdateQuadrantButtonStates()
         UpdatePayoutScheduleDisplay()
         UpdatePlayedGrid()
         UpdateStatusBar()
@@ -230,14 +224,7 @@ Class MainWindow
 
     Private Sub ResetGrid(Optional preserveFreeGames As Boolean = False)
         If Vm.UseWayTicket Then Vm.UseWayTicket = False
-        _wayTicketGroups = Nothing
-        _wayTicketKingNumber = 0
-        _isBullseyeActive = False
-        BtnBullseye.Background = Brushes.Coral
-        For Each kvp In _kenoButtons
-            kvp.Value.Background = BrushDefault
-        Next
-        _selectedNumbers.Clear()
+        Sel.Clear()
         _lastMatches = -1
         _lastPayout = 0D
         _lastFirstLastBonus = 0D
@@ -249,14 +236,12 @@ Class MainWindow
             UpdateFreeGamesGrid()
             UpdateFreeGamesButton()
         End If
-        UpdatePlayedGrid()
-        UpdateStatusBar()
-        UpdateQuadrantButtonStates()
+        OnSelectionChanged()
     End Sub
 
     ' ── status bar ───────────────────────────────────────────────────────────
     Private Sub UpdateStatusBar()
-        Vm.PicksText = $"Picks: {_selectedNumbers.Count}"
+        Vm.PicksText = $"Picks: {Sel.Numbers.Count}"
         Vm.MatchesText = $"Matches: {If(_lastMatches < 0, "—", _lastMatches.ToString())}"
         Vm.PayoutText = $"Payout: {_lastPayout:C2}"
     End Sub
@@ -325,25 +310,8 @@ Class MainWindow
         If Not _kenoButtons.TryGetValue(number, value) Then Return
 
         If Vm.UseWayTicket Then Vm.UseWayTicket = False
-        If _isBullseyeActive Then
-            _isBullseyeActive = False
-            BtnBullseye.Background = Brushes.Coral
-        End If
-
-        If _selectedNumbers.Remove(number) Then
-            value.Background = BrushDefault
-        ElseIf _selectedNumbers.Count < 20 Then
-            _selectedNumbers.Add(number)
-            _kenoButtons(number).Background = BrushUserPick
-        Else
-            Return
-        End If
-
-        UpdatePayoutScheduleDisplay()
-        UpdatePlayedGrid()
-        UpdateStatusBar()
-        UpdateWayTicketSummary()
-        UpdateWagerPreview()
+        If Not Sel.Toggle(number) Then Return
+        OnSelectionChanged()
     End Sub
 
     Private Const HitsColWidth As Integer = 8
@@ -351,7 +319,7 @@ Class MainWindow
     Private Const WinColWidth As Integer = 19
 
     Private Sub UpdatePayoutScheduleDisplay()
-        Dim pickCount = _selectedNumbers.Count
+        Dim pickCount = Sel.Numbers.Count
 
         If pickCount = 0 Then
             RtbPayoutSchedule.Document.Blocks.Clear()
@@ -362,10 +330,10 @@ Class MainWindow
         Dim betAmount = GetSelectedBetAmount()
         If betAmount <= 0D Then betAmount = 1D
         Dim halfType = GetHalfType()
-        Dim entries = If(_isBullseyeActive, GetBullseyePayoutScheduleEntries(),
+        Dim entries = If(Sel.IsBullseye, GetBullseyePayoutScheduleEntries(),
                          If(halfType IsNot Nothing, GetAreaPayoutScheduleEntries(halfType),
                             GetPayoutScheduleEntries(pickCount)))
-        TbkPayoutHeader.Text = If(_isBullseyeActive, "Payout — Bullseye",
+        TbkPayoutHeader.Text = If(Sel.IsBullseye, "Payout — Bullseye",
                                If(halfType = "TopBottom", "Payout — Top/Bottom Half",
                                If(halfType = "LeftRight", "Payout — Left/Right Half",
                                   $"Payout — Pick {pickCount}")))
@@ -395,7 +363,7 @@ Class MainWindow
         Next
 
         ' First/Last Ball bonus row
-        If Vm.UseFirstLast AndAlso Not _isBullseyeActive AndAlso halfType Is Nothing AndAlso pickCount > 0 Then
+        If Vm.UseFirstLast AndAlso Not Sel.IsBullseye AndAlso halfType Is Nothing AndAlso pickCount > 0 Then
             Dim flBonus = GetFirstLastBallBonus(pickCount)
             If flBonus > 0D Then
                 Dim isFlWin = _lastMatches >= 0 AndAlso _lastFirstLastBonus > 0D
@@ -452,7 +420,7 @@ Class MainWindow
         Dim bet = GetSelectedBetAmount()
         Dim games = GetConsecutiveGamesCount()
 
-        If bet <= 0D OrElse _selectedNumbers.Count = 0 Then
+        If bet <= 0D OrElse Sel.Numbers.Count = 0 Then
             Vm.WagerTotalText = "$0"
             Return
         End If
@@ -467,8 +435,8 @@ Class MainWindow
             Return
         End If
 
-        If _selectedNumbers.Count = 0 Then Return
-        _replayNumbers = _selectedNumbers.ToArray()
+        If Sel.Numbers.Count = 0 Then Return
+        _replayNumbers = Sel.Numbers.ToArray()
 
         Dim bet = GetSelectedBetAmount()
         If bet <= 0D Then Return
@@ -477,7 +445,7 @@ Class MainWindow
         Dim useMultiplier = Vm.UseMultiplier
         Dim useFirstLast = Vm.UseFirstLast
         Dim useWayTicket = Vm.UseWayTicket
-        Dim useBullseye = _isBullseyeActive
+        Dim useBullseye = Sel.IsBullseye
         Dim usePowerball = Vm.UsePowerball
 
         Dim totalWager = ComputeTotalWager(bet, gamesToPlay)
@@ -515,8 +483,8 @@ Class MainWindow
                 lastMatches = result.Matches
                 gameResults.Add((i, result.Matches, gamePayout, currentMultiplier, firstLastBonus))
                 UpdateGamePlayCell(i, gamePayout > 0D,
-                                   _selectedNumbers.Contains(result.DrawOrder(0)),
-                                   _selectedNumbers.Contains(result.DrawOrder(19)))
+                                   Sel.Numbers.Contains(result.DrawOrder(0)),
+                                   Sel.Numbers.Contains(result.DrawOrder(19)))
                 UpdateDrawStats(result.Draw, gamePayout > 0D)
 
                 ' ── progressive jackpot contribution ───────────────────────────
@@ -527,11 +495,11 @@ Class MainWindow
                 End If
 
                 ' ── progressive jackpot win check ──────────────────────────────
-                If _selectedNumbers.Count >= 8 AndAlso result.Matches = _selectedNumbers.Count Then
+                If Sel.Numbers.Count >= 8 AndAlso result.Matches = Sel.Numbers.Count Then
                     _bankBalance += _jackpotBalance
                     SaveBankBalance(_bankBalance)
                     UpdateBankDisplay()
-                    MessageBox.Show($"JACKPOT! You matched all {_selectedNumbers.Count} numbers and won {_jackpotBalance:C0}!",
+                    MessageBox.Show($"JACKPOT! You matched all {Sel.Numbers.Count} numbers and won {_jackpotBalance:C0}!",
                                     "Progressive Jackpot Winner!", MessageBoxButton.OK, MessageBoxImage.Exclamation)
                     ResetJackpot()
                     AllTimeSummaryStore.RecordJackpotWon()
@@ -540,13 +508,13 @@ Class MainWindow
                 End If
 
                 ' Free game bonus — matching WinForms IsFreeGameBonus / AwardFreeGameBonus
-                Dim isFreeGameResult = (gamePayout = 0D) AndAlso GameEngine.IsFreeGameBonus(result.Matches, bet, _selectedNumbers.Count)
+                Dim isFreeGameResult = (gamePayout = 0D) AndAlso GameEngine.IsFreeGameBonus(result.Matches, bet, Sel.Numbers.Count)
                 If isFreeGameResult Then
                     freeGameIndices.Add(i)
                     AwardFreeGameBonus(suppressDialog:=isSuperSonic AndAlso gamesToPlay > 1)
                 ElseIf i < gamesToPlay AndAlso Not isSuperSonic Then
                     If gamePayout > 0D Then
-                        WinPayoutSchedule.ShowForWin(Me, gameMode, _selectedNumbers.Count, result.Matches, gamePayout, bet)
+                        WinPayoutSchedule.ShowForWin(Me, gameMode, Sel.Numbers.Count, result.Matches, gamePayout, bet)
                     Else
                         Await Task.Delay(3000)
                     End If
@@ -602,7 +570,7 @@ Class MainWindow
                                                   freeGamesEarned:=freeGameIndices.Count,
                                                   isSuperSonic:=isSuperSonic)
             ElseIf totalPayout > 0D Then
-                WinPayoutSchedule.ShowForWin(Me, gameMode, _selectedNumbers.Count, lastMatches, totalPayout, bet)
+                WinPayoutSchedule.ShowForWin(Me, gameMode, Sel.Numbers.Count, lastMatches, totalPayout, bet)
             End If
         Catch ex As Exception
             LogError(ex, "Result dialog")
@@ -614,10 +582,10 @@ Class MainWindow
     Private Async Function DrawSingleGameAnimated() As Task(Of (Draw As HashSet(Of Integer), DrawOrder As List(Of Integer), Matches As Integer))
         Dim drawOrder = GameEngine.DrawNumbers(Random.Shared)
         Dim drawSet As New HashSet(Of Integer)()
-        Dim sortedPicks = _selectedNumbers.ToArray()
+        Dim sortedPicks = Sel.Numbers.ToArray()
 
         For Each kvp In _kenoButtons
-            kvp.Value.Background = If(_selectedNumbers.Contains(kvp.Key), BrushUserPick, BrushDefault)
+            kvp.Value.Background = If(Sel.Numbers.Contains(kvp.Key), BrushUserPick, BrushDefault)
         Next
 
         For i = 0 To Math.Min(sortedPicks.Length, _playedLabels.Length) - 1
@@ -627,7 +595,7 @@ Class MainWindow
         Dim delay = GetDrawDelayMs()
         For Each num In drawOrder
             drawSet.Add(num)
-            _kenoButtons(num).Background = If(_selectedNumbers.Contains(num), BrushMatch, BrushDraw)
+            _kenoButtons(num).Background = If(Sel.Numbers.Contains(num), BrushMatch, BrushDraw)
 
             Dim pickIdx = Array.IndexOf(sortedPicks, num)
             If pickIdx >= 0 AndAlso pickIdx < _playedLabels.Length Then
@@ -643,29 +611,29 @@ Class MainWindow
     Private Function BuildGameOptions(bet As Decimal) As GameOptions
         Dim halfType = GetHalfType()
         Return New GameOptions With {
-            .Mode = If(_isBullseyeActive, TicketMode.Bullseye,
+            .Mode = If(Sel.IsBullseye, TicketMode.Bullseye,
                     If(halfType = "TopBottom", TicketMode.TopBottomHalf,
                     If(halfType = "LeftRight", TicketMode.LeftRightHalf, TicketMode.Regular))),
-            .Picks = _selectedNumbers.ToArray(),
+            .Picks = Sel.Numbers.ToArray(),
             .Bet = bet,
             .UseMultiplier = Vm.UseMultiplier,
             .UseFirstLast = Vm.UseFirstLast,
             .UsePowerball = Vm.UsePowerball,
             .UseWayTicket = Vm.UseWayTicket,
-            .WayGroups = _wayTicketGroups
+            .WayGroups = Sel.WayGroups
         }
     End Function
 
     Private Function ComputeTotalWager(bet As Decimal, gamesToPlay As Integer) As Decimal
         Return GameEngine.ComputeTotalWager(bet, gamesToPlay, Vm.UseMultiplier,
                                             Vm.UseFirstLast, Vm.UseWayTicket,
-                                            If(_wayTicketGroups Is Nothing, 0, _wayTicketGroups.Count), _selectedNumbers.Count)
+                                            If(Sel.WayGroups Is Nothing, 0, Sel.WayGroups.Count), Sel.Numbers.Count)
     End Function
 
     Private Sub ApplyDrawToGrid(draw As HashSet(Of Integer))
         For Each kvp In _kenoButtons
             Dim num = kvp.Key
-            Dim inPick = _selectedNumbers.Contains(num)
+            Dim inPick = Sel.Numbers.Contains(num)
             Dim inDraw = draw.Contains(num)
             kvp.Value.Background = If(inPick AndAlso inDraw, BrushMatch,
                                     If(inPick, BrushUserPick,
@@ -673,7 +641,7 @@ Class MainWindow
                                        BrushDefault)))
         Next
 
-        Dim sorted = _selectedNumbers.ToArray()
+        Dim sorted = Sel.Numbers.ToArray()
         For i = 0 To Math.Min(sorted.Length, _playedLabels.Length) - 1
             _playedLabels(i).Background = If(draw.Contains(sorted(i)), BrushMatch, BrushPlayedDefault)
         Next
@@ -711,17 +679,17 @@ Class MainWindow
 
     ' ── save favorites ───────────────────────────────────────────────────────────────────────────
     Private Sub BtnSaveFavorites_Click(sender As Object, e As RoutedEventArgs)
-        If _selectedNumbers.Count = 0 Then
+        If Sel.Numbers.Count = 0 Then
             MessageBox.Show("No numbers selected to save.", "Save Favorites",
                             MessageBoxButton.OK, MessageBoxImage.Information)
             Return
         End If
 
-        Dim slot = WinFavoritesSlot.ShowForSave(Me, _selectedNumbers.Count)
+        Dim slot = WinFavoritesSlot.ShowForSave(Me, Sel.Numbers.Count)
         If slot < 0 Then Return
 
-        SaveFavorites(slot, _selectedNumbers)
-        MessageBox.Show($"Saved {_selectedNumbers.Count} numbers to Slot {slot + 1}.", "Save Favorites",
+        SaveFavorites(slot, Sel.Numbers)
+        MessageBox.Show($"Saved {Sel.Numbers.Count} numbers to Slot {slot + 1}.", "Save Favorites",
                         MessageBoxButton.OK, MessageBoxImage.Information)
     End Sub
 
@@ -730,21 +698,8 @@ Class MainWindow
         Dim n As Integer = CInt(NudQuickPickCount.Value.GetValueOrDefault(1))
 
         ResetGrid(preserveFreeGames:=True)
-        Dim pool As New List(Of Integer)()
-        For i = 1 To 80 : pool.Add(i) : Next
-        Do While _selectedNumbers.Count < n
-            Dim idx = Random.Shared.Next(pool.Count)
-            Dim num = pool(idx)
-            pool.RemoveAt(idx)
-            _selectedNumbers.Add(num)
-            _kenoButtons(num).Background = BrushUserPick
-        Loop
-
-        UpdatePayoutScheduleDisplay()
-        UpdatePlayedGrid()
-        UpdateStatusBar()
-        UpdateWayTicketSummary()
-        UpdateWagerPreview()
+        Sel.QuickPick(n, Random.Shared)
+        OnSelectionChanged()
     End Sub
 
     Private Sub OnMultiplierChanged()
@@ -865,35 +820,33 @@ Class MainWindow
 
     Private Sub OnWayTicketChanged()
         If Vm.UseWayTicket Then
-            If _selectedNumbers.Count = 0 Then
+            If Sel.Numbers.Count = 0 Then
                 MessageBox.Show("Select your numbers first, then enable Way Ticket.",
                                 "Way Ticket", MessageBoxButton.OK, MessageBoxImage.Information)
                 Vm.UseWayTicket = False
                 Return
             End If
-            Dim result = WinWayTicket.ShowAssignment(Me, _selectedNumbers.ToList(), GetSelectedBetAmount())
+            Dim result = WinWayTicket.ShowAssignment(Me, Sel.Numbers.ToList(), GetSelectedBetAmount())
             If result IsNot Nothing Then
-                _wayTicketGroups = result.Groups
-                _wayTicketKingNumber = result.KingNumber
+                Sel.WayGroups = result.Groups
+                Sel.WayKingNumber = result.KingNumber
             Else
                 Vm.UseWayTicket = False
-                _wayTicketGroups = Nothing
-                _wayTicketKingNumber = 0
+                Sel.ClearWayTicket()
             End If
         Else
-            _wayTicketGroups = Nothing
-            _wayTicketKingNumber = 0
+            Sel.ClearWayTicket()
         End If
         UpdateWayTicketSummary()
         UpdateWagerPreview()
     End Sub
 
     Private Sub UpdateWayTicketSummary()
-        If Not Vm.UseWayTicket OrElse _wayTicketGroups Is Nothing OrElse _wayTicketGroups.Count = 0 Then
+        If Not Vm.UseWayTicket OrElse Sel.WayGroups Is Nothing OrElse Sel.WayGroups.Count = 0 Then
             LblWayTicketSummary.Content = "—"
             Return
         End If
-        Dim subTickets = _wayTicketGroups.Count
+        Dim subTickets = Sel.WayGroups.Count
         Dim total = subTickets * GetSelectedBetAmount()
         LblWayTicketSummary.Content = $"{subTickets} sub-tickets @ {total:C2}"
     End Sub
@@ -901,25 +854,8 @@ Class MainWindow
     Private Sub BtnBullseye_Click(sender As Object, e As RoutedEventArgs)
         If Vm.IsPlaying Then Return
         If Vm.UseWayTicket Then Vm.UseWayTicket = False
-
-        For Each kvp In _kenoButtons
-            kvp.Value.Background = BrushDefault
-        Next
-        _selectedNumbers.Clear()
-        _wayTicketGroups = Nothing
-        _wayTicketKingNumber = 0
-
-        For Each n In BullseyeNumbers
-            _selectedNumbers.Add(n)
-            _kenoButtons(n).Background = BrushUserPick
-        Next
-
-        _isBullseyeActive = True
-        BtnBullseye.Background = Brushes.Gold
-        UpdatePayoutScheduleDisplay()
-        UpdatePlayedGrid()
-        UpdateStatusBar()
-        UpdateWagerPreview()
+        Sel.ActivateBullseye()
+        OnSelectionChanged()
     End Sub
 
     Private Sub BtnFreeGames_Click(sender As Object, e As RoutedEventArgs)
@@ -932,7 +868,7 @@ Class MainWindow
     End Sub
 
     Private Async Function PlayQueuedFreeGamesAsync() As Task
-        If _selectedNumbers.Count = 0 Then Return
+        If Sel.Numbers.Count = 0 Then Return
 
         ' Trust the staged count — BtnFreeGames_Click already validated GetFreeGames() >= _freeGamesQueued
         ' at each click, so re-reading the disk here can only return a stale/lower value and play
@@ -946,7 +882,7 @@ Class MainWindow
         End If
 
         Const FreeGameBet As Decimal = 2D
-        Dim gameMode = If(_isBullseyeActive, "Bullseye", "Regular")
+        Dim gameMode = If(Sel.IsBullseye, "Bullseye", "Regular")
         Dim totalPayout = 0D
 
         UseFreeGames(gamesToPlay)
@@ -962,8 +898,8 @@ Class MainWindow
                 Dim result = Await DrawSingleGameAnimated()
 
                 Dim gamePayout = GameEngine.ScoreGame(New GameOptions With {
-                    .Mode = If(_isBullseyeActive, TicketMode.Bullseye, TicketMode.Regular),
-                    .Picks = _selectedNumbers.ToArray(),
+                    .Mode = If(Sel.IsBullseye, TicketMode.Bullseye, TicketMode.Regular),
+                    .Picks = Sel.Numbers.ToArray(),
                     .Bet = FreeGameBet}, result.DrawOrder, Random.Shared).Payout
 
                 totalPayout += gamePayout
@@ -1007,7 +943,7 @@ Class MainWindow
         AllTimeSummaryStore.RecordFreeGameEarned()
         UpdateFreeGamesButton()
         If Not suppressDialog Then
-            WinBonusGame.ShowBonus(Me, _selectedNumbers.Count)
+            WinBonusGame.ShowBonus(Me, Sel.Numbers.Count)
         End If
     End Sub
 
@@ -1029,20 +965,8 @@ Class MainWindow
             Return
         End If
         ResetGrid(preserveFreeGames:=True)
-        For Each n In favs.Take(20)
-
-            Dim value As Button = Nothing
-
-            If _kenoButtons.TryGetValue(n, value) Then
-                _selectedNumbers.Add(n)
-                value.Background = BrushUserPick
-            End If
-        Next
-        UpdatePayoutScheduleDisplay()
-        UpdatePlayedGrid()
-        UpdateStatusBar()
-        UpdateWayTicketSummary()
-        UpdateWagerPreview()
+        Sel.Replace(favs)
+        OnSelectionChanged()
     End Sub
 
     Private Sub BtnReplayLastGame_Click(sender As Object, e As RoutedEventArgs)
@@ -1052,101 +976,37 @@ Class MainWindow
             Return
         End If
         ResetGrid(preserveFreeGames:=True)
-        For Each n In _replayNumbers
-            Dim value As Button = Nothing
-            If _kenoButtons.TryGetValue(n, value) Then
-                _selectedNumbers.Add(n)
-                _kenoButtons(n).Background = BrushUserPick
-            End If
-        Next
-        UpdatePayoutScheduleDisplay()
-        UpdatePlayedGrid()
-        UpdateStatusBar()
-        UpdateWayTicketSummary()
-        UpdateWagerPreview()
+        Sel.Replace(_replayNumbers)
+        OnSelectionChanged()
     End Sub
 
     Private Sub BtnQuadrant_Click(sender As Object, e As RoutedEventArgs)
         If TypeOf sender IsNot Button Then Return
         Dim btn = CType(sender, Button)
         Dim quadrant = CInt(btn.Tag)
-        Dim nums = GetQuadrantNumbers(quadrant)
-        Dim isActive = nums.All(Function(n) _selectedNumbers.Contains(n))
-
-        ' Cap at 2 active quadrants — must deselect one before selecting another.
-        If Not isActive AndAlso CountActiveQuadrants() >= 2 Then Return
-
+        If Not Sel.ToggleQuadrant(quadrant) Then Return   ' capped at 2 active quadrants
         If Vm.UseWayTicket Then Vm.UseWayTicket = False
-        If _isBullseyeActive Then
-            _isBullseyeActive = False
-            BtnBullseye.Background = Brushes.Coral
-        End If
-
-        If isActive Then
-            For Each n In nums
-                _selectedNumbers.Remove(n)
-                _kenoButtons(n).Background = BrushDefault
-            Next
-        Else
-            For Each n In nums
-                _selectedNumbers.Add(n)
-                _kenoButtons(n).Background = BrushUserPick
-            Next
-        End If
-
-        UpdateQuadrantButtonStates()
-        UpdatePayoutScheduleDisplay()
-        UpdatePlayedGrid()
-        UpdateStatusBar()
-        UpdateWayTicketSummary()
-        UpdateWagerPreview()
+        OnSelectionChanged()
     End Sub
 
-    Private Function CountActiveQuadrants() As Integer
-        Return Enumerable.Range(1, 4).Count(Function(q) GetQuadrantNumbers(q).All(Function(n) _selectedNumbers.Contains(n)))
-    End Function
-
-    ' Returns the area-payout key when exactly 2 quadrants are active, Nothing otherwise.
-    ' Q1=top-left  Q2=top-right  Q3=bottom-left  Q4=bottom-right
-    ' Same row  → "TopBottom";  Same column or diagonal → "LeftRight".
     Private Function GetHalfType() As String
-        If CountActiveQuadrants() <> 2 Then Return Nothing
-        Dim active = Enumerable.Range(1, 4).Where(Function(q) GetQuadrantNumbers(q).All(Function(n) _selectedNumbers.Contains(n))).ToList()
-        If active.Count <> 2 Then Return Nothing
-        Dim a = active(0), b = active(1)   ' always a < b (ascending Range)
-        If (a = 1 AndAlso b = 2) OrElse (a = 3 AndAlso b = 4) Then Return "TopBottom"
-        Return "LeftRight"   ' same column (1+3, 2+4) or diagonal (1+4, 2+3)
+        Return Sel.GetHalfType()
     End Function
 
     Private Sub UpdateQuadrantButtonStates()
         Dim qBtns = {BtnQuadrant1, BtnQuadrant2, BtnQuadrant3, BtnQuadrant4}
         For q = 1 To 4
-            Dim nums = GetQuadrantNumbers(q)
-            qBtns(q - 1).Background = If(nums.All(Function(n) _selectedNumbers.Contains(n)),
-                                          Brushes.Gold, Brushes.Orange)
+            qBtns(q - 1).Background = If(Sel.IsQuadrantActive(q), Brushes.Gold, Brushes.Orange)
         Next
 
         ' First/Last is incompatible with half-board (2 active quadrants).
-        Dim isHalf = CountActiveQuadrants() >= 2
+        Dim isHalf = Sel.CountActiveQuadrants() >= 2
         If isHalf AndAlso Vm.UseFirstLast Then
             Vm.UseFirstLast = False
         End If
         ChkFirstLastPlay.IsEnabled = Not isHalf
     End Sub
 
-    Private Shared Function GetQuadrantNumbers(quadrant As Integer) As Integer()
-        Dim rowStart = If(quadrant <= 2, 0, 4)
-        Dim colStart = If(quadrant Mod 2 = 1, 0, 5)
-        Dim result(19) As Integer
-        Dim idx = 0
-        For r = 0 To 3
-            For c = 0 To 4
-                result(idx) = (rowStart + r) * 10 + (colStart + c) + 1
-                idx += 1
-            Next
-        Next
-        Return result
-    End Function
 
     ' ── status bar actions
 
