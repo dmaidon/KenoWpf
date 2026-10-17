@@ -13,6 +13,102 @@ Public Class MainViewModel
     Private _streakBrush As Brush = SystemColors.ControlTextBrush
     Private _bestStreakText As String = "Best: 0W"
 
+    ' ── ticket options ───────────────────────────────────────────────────────
+    Private _betPreset As Integer = 1
+    Private _specialWager As Double?
+    Private _consecutiveGames As Integer = 1
+    Private _drawDelayMs As Integer = 500
+    Private _useMultiplier As Boolean
+    Private _useFirstLast As Boolean
+    Private _useWayTicket As Boolean
+    Private _usePowerball As Boolean
+    Private _flyoutsEnabled As Boolean = True
+
+    ''' <summary>Preset wager in dollars; 0 when a special wager is in use.</summary>
+    Public Property BetPreset As Integer
+        Get
+            Return _betPreset
+        End Get
+        Set(value As Integer)
+            If SetField(_betPreset, value) AndAlso value > 0 Then SpecialWager = Nothing
+        End Set
+    End Property
+
+    ''' <summary>Custom wager; entering one of $0.05 or more clears the preset.</summary>
+    Public Property SpecialWager As Double?
+        Get
+            Return _specialWager
+        End Get
+        Set(value As Double?)
+            If SetField(_specialWager, value) AndAlso value.GetValueOrDefault() >= 0.05 Then BetPreset = 0
+        End Set
+    End Property
+
+    ''' <summary>Number of consecutive games (1 when none selected).</summary>
+    Public Property ConsecutiveGames As Integer
+        Get
+            Return _consecutiveGames
+        End Get
+        Set(value As Integer)
+            SetField(_consecutiveGames, value)
+        End Set
+    End Property
+
+    ''' <summary>Pause between balls in ms: 1000 slow, 500 medium, 200 fast, 0 super sonic.</summary>
+    Public Property DrawDelayMs As Integer
+        Get
+            Return _drawDelayMs
+        End Get
+        Set(value As Integer)
+            SetField(_drawDelayMs, value)
+        End Set
+    End Property
+
+    Public Property UseMultiplier As Boolean
+        Get
+            Return _useMultiplier
+        End Get
+        Set(value As Boolean)
+            SetField(_useMultiplier, value)
+        End Set
+    End Property
+
+    Public Property UseFirstLast As Boolean
+        Get
+            Return _useFirstLast
+        End Get
+        Set(value As Boolean)
+            SetField(_useFirstLast, value)
+        End Set
+    End Property
+
+    Public Property UseWayTicket As Boolean
+        Get
+            Return _useWayTicket
+        End Get
+        Set(value As Boolean)
+            SetField(_useWayTicket, value)
+        End Set
+    End Property
+
+    Public Property UsePowerball As Boolean
+        Get
+            Return _usePowerball
+        End Get
+        Set(value As Boolean)
+            SetField(_usePowerball, value)
+        End Set
+    End Property
+
+    Public Property FlyoutsEnabled As Boolean
+        Get
+            Return _flyoutsEnabled
+        End Get
+        Set(value As Boolean)
+            SetField(_flyoutsEnabled, value)
+        End Set
+    End Property
+
     Public Property BankText As String
         Get
             Return _bankText

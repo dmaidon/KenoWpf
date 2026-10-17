@@ -3,6 +3,7 @@
 Class MainWindow
 
     Private ReadOnly Vm As New MainViewModel()
+    Private Shared ReadOnly DrawDelays As Integer() = {1000, 500, 200, 0}
 
     ' ── colour constants matching WinForms FrmMain.KenoSelection ──────────────
     Private Shared ReadOnly BrushDefault As SolidColorBrush = Freeze(Color.FromRgb(192, 255, 255))  ' #C0FFFF
@@ -46,6 +47,7 @@ Class MainWindow
     Public Sub New()
         InitializeComponent()
         DataContext = Vm
+        AddHandler Vm.PropertyChanged, AddressOf Vm_PropertyChanged
         BuildKenoGrid()
         BuildPlayedGrid()
         BuildGamePlayGrid()
@@ -63,9 +65,8 @@ Class MainWindow
         UpdateFreeGamesButton()
         Dim appSettings = LoadAppSettings()
         NudRepopulateAmount.Value = CDbl(If(appSettings.RepopulateAmount > 0D, appSettings.RepopulateAmount, 10000D))
-        ChkFlyoutsEnabled.IsChecked = appSettings.FlyoutsEnabled
-        Dim speedRadios = {RbDrawSpeedSlow, RbDrawSpeedMedium, RbDrawSpeedFast, RbDrawSpeedSS}
-        speedRadios(Math.Max(0, Math.Min(appSettings.DrawSpeedIndex, speedRadios.Length - 1))).IsChecked = True
+        Vm.FlyoutsEnabled = appSettings.FlyoutsEnabled
+        Vm.DrawDelayMs = DrawDelays(Math.Max(0, Math.Min(appSettings.DrawSpeedIndex, DrawDelays.Length - 1)))
     End Sub
 
     ' ── grid builder ─────────────────────────────────────────────────────────
@@ -206,9 +207,7 @@ Class MainWindow
             btn.Background = BrushUserPick
         End If
 
-        If ChkWayTicket.IsChecked = True Then
-            ChkWayTicket.IsChecked = False
-        End If
+        If Vm.UseWayTicket Then Vm.UseWayTicket = False
 
         If _isBullseyeActive Then
             _isBullseyeActive = False
@@ -230,9 +229,7 @@ Class MainWindow
     End Function
 
     Private Sub ResetGrid(Optional preserveFreeGames As Boolean = False)
-        If ChkWayTicket IsNot Nothing AndAlso ChkWayTicket.IsChecked = True Then
-            ChkWayTicket.IsChecked = False
-        End If
+        If Vm.UseWayTicket Then Vm.UseWayTicket = False
         _wayTicketGroups = Nothing
         _wayTicketKingNumber = 0
         _isBullseyeActive = False
@@ -327,7 +324,7 @@ Class MainWindow
         Dim value As Button = Nothing
         If Not _kenoButtons.TryGetValue(number, value) Then Return
 
-        If ChkWayTicket.IsChecked = True Then ChkWayTicket.IsChecked = False
+        If Vm.UseWayTicket Then Vm.UseWayTicket = False
         If _isBullseyeActive Then
             _isBullseyeActive = False
             BtnBullseye.Background = Brushes.Coral
@@ -398,7 +395,7 @@ Class MainWindow
         Next
 
         ' First/Last Ball bonus row
-        If ChkFirstLastPlay.IsChecked = True AndAlso Not _isBullseyeActive AndAlso halfType Is Nothing AndAlso pickCount > 0 Then
+        If Vm.UseFirstLast AndAlso Not _isBullseyeActive AndAlso halfType Is Nothing AndAlso pickCount > 0 Then
             Dim flBonus = GetFirstLastBallBonus(pickCount)
             If flBonus > 0D Then
                 Dim isFlWin = _lastMatches >= 0 AndAlso _lastFirstLastBonus > 0D
@@ -479,11 +476,11 @@ Class MainWindow
         If bet <= 0D Then Return
 
         Dim gamesToPlay = GetConsecutiveGamesCount()
-        Dim useMultiplier = ChkMultiplierKeno.IsChecked = True
-        Dim useFirstLast = ChkFirstLastPlay.IsChecked = True
-        Dim useWayTicket = ChkWayTicket.IsChecked = True
+        Dim useMultiplier = Vm.UseMultiplier
+        Dim useFirstLast = Vm.UseFirstLast
+        Dim useWayTicket = Vm.UseWayTicket
         Dim useBullseye = _isBullseyeActive
-        Dim usePowerball = ChkPowerball.IsChecked = True
+        Dim usePowerball = Vm.UsePowerball
 
         Dim totalWager = ComputeTotalWager(bet, gamesToPlay)
         Dim totalPayout = 0D
@@ -655,17 +652,17 @@ Class MainWindow
                     If(halfType = "LeftRight", TicketMode.LeftRightHalf, TicketMode.Regular))),
             .Picks = _selectedNumbers.ToArray(),
             .Bet = bet,
-            .UseMultiplier = ChkMultiplierKeno.IsChecked.GetValueOrDefault(),
-            .UseFirstLast = ChkFirstLastPlay.IsChecked.GetValueOrDefault(),
-            .UsePowerball = ChkPowerball.IsChecked.GetValueOrDefault(),
-            .UseWayTicket = ChkWayTicket.IsChecked.GetValueOrDefault(),
+            .UseMultiplier = Vm.UseMultiplier,
+            .UseFirstLast = Vm.UseFirstLast,
+            .UsePowerball = Vm.UsePowerball,
+            .UseWayTicket = Vm.UseWayTicket,
             .WayGroups = _wayTicketGroups
         }
     End Function
 
     Private Function ComputeTotalWager(bet As Decimal, gamesToPlay As Integer) As Decimal
-        Return GameEngine.ComputeTotalWager(bet, gamesToPlay, ChkMultiplierKeno.IsChecked.GetValueOrDefault(),
-                                            ChkFirstLastPlay.IsChecked.GetValueOrDefault(), ChkWayTicket.IsChecked.GetValueOrDefault(),
+        Return GameEngine.ComputeTotalWager(bet, gamesToPlay, Vm.UseMultiplier,
+                                            Vm.UseFirstLast, Vm.UseWayTicket,
                                             If(_wayTicketGroups Is Nothing, 0, _wayTicketGroups.Count), _selectedNumbers.Count)
     End Function
 
@@ -691,24 +688,8 @@ Class MainWindow
     End Sub
 
     ' ── consecutive games ──────────────────────────────────────────────────
-    Private _consecutiveRadios As RadioButton()
-
-    Private Function GetConsecutiveRadioButtons() As RadioButton()
-        If _consecutiveRadios IsNot Nothing Then Return _consecutiveRadios
-        _consecutiveRadios = {RbConsecutive2, RbConsecutive3, RbConsecutive4, RbConsecutive5,
-                RbConsecutive6, RbConsecutive7, RbConsecutive8, RbConsecutive9,
-                RbConsecutive10, RbConsecutive11, RbConsecutive12, RbConsecutive13,
-                RbConsecutive14, RbConsecutive15, RbConsecutive16, RbConsecutive17,
-                RbConsecutive18, RbConsecutive19, RbConsecutive20}
-        Return _consecutiveRadios
-    End Function
-
     Private Function GetConsecutiveGamesCount() As Integer
-        For Each rb In GetConsecutiveRadioButtons()
-            If rb IsNot Nothing AndAlso rb.IsChecked = True Then Return CInt(rb.Tag)
-        Next
-
-        Return 1
+        Return Vm.ConsecutiveGames
     End Function
 
     Private Function GetConsecutiveBonus() As Decimal
@@ -720,69 +701,16 @@ Class MainWindow
         TbkBonusMultiplier.Text = $"Bonus: {bonus}×"
     End Sub
 
-    Private Sub RbConsecutive_Checked(sender As Object, e As RoutedEventArgs)
-        UpdateBonusDisplay()
-        UpdateWagerPreview()
-    End Sub
-
     ' ── wager ───────────────────────────────────────────────────────────────
-    Private _wagerRadios As RadioButton()
-
-    Private Function GetWagerRadioButtons() As RadioButton()
-        If _wagerRadios IsNot Nothing Then Return _wagerRadios
-        _wagerRadios = {RbWager1, RbWager2, RbWager3, RbWager5, RbWager10, RbWager15, RbWager20,
-                RbWager25, RbWager30, RbWager40, RbWager50, RbWager100, RbWager150, RbWager200}
-        Return _wagerRadios
-    End Function
-
     Private Function GetSelectedBetAmount() As Decimal
-        For Each rb In GetWagerRadioButtons()
-            If rb.IsChecked = True Then Return CDec(rb.Tag)
-        Next
-
-        If NudSpecialWager IsNot Nothing AndAlso NudSpecialWager.Value.HasValue AndAlso NudSpecialWager.Value.Value >= 0.05 Then
-            Return Math.Round(CDec(NudSpecialWager.Value.Value), 2)
-        End If
-
+        If Vm.BetPreset > 0 Then Return Vm.BetPreset
+        If Vm.SpecialWager.GetValueOrDefault() >= 0.05 Then Return Math.Round(CDec(Vm.SpecialWager.Value), 2)
         Return 0D
     End Function
 
-    Private Sub RbWager_Checked(sender As Object, e As RoutedEventArgs)
-        If NudSpecialWager IsNot Nothing Then NudSpecialWager.Value = Nothing
-        UpdatePayoutScheduleDisplay()
-        UpdateWayTicketSummary()
-        UpdateWagerPreview()
-    End Sub
-
-    Private Sub NudSpecialWager_ValueChanged(sender As Object, e As RoutedPropertyChangedEventArgs(Of Double?))
-        If NudSpecialWager IsNot Nothing AndAlso NudSpecialWager.Value.GetValueOrDefault() >= 0.05 Then
-            For Each rb In GetWagerRadioButtons()
-                rb.IsChecked = False
-            Next
-        End If
-
-        UpdatePayoutScheduleDisplay()
-        UpdateWagerPreview()
-    End Sub
-
     ' ── draw speed
-    Private Sub RbDrawSpeed_Checked(sender As Object, e As RoutedEventArgs)
-        ShowDrawSpeedFlyout()
-        If Not IsLoaded Then Return
-        Dim speedRadios = {RbDrawSpeedSlow, RbDrawSpeedMedium, RbDrawSpeedFast, RbDrawSpeedSS}
-        Dim idx = Array.IndexOf(speedRadios, TryCast(sender, RadioButton))
-        If idx < 0 Then Return
-        Dim appSettings = LoadAppSettings()
-        appSettings.DrawSpeedIndex = idx
-        SaveAppSettings(appSettings)
-    End Sub
-
     Private Function GetDrawDelayMs() As Integer
-        For Each rb In {RbDrawSpeedSlow, RbDrawSpeedMedium, RbDrawSpeedFast, RbDrawSpeedSS}
-            If rb.IsChecked = True Then Return CInt(rb.Tag)
-        Next
-
-        Return 500
+        Return Vm.DrawDelayMs
     End Function
 
     ' ── save favorites ───────────────────────────────────────────────────────────────────────────
@@ -823,8 +751,8 @@ Class MainWindow
         UpdateWagerPreview()
     End Sub
 
-    Private Sub ChkMultiplierKeno_Changed()
-        If ChkMultiplierKeno.IsChecked <> True Then
+    Private Sub OnMultiplierChanged()
+        If Not Vm.UseMultiplier Then
             ChkMultiplierKeno.Content = "Multiplier: 1×"
             HideFlyout()
         Else
@@ -833,17 +761,43 @@ Class MainWindow
         UpdateWagerPreview()
     End Sub
 
-    Private Sub ChkFirstLastPlay_Changed(sender As Object, e As RoutedEventArgs)
-        If ChkFirstLastPlay.IsChecked = True Then
-            ShowFirstLastFlyout()
-        Else
-            HideFlyout()
-        End If
-        UpdateWagerPreview()
+    ' ── option changes (raised by the view model) ──────────────────────────────
+    Private Sub Vm_PropertyChanged(sender As Object, e As ComponentModel.PropertyChangedEventArgs)
+        Select Case e.PropertyName
+            Case NameOf(MainViewModel.BetPreset), NameOf(MainViewModel.SpecialWager)
+                UpdatePayoutScheduleDisplay()
+                UpdateWayTicketSummary()
+                UpdateWagerPreview()
+            Case NameOf(MainViewModel.ConsecutiveGames)
+                UpdateBonusDisplay()
+                UpdateWagerPreview()
+            Case NameOf(MainViewModel.DrawDelayMs)
+                ShowDrawSpeedFlyout()
+                If IsLoaded Then
+                    Dim appSettings = LoadAppSettings()
+                    appSettings.DrawSpeedIndex = Math.Max(0, Array.IndexOf(DrawDelays, Vm.DrawDelayMs))
+                    SaveAppSettings(appSettings)
+                End If
+            Case NameOf(MainViewModel.UseMultiplier)
+                OnMultiplierChanged()
+            Case NameOf(MainViewModel.UseFirstLast)
+                If Vm.UseFirstLast Then ShowFirstLastFlyout() Else HideFlyout()
+                UpdateWagerPreview()
+            Case NameOf(MainViewModel.UseWayTicket)
+                OnWayTicketChanged()
+            Case NameOf(MainViewModel.UsePowerball)
+                LblPowerballValue.Content = If(Vm.UsePowerball, "Active", "—")
+            Case NameOf(MainViewModel.FlyoutsEnabled)
+                If IsLoaded Then
+                    Dim appSettings = LoadAppSettings()
+                    appSettings.FlyoutsEnabled = Vm.FlyoutsEnabled
+                    SaveAppSettings(appSettings)
+                End If
+        End Select
     End Sub
 
     Private Sub ShowMultiplierFlyout()
-        If ChkFlyoutsEnabled.IsChecked <> True Then Return
+        If Not Vm.FlyoutsEnabled Then Return
         FlyoutCheckboxHelp.Header = "Multiplier Keno"
         TbkFlyoutDesc.Text = "Adds $1 to your wager per game. Before each draw a random multiplier is applied to your base payout:"
         TbkFlyoutData.Text = "  ×1  — 45%   (most common)" & vbLf &
@@ -855,7 +809,7 @@ Class MainWindow
     End Sub
 
     Private Sub ShowFirstLastFlyout()
-        If ChkFlyoutsEnabled.IsChecked <> True Then Return
+        If Not Vm.FlyoutsEnabled Then Return
         FlyoutCheckboxHelp.Header = "First / Last Ball"
         TbkFlyoutDesc.Text = "Adds $1 to your wager per game. If the first or last ball drawn matches any of your picks, you win a flat cash bonus:"
         TbkFlyoutData.Text = " Pick  Bonus" & vbLf &
@@ -888,7 +842,7 @@ Class MainWindow
 
     Private Sub ShowDrawSpeedFlyout()
         If Not IsLoaded Then Return
-        If ChkFlyoutsEnabled.IsChecked <> True Then Return
+        If Not Vm.FlyoutsEnabled Then Return
         Dim delay = GetDrawDelayMs()
         Dim selected As String
         Select Case delay
@@ -911,12 +865,12 @@ Class MainWindow
         FlyoutCheckboxHelp.IsOpen = True
     End Sub
 
-    Private Sub ChkWayTicket_Changed(sender As Object, e As RoutedEventArgs)
-        If ChkWayTicket.IsChecked = True Then
+    Private Sub OnWayTicketChanged()
+        If Vm.UseWayTicket Then
             If _selectedNumbers.Count = 0 Then
                 MessageBox.Show("Select your numbers first, then enable Way Ticket.",
                                 "Way Ticket", MessageBoxButton.OK, MessageBoxImage.Information)
-                ChkWayTicket.IsChecked = False
+                Vm.UseWayTicket = False
                 Return
             End If
             Dim result = WinWayTicket.ShowAssignment(Me, _selectedNumbers.ToList(), GetSelectedBetAmount())
@@ -924,7 +878,7 @@ Class MainWindow
                 _wayTicketGroups = result.Groups
                 _wayTicketKingNumber = result.KingNumber
             Else
-                ChkWayTicket.IsChecked = False
+                Vm.UseWayTicket = False
                 _wayTicketGroups = Nothing
                 _wayTicketKingNumber = 0
             End If
@@ -937,8 +891,7 @@ Class MainWindow
     End Sub
 
     Private Sub UpdateWayTicketSummary()
-        If ChkWayTicket Is Nothing Then Return
-        If ChkWayTicket.IsChecked <> True OrElse _wayTicketGroups Is Nothing OrElse _wayTicketGroups.Count = 0 Then
+        If Not Vm.UseWayTicket OrElse _wayTicketGroups Is Nothing OrElse _wayTicketGroups.Count = 0 Then
             LblWayTicketSummary.Content = "—"
             Return
         End If
@@ -947,13 +900,9 @@ Class MainWindow
         LblWayTicketSummary.Content = $"{subTickets} sub-tickets @ {total:C2}"
     End Sub
 
-    Private Sub ChkPowerball_Changed(sender As Object, e As RoutedEventArgs)
-        LblPowerballValue.Content = If(ChkPowerball.IsChecked = True, "Active", "—")
-    End Sub
-
     Private Sub BtnBullseye_Click(sender As Object, e As RoutedEventArgs)
         If Not BtnPlay.IsEnabled Then Return
-        If ChkWayTicket.IsChecked = True Then ChkWayTicket.IsChecked = False
+        If Vm.UseWayTicket Then Vm.UseWayTicket = False
 
         For Each kvp In _kenoButtons
             kvp.Value.Background = BrushDefault
@@ -1133,7 +1082,7 @@ Class MainWindow
         ' Cap at 2 active quadrants — must deselect one before selecting another.
         If Not isActive AndAlso CountActiveQuadrants() >= 2 Then Return
 
-        If ChkWayTicket.IsChecked = True Then ChkWayTicket.IsChecked = False
+        If Vm.UseWayTicket Then Vm.UseWayTicket = False
         If _isBullseyeActive Then
             _isBullseyeActive = False
             BtnBullseye.Background = Brushes.Coral
@@ -1185,8 +1134,8 @@ Class MainWindow
 
         ' First/Last is incompatible with half-board (2 active quadrants).
         Dim isHalf = CountActiveQuadrants() >= 2
-        If isHalf AndAlso ChkFirstLastPlay.IsChecked = True Then
-            ChkFirstLastPlay.IsChecked = False
+        If isHalf AndAlso Vm.UseFirstLast Then
+            Vm.UseFirstLast = False
         End If
         ChkFirstLastPlay.IsEnabled = Not isHalf
     End Sub
@@ -1209,13 +1158,6 @@ Class MainWindow
 
     Private Sub SbiSettings_MouseDown(sender As Object, e As MouseButtonEventArgs)
         FlyoutSettings.IsOpen = Not FlyoutSettings.IsOpen
-    End Sub
-
-    Private Sub ChkFlyoutsEnabled_Changed(sender As Object, e As RoutedEventArgs)
-        If Not IsLoaded Then Return
-        Dim appSettings = LoadAppSettings()
-        appSettings.FlyoutsEnabled = ChkFlyoutsEnabled.IsChecked.GetValueOrDefault(False)
-        SaveAppSettings(appSettings)
     End Sub
 
     Private Sub BtnRepopulateBank_Click(sender As Object, e As RoutedEventArgs)

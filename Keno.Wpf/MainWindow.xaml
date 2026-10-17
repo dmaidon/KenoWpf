@@ -5,6 +5,7 @@
                  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                 xmlns:local="clr-namespace:Keno.Wpf"
                  mc:Ignorable="d"
         Title="Keno.WPF" Height="585" Width="942"
         WindowStartupLocation="CenterScreen"
@@ -13,6 +14,7 @@
         Closing="MainWindow_Closing">
 
     <Window.Resources>
+        <local:EqualsConverter x:Key="EqConv" />
 
         <!-- Default keno cell background — matches WinForms Color.FromArgb(192,255,255) -->
         <SolidColorBrush x:Key="KenoDefaultBrush" Color="#C0FFFF" />
@@ -200,9 +202,7 @@
                 <StackPanel Margin="8,6">
                     <CheckBox x:Name="ChkFlyoutsEnabled"
                                   Content="Enable flyout tips"
-                                  IsChecked="True"
-                                  Checked="ChkFlyoutsEnabled_Changed"
-                                  Unchecked="ChkFlyoutsEnabled_Changed"
+                                  IsChecked="{Binding FlyoutsEnabled}"
                                   FontFamily="Segoe UI" FontSize="10" FontWeight="Bold"
                                   Foreground="#330066"
                                   Margin="0,4,0,8" />
@@ -459,20 +459,20 @@
             </GroupBox.Effect>
             <StackPanel Margin="4,0,4,0" Height="148">
                 <UniformGrid Columns="2">
-                    <RadioButton x:Name="RbWager1"   Content="$1"   Tag="1"   GroupName="Wager" IsChecked="True" Checked="RbWager_Checked" Margin="0,1" Foreground="Navy" />
-                    <RadioButton x:Name="RbWager25"  Content="$25"  Tag="25"  GroupName="Wager" Checked="RbWager_Checked" Margin="0,1" Foreground="Navy" />
-                    <RadioButton x:Name="RbWager2"   Content="$2"   Tag="2"   GroupName="Wager" Checked="RbWager_Checked" Margin="0,1" Foreground="Navy" />
-                    <RadioButton x:Name="RbWager30"  Content="$30"  Tag="30"  GroupName="Wager" Checked="RbWager_Checked" Margin="0,1" Foreground="Navy" />
-                    <RadioButton x:Name="RbWager3"   Content="$3"   Tag="3"   GroupName="Wager" Checked="RbWager_Checked" Margin="0,1" Foreground="Navy" />
-                    <RadioButton x:Name="RbWager40"  Content="$40"  Tag="40"  GroupName="Wager" Checked="RbWager_Checked" Margin="0,1" Foreground="Navy" />
-                    <RadioButton x:Name="RbWager5"   Content="$5"   Tag="5"   GroupName="Wager" Checked="RbWager_Checked" Margin="0,1" Foreground="Navy" />
-                    <RadioButton x:Name="RbWager50"  Content="$50"  Tag="50"  GroupName="Wager" Checked="RbWager_Checked" Margin="0,1" Foreground="Navy" />
-                    <RadioButton x:Name="RbWager10"  Content="$10"  Tag="10"  GroupName="Wager" Checked="RbWager_Checked" Margin="0,1" Foreground="Navy" />
-                    <RadioButton x:Name="RbWager100" Content="$100" Tag="100" GroupName="Wager" Checked="RbWager_Checked" Margin="0,1" Foreground="Navy" />
-                    <RadioButton x:Name="RbWager15"  Content="$15"  Tag="15"  GroupName="Wager" Checked="RbWager_Checked" Margin="0,1" Foreground="Navy" />
-                    <RadioButton x:Name="RbWager150" Content="$150" Tag="150" GroupName="Wager" Checked="RbWager_Checked" Margin="0,1" Foreground="Navy" />
-                    <RadioButton x:Name="RbWager20"  Content="$20"  Tag="20"  GroupName="Wager" Checked="RbWager_Checked" Margin="0,1" Foreground="Navy" />
-                    <RadioButton x:Name="RbWager200" Content="$200" Tag="200" GroupName="Wager" Checked="RbWager_Checked" Margin="0,1" Foreground="Navy" />
+                    <RadioButton x:Name="RbWager1"   Content="$1"   Tag="1"   IsChecked="{Binding BetPreset, Converter={StaticResource EqConv}, ConverterParameter=1}" GroupName="Wager" Margin="0,1" Foreground="Navy" />
+                    <RadioButton x:Name="RbWager25"  Content="$25"  Tag="25"  IsChecked="{Binding BetPreset, Converter={StaticResource EqConv}, ConverterParameter=25}" GroupName="Wager" Margin="0,1" Foreground="Navy" />
+                    <RadioButton x:Name="RbWager2"   Content="$2"   Tag="2"   IsChecked="{Binding BetPreset, Converter={StaticResource EqConv}, ConverterParameter=2}" GroupName="Wager" Margin="0,1" Foreground="Navy" />
+                    <RadioButton x:Name="RbWager30"  Content="$30"  Tag="30"  IsChecked="{Binding BetPreset, Converter={StaticResource EqConv}, ConverterParameter=30}" GroupName="Wager" Margin="0,1" Foreground="Navy" />
+                    <RadioButton x:Name="RbWager3"   Content="$3"   Tag="3"   IsChecked="{Binding BetPreset, Converter={StaticResource EqConv}, ConverterParameter=3}" GroupName="Wager" Margin="0,1" Foreground="Navy" />
+                    <RadioButton x:Name="RbWager40"  Content="$40"  Tag="40"  IsChecked="{Binding BetPreset, Converter={StaticResource EqConv}, ConverterParameter=40}" GroupName="Wager" Margin="0,1" Foreground="Navy" />
+                    <RadioButton x:Name="RbWager5"   Content="$5"   Tag="5"   IsChecked="{Binding BetPreset, Converter={StaticResource EqConv}, ConverterParameter=5}" GroupName="Wager" Margin="0,1" Foreground="Navy" />
+                    <RadioButton x:Name="RbWager50"  Content="$50"  Tag="50"  IsChecked="{Binding BetPreset, Converter={StaticResource EqConv}, ConverterParameter=50}" GroupName="Wager" Margin="0,1" Foreground="Navy" />
+                    <RadioButton x:Name="RbWager10"  Content="$10"  Tag="10"  IsChecked="{Binding BetPreset, Converter={StaticResource EqConv}, ConverterParameter=10}" GroupName="Wager" Margin="0,1" Foreground="Navy" />
+                    <RadioButton x:Name="RbWager100" Content="$100" Tag="100" IsChecked="{Binding BetPreset, Converter={StaticResource EqConv}, ConverterParameter=100}" GroupName="Wager" Margin="0,1" Foreground="Navy" />
+                    <RadioButton x:Name="RbWager15"  Content="$15"  Tag="15"  IsChecked="{Binding BetPreset, Converter={StaticResource EqConv}, ConverterParameter=15}" GroupName="Wager" Margin="0,1" Foreground="Navy" />
+                    <RadioButton x:Name="RbWager150" Content="$150" Tag="150" IsChecked="{Binding BetPreset, Converter={StaticResource EqConv}, ConverterParameter=150}" GroupName="Wager" Margin="0,1" Foreground="Navy" />
+                    <RadioButton x:Name="RbWager20"  Content="$20"  Tag="20"  IsChecked="{Binding BetPreset, Converter={StaticResource EqConv}, ConverterParameter=20}" GroupName="Wager" Margin="0,1" Foreground="Navy" />
+                    <RadioButton x:Name="RbWager200" Content="$200" Tag="200" IsChecked="{Binding BetPreset, Converter={StaticResource EqConv}, ConverterParameter=200}" GroupName="Wager" Margin="0,1" Foreground="Navy" />
                 </UniformGrid>
                 <Separator Margin="0,4" />
                 <Grid>
@@ -497,7 +497,7 @@
                         BorderBrush="DarkOrange"
                         BorderThickness="2"
                         HorizontalContentAlignment="Center"
-                        ValueChanged="NudSpecialWager_ValueChanged" />
+                        Value="{Binding SpecialWager, UpdateSourceTrigger=PropertyChanged}" />
                 </Grid>
             </StackPanel>
         </GroupBox>
@@ -512,28 +512,28 @@
             <StackPanel Margin="4,2,4,4">
                 <UniformGrid Columns="5">
                     <!-- Row 1 -->
-                    <RadioButton x:Name="RbConsecutive2"  Content="2"  Tag="2"  GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
-                    <RadioButton x:Name="RbConsecutive6"  Content="6"  Tag="6"  GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
-                    <RadioButton x:Name="RbConsecutive10" Content="10" Tag="10" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
-                    <RadioButton x:Name="RbConsecutive14" Content="14" Tag="14" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
-                    <RadioButton x:Name="RbConsecutive18" Content="18" Tag="18" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive2"  Content="2"  Tag="2"  IsChecked="{Binding ConsecutiveGames, Converter={StaticResource EqConv}, ConverterParameter=2}" GroupName="Consec" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive6"  Content="6"  Tag="6"  IsChecked="{Binding ConsecutiveGames, Converter={StaticResource EqConv}, ConverterParameter=6}" GroupName="Consec" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive10" Content="10" Tag="10" IsChecked="{Binding ConsecutiveGames, Converter={StaticResource EqConv}, ConverterParameter=10}" GroupName="Consec" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive14" Content="14" Tag="14" IsChecked="{Binding ConsecutiveGames, Converter={StaticResource EqConv}, ConverterParameter=14}" GroupName="Consec" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive18" Content="18" Tag="18" IsChecked="{Binding ConsecutiveGames, Converter={StaticResource EqConv}, ConverterParameter=18}" GroupName="Consec" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
                     <!-- Row 2 -->
-                    <RadioButton x:Name="RbConsecutive3"  Content="3"  Tag="3"  GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
-                    <RadioButton x:Name="RbConsecutive7"  Content="7"  Tag="7"  GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
-                    <RadioButton x:Name="RbConsecutive11" Content="11" Tag="11" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
-                    <RadioButton x:Name="RbConsecutive15" Content="15" Tag="15" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
-                    <RadioButton x:Name="RbConsecutive19" Content="19" Tag="19" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive3"  Content="3"  Tag="3"  IsChecked="{Binding ConsecutiveGames, Converter={StaticResource EqConv}, ConverterParameter=3}" GroupName="Consec" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive7"  Content="7"  Tag="7"  IsChecked="{Binding ConsecutiveGames, Converter={StaticResource EqConv}, ConverterParameter=7}" GroupName="Consec" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive11" Content="11" Tag="11" IsChecked="{Binding ConsecutiveGames, Converter={StaticResource EqConv}, ConverterParameter=11}" GroupName="Consec" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive15" Content="15" Tag="15" IsChecked="{Binding ConsecutiveGames, Converter={StaticResource EqConv}, ConverterParameter=15}" GroupName="Consec" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive19" Content="19" Tag="19" IsChecked="{Binding ConsecutiveGames, Converter={StaticResource EqConv}, ConverterParameter=19}" GroupName="Consec" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
                     <!-- Row 3 -->
-                    <RadioButton x:Name="RbConsecutive4"  Content="4"  Tag="4"  GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
-                    <RadioButton x:Name="RbConsecutive8"  Content="8"  Tag="8"  GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
-                    <RadioButton x:Name="RbConsecutive12" Content="12" Tag="12" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
-                    <RadioButton x:Name="RbConsecutive16" Content="16" Tag="16" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
-                    <RadioButton x:Name="RbConsecutive20" Content="20" Tag="20" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive4"  Content="4"  Tag="4"  IsChecked="{Binding ConsecutiveGames, Converter={StaticResource EqConv}, ConverterParameter=4}" GroupName="Consec" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive8"  Content="8"  Tag="8"  IsChecked="{Binding ConsecutiveGames, Converter={StaticResource EqConv}, ConverterParameter=8}" GroupName="Consec" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive12" Content="12" Tag="12" IsChecked="{Binding ConsecutiveGames, Converter={StaticResource EqConv}, ConverterParameter=12}" GroupName="Consec" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive16" Content="16" Tag="16" IsChecked="{Binding ConsecutiveGames, Converter={StaticResource EqConv}, ConverterParameter=16}" GroupName="Consec" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive20" Content="20" Tag="20" IsChecked="{Binding ConsecutiveGames, Converter={StaticResource EqConv}, ConverterParameter=20}" GroupName="Consec" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
                     <!-- Row 4 -->
-                    <RadioButton x:Name="RbConsecutive5"  Content="5"  Tag="5"  GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
-                    <RadioButton x:Name="RbConsecutive9"  Content="9"  Tag="9"  GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
-                    <RadioButton x:Name="RbConsecutive13" Content="13" Tag="13" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
-                    <RadioButton x:Name="RbConsecutive17" Content="17" Tag="17" GroupName="Consec" Checked="RbConsecutive_Checked" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive5"  Content="5"  Tag="5"  IsChecked="{Binding ConsecutiveGames, Converter={StaticResource EqConv}, ConverterParameter=5}" GroupName="Consec" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive9"  Content="9"  Tag="9"  IsChecked="{Binding ConsecutiveGames, Converter={StaticResource EqConv}, ConverterParameter=9}" GroupName="Consec" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive13" Content="13" Tag="13" IsChecked="{Binding ConsecutiveGames, Converter={StaticResource EqConv}, ConverterParameter=13}" GroupName="Consec" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
+                    <RadioButton x:Name="RbConsecutive17" Content="17" Tag="17" IsChecked="{Binding ConsecutiveGames, Converter={StaticResource EqConv}, ConverterParameter=17}" GroupName="Consec" Margin="0,1" Background="#FFE9F6D5" Foreground="Black" />
                 </UniformGrid>
                 <TextBlock x:Name="TbkBonusMultiplier" Text="Bonus: 1×"
                            FontSize="12" FontWeight="Bold"
@@ -590,17 +590,17 @@
                 </Grid.RowDefinitions>
                 <Border Grid.Column="0" Grid.Row="0" Background="#FFC0FFFF">
                     <RadioButton x:Name="RbDrawSpeedSlow" Tag="1000" GroupName="DrawSpeed"
-                                 Checked="RbDrawSpeed_Checked"
+                                 IsChecked="{Binding DrawDelayMs, Converter={StaticResource EqConv}, ConverterParameter=1000}"
                                  HorizontalAlignment="Center" Margin="4,2" />
                 </Border>
                 <Border Grid.Column="1" Grid.Row="0" Background="#FFFFC080">
                     <RadioButton x:Name="RbDrawSpeedMedium" Tag="500" GroupName="DrawSpeed"
-                                 IsChecked="True" Checked="RbDrawSpeed_Checked"
+                                 IsChecked="{Binding DrawDelayMs, Converter={StaticResource EqConv}, ConverterParameter=500}"
                                  HorizontalAlignment="Center" Margin="4,2" />
                 </Border>
                 <Border Grid.Column="2" Grid.Row="0" Background="#FFFF8080">
                     <RadioButton x:Name="RbDrawSpeedFast" Tag="200" GroupName="DrawSpeed"
-                                 Checked="RbDrawSpeed_Checked"
+                                 IsChecked="{Binding DrawDelayMs, Converter={StaticResource EqConv}, ConverterParameter=200}"
                                  HorizontalAlignment="Center" Margin="4,2" />
                 </Border>
                 <Border Grid.Column="0" Grid.Row="1" Background="#FFC0FFFF">
@@ -617,7 +617,7 @@
                 </Border>
                 <Border Grid.Column="3" Grid.Row="0" Background="#FFFF80FF">
                     <RadioButton x:Name="RbDrawSpeedSS" Tag="0" GroupName="DrawSpeed"
-                                 Checked="RbDrawSpeed_Checked"
+                                 IsChecked="{Binding DrawDelayMs, Converter={StaticResource EqConv}, ConverterParameter=0}"
                                  HorizontalAlignment="Center" Margin="4,2" />
                 </Border>
                 <Border Grid.Column="3" Grid.Row="1" Background="#FFFF80FF">
@@ -648,16 +648,16 @@
                     </StackPanel>
                     <UniformGrid Columns="2">
                         <CheckBox x:Name="ChkMultiplierKeno" Content="Multiplier: 1×" Margin="2,1" FontFamily="Segoe UI" FontSize="8" FontWeight="Bold"
-                                  Foreground="Red" Checked="ChkMultiplierKeno_Changed" Unchecked="ChkMultiplierKeno_Changed" />
+                                  Foreground="Red" IsChecked="{Binding UseMultiplier}" />
                         <CheckBox x:Name="ChkFirstLastPlay" Content="First/Last ($1)" Margin="2,1"
                                   Foreground="Teal" FontFamily="Segoe UI" FontSize="8" FontWeight="Bold"
-                                  Checked="ChkFirstLastPlay_Changed" Unchecked="ChkFirstLastPlay_Changed" />
+                                  IsChecked="{Binding UseFirstLast}" />
                         <CheckBox x:Name="ChkWayTicket" Content="Way Ticket" Margin="2,1"
                                   Foreground="#FFC04000" FontFamily="Segoe UI" FontSize="8" FontWeight="Bold"
-                                  Checked="ChkWayTicket_Changed" Unchecked="ChkWayTicket_Changed" />
+                                  IsChecked="{Binding UseWayTicket}" />
                         <CheckBox x:Name="ChkPowerball" Content="Powerball (×4)" Margin="2,1"
                                   Foreground="Black" FontFamily="Segoe UI" FontSize="8" FontWeight="Bold"
-                                  Checked="ChkPowerball_Changed" Unchecked="ChkPowerball_Changed" />
+                                  IsChecked="{Binding UsePowerball}" />
                     </UniformGrid>
                     <UniformGrid Columns="2">
                         <Label x:Name="LblWayTicketSummary" Content="—"
