@@ -488,6 +488,7 @@ Class MainWindow
         Dim totalWager = ComputeTotalWager(bet, gamesToPlay)
         Dim totalPayout = 0D
         Dim lastMatches = 0
+        Dim options = BuildGameOptions(bet)
         Dim gameResults As New List(Of (Index As Integer, Matched As Integer, Payout As Decimal, Multiplier As Integer, FirstLastBonus As Decimal))()
         Dim freeGameIndices As New HashSet(Of Integer)()
 
@@ -508,46 +509,20 @@ Class MainWindow
             For i = 1 To gamesToPlay
                 Dim result = Await DrawSingleGameAnimated()
 
-                Dim gamePayout As Decimal
-                If useWayTicket Then
-                    gamePayout = GetWayTicketPayout(result.Draw, bet)
-                ElseIf useBullseye Then
-                    gamePayout = GetBullseyePayout(result.Matches) * bet
-                ElseIf halfType IsNot Nothing Then
-                    gamePayout = GetAreaPayout(halfType, result.Matches) * bet
-                Else
-                    gamePayout = GetPayout(_selectedNumbers.Count, result.Matches) * bet
-                End If
-
-                Dim currentMultiplier = 1
-                If useMultiplier Then
-                    currentMultiplier = DrawMultiplier()
-                    gamePayout *= currentMultiplier
-                    ChkMultiplierKeno.Content = $"Multiplier: {currentMultiplier}×"
-                End If
-
-                If usePowerball Then
-                    Dim pbNum = Random.Shared.Next(1, 81)
-                    LblPowerballValue.Content = pbNum.ToString()
-                    If _selectedNumbers.Contains(pbNum) Then gamePayout *= 4
-                End If
-
-                ' ── First/Last flat bonus — not scaled by bet, multiplier, or Powerball ──
-                Dim firstLastBonus = 0D
-                If useFirstLast Then
-                    If _selectedNumbers.Contains(result.FirstDrawn) OrElse _selectedNumbers.Contains(result.LastDrawn) Then
-                        firstLastBonus = GetFirstLastBallBonus(_selectedNumbers.Count)
-                        gamePayout += firstLastBonus
-                    End If
-                End If
+                Dim score = GameEngine.ScoreGame(options, result.DrawOrder, Random.Shared)
+                Dim gamePayout = score.Payout
+                Dim currentMultiplier = score.Multiplier
+                Dim firstLastBonus = score.FirstLastBonus
+                If useMultiplier Then ChkMultiplierKeno.Content = $"Multiplier: {currentMultiplier}×"
+                If usePowerball Then LblPowerballValue.Content = score.PowerballNumber.ToString()
 
                 totalPayout += gamePayout
                 Vm.WinningsText = totalPayout.ToString("C2")
                 lastMatches = result.Matches
                 gameResults.Add((i, result.Matches, gamePayout, currentMultiplier, firstLastBonus))
                 UpdateGamePlayCell(i, gamePayout > 0D,
-                                   _selectedNumbers.Contains(result.FirstDrawn),
-                                   _selectedNumbers.Contains(result.LastDrawn))
+                                   _selectedNumbers.Contains(result.DrawOrder(0)),
+                                   _selectedNumbers.Contains(result.DrawOrder(19)))
                 UpdateDrawStats(result.Draw, gamePayout > 0D)
 
                 ' ── progressive jackpot contribution ───────────────────────────
@@ -571,7 +546,7 @@ Class MainWindow
                 End If
 
                 ' Free game bonus — matching WinForms IsFreeGameBonus / AwardFreeGameBonus
-                Dim isFreeGameResult = (gamePayout = 0D) AndAlso IsFreeGameBonus(result.Matches, bet)
+                Dim isFreeGameResult = (gamePayout = 0D) AndAlso GameEngine.IsFreeGameBonus(result.Matches, bet, _selectedNumbers.Count)
                 If isFreeGameResult Then
                     freeGameIndices.Add(i)
                     AwardFreeGameBonus(suppressDialog:=isSuperSonic AndAlso gamesToPlay > 1)
@@ -592,11 +567,11 @@ Class MainWindow
         Dim totalFirstLastBonus = gameResults.Sum(Function(r) r.FirstLastBonus)
         _lastFirstLastBonus = totalFirstLastBonus
         Dim bonus = GetConsecutiveBonus()
-        totalPayout = (subtotal - totalFirstLastBonus) * bonus + totalFirstLastBonus
+        totalPayout = GameEngine.ApplyConsecutiveBonus(subtotal, totalFirstLastBonus, bonus)
 
         ' Record each game using bonus-adjusted payout so AllTimeSummary reflects actual earnings.
         Dim perGameBet = totalWager / gamesToPlay
-        AllTimeSummaryStore.RecordGames(gameResults.Select(Function(r) (perGameBet, (r.Payout - r.FirstLastBonus) * bonus + r.FirstLastBonus)))
+        AllTimeSummaryStore.RecordGames(gameResults.Select(Function(r) (perGameBet, GameEngine.ApplyConsecutiveBonus(r.Payout, r.FirstLastBonus, bonus))))
 
         _bankBalance += totalPayout   ' wager was already debited before the first draw
         SaveBankBalance(_bankBalance)
@@ -643,13 +618,9 @@ Class MainWindow
         End Try
     End Sub
 
-    Private Async Function DrawSingleGameAnimated() As Task(Of (Draw As HashSet(Of Integer), Matches As Integer, FirstDrawn As Integer, LastDrawn As Integer))
-        Dim pool As New List(Of Integer)(80)
-        For i = 1 To 80 : pool.Add(i) : Next
-
-        Dim drawOrder As New List(Of Integer)(20)
+    Private Async Function DrawSingleGameAnimated() As Task(Of (Draw As HashSet(Of Integer), DrawOrder As List(Of Integer), Matches As Integer))
+        Dim drawOrder = GameEngine.DrawNumbers(Random.Shared)
         Dim drawSet As New HashSet(Of Integer)()
-
         Dim sortedPicks = _selectedNumbers.ToArray()
 
         For Each kvp In _kenoButtons
@@ -661,11 +632,7 @@ Class MainWindow
         Next
 
         Dim delay = GetDrawDelayMs()
-        Do While drawOrder.Count < 20
-            Dim idx = Random.Shared.Next(pool.Count)
-            Dim num = pool(idx)
-            pool.RemoveAt(idx)
-            drawOrder.Add(num)
+        For Each num In drawOrder
             drawSet.Add(num)
             _kenoButtons(num).Background = If(_selectedNumbers.Contains(num), BrushMatch, BrushDraw)
 
@@ -675,38 +642,31 @@ Class MainWindow
             End If
 
             If delay > 0 Then Await Task.Delay(delay)
-        Loop
-
-        Dim matches = drawOrder.Where(Function(n) _selectedNumbers.Contains(n)).Count()
-
-        Return (drawSet, matches, drawOrder(0), drawOrder(19))
-    End Function
-
-    ' Returns full cost for all games: base bet + $1/game for Multiplier, $1/game for First/Last,
-    ' (subTickets-1)*bet/game for Way Ticket.  Powerball is a payout multiplier — no extra wager.
-    Private Function ComputeTotalWager(bet As Decimal, gamesToPlay As Integer) As Decimal
-        Dim perGame = bet
-        If ChkMultiplierKeno.IsChecked = True Then perGame += 1D
-        If ChkFirstLastPlay.IsChecked = True Then perGame += 1D
-        If ChkWayTicket.IsChecked = True Then
-            Dim subTickets = If(_wayTicketGroups IsNot Nothing AndAlso _wayTicketGroups.Count > 0,
-                                _wayTicketGroups.Count,
-                                Math.Max(1, _selectedNumbers.Count \ 3))
-            perGame += (subTickets - 1) * bet
-        End If
-
-        Return perGame * gamesToPlay
-    End Function
-
-    ' Splits picks into groups of 3, evaluates each sub-ticket against the draw, sums the payouts.
-    Private Function GetWayTicketPayout(draw As HashSet(Of Integer), bet As Decimal) As Decimal
-        If _wayTicketGroups Is Nothing OrElse _wayTicketGroups.Count = 0 Then Return 0D
-        Dim total = 0D
-        For Each group In _wayTicketGroups
-            Dim matches = group.Where(Function(n) draw.Contains(n)).Count()
-            total += GetPayout(group.Count, matches) * bet
         Next
-        Return total
+
+        Return (drawSet, drawOrder, GameEngine.CountMatches(sortedPicks, drawSet))
+    End Function
+
+    Private Function BuildGameOptions(bet As Decimal) As GameOptions
+        Dim halfType = GetHalfType()
+        Return New GameOptions With {
+            .Mode = If(_isBullseyeActive, TicketMode.Bullseye,
+                    If(halfType = "TopBottom", TicketMode.TopBottomHalf,
+                    If(halfType = "LeftRight", TicketMode.LeftRightHalf, TicketMode.Regular))),
+            .Picks = _selectedNumbers.ToArray(),
+            .Bet = bet,
+            .UseMultiplier = ChkMultiplierKeno.IsChecked.GetValueOrDefault(),
+            .UseFirstLast = ChkFirstLastPlay.IsChecked.GetValueOrDefault(),
+            .UsePowerball = ChkPowerball.IsChecked.GetValueOrDefault(),
+            .UseWayTicket = ChkWayTicket.IsChecked.GetValueOrDefault(),
+            .WayGroups = _wayTicketGroups
+        }
+    End Function
+
+    Private Function ComputeTotalWager(bet As Decimal, gamesToPlay As Integer) As Decimal
+        Return GameEngine.ComputeTotalWager(bet, gamesToPlay, ChkMultiplierKeno.IsChecked.GetValueOrDefault(),
+                                            ChkFirstLastPlay.IsChecked.GetValueOrDefault(), ChkWayTicket.IsChecked.GetValueOrDefault(),
+                                            If(_wayTicketGroups Is Nothing, 0, _wayTicketGroups.Count), _selectedNumbers.Count)
     End Function
 
     Private Sub ApplyDrawToGrid(draw As HashSet(Of Integer))
@@ -752,13 +712,7 @@ Class MainWindow
     End Function
 
     Private Function GetConsecutiveBonus() As Decimal
-        Dim count = GetConsecutiveGamesCount()
-        If count > 16 Then Return 1.75D
-        If count >= 12 Then Return 1.5D
-        If count >= 8 Then Return 1.25D
-        If count >= 5 Then Return 1.1D
-
-        Return 1D
+        Return GameEngine.GetConsecutiveBonus(GetConsecutiveGamesCount())
     End Function
 
     Private Sub UpdateBonusDisplay()
@@ -878,16 +832,6 @@ Class MainWindow
         End If
         UpdateWagerPreview()
     End Sub
-
-    ' Weighted draw: x1=45%, x2=30%, x3=13%, x5=9%, x10=3%
-    Private Shared Function DrawMultiplier() As Integer
-        Dim roll = Random.Shared.Next(100)
-        If roll < 45 Then Return 1
-        If roll < 75 Then Return 2
-        If roll < 88 Then Return 3
-        If roll < 97 Then Return 5
-        Return 10
-    End Function
 
     Private Sub ChkFirstLastPlay_Changed(sender As Object, e As RoutedEventArgs)
         If ChkFirstLastPlay.IsChecked = True Then
@@ -1072,12 +1016,10 @@ Class MainWindow
             For i = 0 To gamesToPlay - 1
                 Dim result = Await DrawSingleGameAnimated()
 
-                Dim gamePayout As Decimal
-                If _isBullseyeActive Then
-                    gamePayout = GetBullseyePayout(result.Matches) * FreeGameBet
-                Else
-                    gamePayout = GetPayout(_selectedNumbers.Count, result.Matches) * FreeGameBet
-                End If
+                Dim gamePayout = GameEngine.ScoreGame(New GameOptions With {
+                    .Mode = If(_isBullseyeActive, TicketMode.Bullseye, TicketMode.Regular),
+                    .Picks = _selectedNumbers.ToArray(),
+                    .Bet = FreeGameBet}, result.DrawOrder, Random.Shared).Payout
 
                 totalPayout += gamePayout
                 Vm.WinningsText = totalPayout.ToString("C2")
@@ -1113,13 +1055,6 @@ Class MainWindow
             UpdateFreeGamesGrid()
             Vm.WagerTotalText = (gamesToPlay * FreeGameBet).ToString("C2")
         End Try
-    End Function
-
-    Private Function IsFreeGameBonus(matchedCount As Integer, betAmount As Decimal) As Boolean
-        If betAmount < 2D Then Return False
-        If matchedCount <> 0 Then Return False
-        Dim picks = _selectedNumbers.Count
-        Return picks >= 5 AndAlso picks <= 9
     End Function
 
     Private Sub AwardFreeGameBonus(Optional suppressDialog As Boolean = False)
