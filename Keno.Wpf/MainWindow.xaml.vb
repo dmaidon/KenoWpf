@@ -63,6 +63,7 @@ Class MainWindow
         Dim appSettings = LoadAppSettings()
         NudRepopulateAmount.Value = CDbl(If(appSettings.RepopulateAmount > 0D, appSettings.RepopulateAmount, 10000D))
         Vm.FlyoutsEnabled = appSettings.FlyoutsEnabled
+        NudLossLimit.Value = CDbl(appSettings.LossLimit)
         Vm.DrawDelayMs = DrawDelays(Math.Max(0, Math.Min(appSettings.DrawSpeedIndex, DrawDelays.Length - 1)))
     End Sub
 
@@ -476,6 +477,13 @@ Class MainWindow
         Dim gameMode = If(useBullseye, "Bullseye",
                           If(halfType = "TopBottom", "Top/Bottom Half",
                           If(halfType = "LeftRight", "Left/Right Half", "Regular")))
+        ' Optional session loss limit: warn before a play that would exceed it.
+        Dim lossLimit = CDec(NudLossLimit.Value.GetValueOrDefault(0.0))
+        If lossLimit > 0D AndAlso (_sessionStartBalance - (_bankBalance - totalWager)) > lossLimit Then
+            If MessageBox.Show($"This play would put your session loss past your {lossLimit:C0} limit. Play anyway?",
+                               "Session Loss Limit", MessageBoxButton.YesNo, MessageBoxImage.Warning) <> MessageBoxResult.Yes Then Return
+        End If
+
         ' Debit the full wager up front so a crash or close mid-play cannot leave the bet uncharged.
         _bankBalance -= totalWager
         SaveBankBalance(_bankBalance)
@@ -1061,6 +1069,32 @@ Class MainWindow
 
     Private Sub SbiSettings_MouseDown(sender As Object, e As MouseButtonEventArgs)
         FlyoutSettings.IsOpen = Not FlyoutSettings.IsOpen
+    End Sub
+
+    Private Sub NudLossLimit_ValueChanged(sender As Object, e As RoutedPropertyChangedEventArgs(Of Double?))
+        If Not IsLoaded Then Return
+        Dim appSettings = LoadAppSettings()
+        appSettings.LossLimit = CDec(NudLossLimit.Value.GetValueOrDefault(0.0))
+        SaveAppSettings(appSettings)
+    End Sub
+
+    ' F5 = Play, Esc = Clear, F2 = Quick Pick, F1 = Help
+    Private Sub MainWindow_PreviewKeyDown(sender As Object, e As KeyEventArgs)
+        If Vm.IsPlaying OrElse FlyoutSettings.IsOpen Then Return
+        Select Case e.Key
+            Case Key.F5
+                e.Handled = True
+                BtnPlay_Click(Nothing, Nothing)
+            Case Key.Escape
+                e.Handled = True
+                ResetGrid()
+            Case Key.F2
+                e.Handled = True
+                BtnQuickPick_Click(Nothing, Nothing)
+            Case Key.F1
+                e.Handled = True
+                WinKenoHelp.ShowWindow(Me)
+        End Select
     End Sub
 
     Private Sub BtnRepopulateBank_Click(sender As Object, e As RoutedEventArgs)

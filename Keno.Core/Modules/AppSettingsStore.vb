@@ -55,5 +55,7 @@ Public Module AppSettingsStore
         Public Property DrawSpeedIndex As Integer
         Public Property RepopulateAmount As Decimal = 10000D
         Public Property FlyoutsEnabled As Boolean = True
+        ''' <summary>Session net-loss warning threshold in dollars; 0 = off.</summary>
+        Public Property LossLimit As Decimal
     End Class
 End Module

@@ -11,7 +11,8 @@
         WindowStartupLocation="CenterScreen"
         ResizeMode="CanMinimize"
         GlowBrush="{DynamicResource MahApps.Brushes.Accent}"
-        Closing="MainWindow_Closing">
+        Closing="MainWindow_Closing"
+        PreviewKeyDown="MainWindow_PreviewKeyDown">
 
     <Window.Resources>
         <local:EqualsConverter x:Key="EqConv" />
@@ -231,6 +232,19 @@
                             FontSize="10"
                             Padding="4,3"
                             HorizontalAlignment="Stretch" />
+                    <Separator Margin="0,10,0,8" />
+                    <TextBlock Text="Session Loss Limit"
+                               FontFamily="Segoe UI" FontSize="10" FontWeight="Bold"
+                               Foreground="#330066" Margin="0,0,0,4" />
+                    <TextBlock Text="Warn before a play that would push this session's net loss past this amount (0 = off):"
+                               TextWrapping="Wrap"
+                               FontFamily="Segoe UI" FontSize="9"
+                               Foreground="#444444" Margin="0,0,0,6" />
+                    <mah:NumericUpDown x:Name="NudLossLimit"
+                                       Minimum="0" Maximum="100000"
+                                       Value="0" Interval="100"
+                                       StringFormat="F0" FontSize="10"
+                                       ValueChanged="NudLossLimit_ValueChanged" />
                 </StackPanel>
             </mah:Flyout>
         </mah:FlyoutsControl>
