@@ -51,7 +51,9 @@ Class MainWindow
         BuildPlayedGrid()
         BuildGamePlayGrid()
         BuildFreeGamesGrid()
-        SbiCpy.Content = cpy
+        Dim version = If(Reflection.Assembly.GetExecutingAssembly().GetName().Version, New Version(0, 0)).ToString()
+        Title = $"Keno.WPF  v{version}"
+        SbiCpy.Content = $"{cpy}  v{version}"
         _bankBalance = GetBankBalance()
         _sessionStartBalance = _bankBalance
         UpdateBankDisplay()
