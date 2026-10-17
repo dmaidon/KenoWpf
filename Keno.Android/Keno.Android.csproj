@@ -45,8 +45,8 @@
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
 		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
-		<AssemblyVersion>26.10.17.50</AssemblyVersion>
-		<FileVersion>26.10.17.50</FileVersion>
+		<AssemblyVersion>26.10.17.51</AssemblyVersion>
+		<FileVersion>26.10.17.51</FileVersion>
 		<PackageIcon>keno_2.png</PackageIcon>
 		<Title>Keno.Android</Title>
 	</PropertyGroup>
@@ -108,5 +108,12 @@
 	<ItemGroup>
 	  <None Update="Resources\AppIcon\appicon.svg.OLD" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
 	</ItemGroup>
+
+	<!-- Debug-deploy fix: a failed apksigner run (locked file) used to leave an UNSIGNED "-Signed.apk" behind,
+	     and the next build skipped signing because that file looked up to date -> NO_CERTIFICATES on install.
+	     Deleting it first forces zipalign + apksigner to run on every package build, and a signing failure now fails the build. -->
+	<Target Name="KenoForceResign" BeforeTargets="_Sign" Condition="'$(AndroidPackageFormat)' != 'aab'">
+		<Delete Files="$(ApkFileSigned)" ContinueOnError="true" />
+	</Target>
 
 </Project>

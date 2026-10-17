@@ -575,13 +575,14 @@ public partial class MainPage : ContentPage
             BtnMenu.IsEnabled = false;
 
             string? action = await DisplayActionSheetAsync("Menu", "Cancel", null,
-                "Game History", "Payout Schedule", "How to Play");
+                "Game History", "Payout Schedule", "How to Play", "About");
 
             ContentPage? page = action switch
             {
                 "Game History" => new HistoryPage(_sessionHistory),
                 "Payout Schedule" => new PayoutSchedulePage(),
                 "How to Play" => new HelpPage(),
+                "About" => new AboutPage(),
                 _ => null
             };
 
