@@ -1,4 +1,5 @@
 ' Last Edit: 2026-03-24 05:29 AM - RtbPayoutSchedule now shows 1ST/LST bonus row when First/Last play is enabled.
+Imports System.Threading
 
 Class MainWindow
 
@@ -429,7 +430,22 @@ Class MainWindow
     End Sub
 
     ' ── play / clear ─────────────────────────────────────────────────────────
+    Private _playCts As CancellationTokenSource
+    Private _closeRequested As Boolean
+
     Private Async Sub BtnPlay_Click(sender As Object, e As RoutedEventArgs)
+        Try
+            Await PlayRoundAsync()
+        Catch ex As Exception
+            LogError(ex, NameOf(BtnPlay_Click))
+            MessageBox.Show($"Play error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error)
+            Vm.IsPlaying = False
+        Finally
+            If _closeRequested Then Close()
+        End Try
+    End Sub
+
+    Private Async Function PlayRoundAsync() As Task
         If _freeGamesQueued > 0 Then
             Await PlayQueuedFreeGamesAsync()
             Return
@@ -465,11 +481,15 @@ Class MainWindow
         SaveBankBalance(_bankBalance)
         UpdateBankDisplay()
 
+        Dim perGameWager = totalWager / gamesToPlay
+        Dim cancelled = False
+        _playCts = New CancellationTokenSource()
+        Dim token = _playCts.Token
         Vm.IsPlaying = True
         ResetGamePlayDisplay()
         Try
             For i = 1 To gamesToPlay
-                Dim result = Await DrawSingleGameAnimated()
+                Dim result = Await DrawSingleGameAnimated(token)
 
                 Dim score = GameEngine.ScoreGame(options, result.DrawOrder, Random.Shared)
                 Dim gamePayout = score.Payout
@@ -516,22 +536,40 @@ Class MainWindow
                     If gamePayout > 0D Then
                         WinPayoutSchedule.ShowForWin(Me, gameMode, Sel.Numbers.Count, result.Matches, gamePayout, bet)
                     Else
-                        Await Task.Delay(3000)
+                        Await Task.Delay(3000, token)
                     End If
                 End If
             Next
+        Catch ex As OperationCanceledException
+            cancelled = True
         Finally
             Vm.IsPlaying = False
+            _playCts.Dispose()
+            _playCts = Nothing
         End Try
+
+        ' A cancelled run settles only the completed games and refunds the rest of the wager.
+        Dim gamesPlayed = gameResults.Count
+        If gamesPlayed < gamesToPlay Then
+            Dim refund = totalWager - perGameWager * gamesPlayed
+            _bankBalance += refund
+            totalWager -= refund
+            SaveBankBalance(_bankBalance)
+            UpdateBankDisplay()
+            If gamesPlayed = 0 Then
+                ResetGamePlayDisplay()
+                Return
+            End If
+        End If
 
         Dim subtotal = totalPayout
         Dim totalFirstLastBonus = gameResults.Sum(Function(r) r.FirstLastBonus)
         _lastFirstLastBonus = totalFirstLastBonus
-        Dim bonus = GetConsecutiveBonus()
+        Dim bonus = If(cancelled, 1D, GetConsecutiveBonus())
         totalPayout = GameEngine.ApplyConsecutiveBonus(subtotal, totalFirstLastBonus, bonus)
 
         ' Record each game using bonus-adjusted payout so AllTimeSummary reflects actual earnings.
-        Dim perGameBet = totalWager / gamesToPlay
+        Dim perGameBet = perGameWager
         AllTimeSummaryStore.RecordGames(gameResults.Select(Function(r) (perGameBet, GameEngine.ApplyConsecutiveBonus(r.Payout, r.FirstLastBonus, bonus))))
 
         _bankBalance += totalPayout   ' wager was already debited before the first draw
@@ -539,7 +577,7 @@ Class MainWindow
         UpdateBankDisplay()
 
         ' Update session stats
-        _sessionGamesPlayed += gamesToPlay
+        _sessionGamesPlayed += gamesPlayed
         If totalPayout > 0D Then _sessionWins += 1
         If totalPayout > _sessionBestPayout Then _sessionBestPayout = totalPayout
         _sessionTotalWagered += totalWager
@@ -553,7 +591,7 @@ Class MainWindow
         UpdateFreeGamesButton()
 
         ' ── game log ──────────────────────────────────────────────────────────
-        If gamesToPlay > 1 Then
+        If gamesPlayed > 1 Then
             AppendBatch(gameMode, bet,
                         gameResults.Select(Function(r) (r.Matched, r.Payout, freeGameIndices.Contains(r.Index), r.Multiplier, r.FirstLastBonus)),
                         bonus)
@@ -564,6 +602,7 @@ Class MainWindow
         End If
 
         ' ── Show result dialogs ────────────────────────────────────────────
+        If cancelled Then Return
         Try
             If gamesToPlay > 1 Then
                 WinConsecutiveSummary.ShowSummary(Me, gameResults, bet, bonus, subtotal, totalPayout,
@@ -577,9 +616,9 @@ Class MainWindow
             MessageBox.Show($"Result dialog error: {ex.Message}",
                             "Result Error", MessageBoxButton.OK, MessageBoxImage.Error)
         End Try
-    End Sub
+    End Function
 
-    Private Async Function DrawSingleGameAnimated() As Task(Of (Draw As HashSet(Of Integer), DrawOrder As List(Of Integer), Matches As Integer))
+    Private Async Function DrawSingleGameAnimated(token As CancellationToken) As Task(Of (Draw As HashSet(Of Integer), DrawOrder As List(Of Integer), Matches As Integer))
         Dim drawOrder = GameEngine.DrawNumbers(Random.Shared)
         Dim drawSet As New HashSet(Of Integer)()
         Dim sortedPicks = Sel.Numbers.ToArray()
@@ -602,7 +641,7 @@ Class MainWindow
                 _playedLabels(pickIdx).Background = BrushMatch
             End If
 
-            If delay > 0 Then Await Task.Delay(delay)
+            If delay > 0 Then Await Task.Delay(delay, token)
         Next
 
         Return (drawSet, drawOrder, GameEngine.CountMatches(sortedPicks, drawSet))
@@ -887,6 +926,8 @@ Class MainWindow
 
         UseFreeGames(gamesToPlay)
 
+        _playCts = New CancellationTokenSource()
+        Dim token = _playCts.Token
         Vm.IsPlaying = True
         Vm.WinningsText = "$0"
         Vm.WagerTotalText = "$0"
@@ -895,7 +936,7 @@ Class MainWindow
 
         Try
             For i = 0 To gamesToPlay - 1
-                Dim result = Await DrawSingleGameAnimated()
+                Dim result = Await DrawSingleGameAnimated(token)
 
                 Dim gamePayout = GameEngine.ScoreGame(New GameOptions With {
                     .Mode = If(Sel.IsBullseye, TicketMode.Bullseye, TicketMode.Regular),
@@ -922,9 +963,17 @@ Class MainWindow
                 UpdateStatusBar()
                 UpdatePayoutScheduleDisplay()
             Next
+        Catch ex As OperationCanceledException
+            ' unplayed free games are returned below
         Catch ex As Exception
+            LogError(ex, NameOf(PlayQueuedFreeGamesAsync))
             MessageBox.Show($"Free game error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error)
         Finally
+            For k = freeGameResults.Count + 1 To gamesToPlay
+                AddFreeGame()   ' give back free games that were not played
+            Next
+            _playCts.Dispose()
+            _playCts = Nothing
             If freeGameResults.Count > 0 Then
                 AppendFreeGameBatch(gameMode, FreeGameBet, freeGameResults)
             End If
@@ -933,7 +982,7 @@ Class MainWindow
             Vm.IsPlaying = False
             UpdateFreeGamesButton()
             UpdateFreeGamesGrid()
-            Vm.WagerTotalText = (gamesToPlay * FreeGameBet).ToString("C2")
+            Vm.WagerTotalText = (freeGameResults.Count * FreeGameBet).ToString("C2")
         End Try
     End Function
 
@@ -1047,9 +1096,10 @@ Class MainWindow
 
     Private Sub MainWindow_Closing(sender As Object, e As ComponentModel.CancelEventArgs)
         If Vm.IsPlaying Then
+            ' Stop the running game first; it settles what was played, then re-closes the window.
             e.Cancel = True
-            MessageBox.Show("A game is in progress. Please wait for it to finish before closing.",
-                            "Game In Progress", MessageBoxButton.OK, MessageBoxImage.Information)
+            _closeRequested = True
+            _playCts?.Cancel()
             Return
         End If
         If _sessionGamesPlayed = 0 Then Return
