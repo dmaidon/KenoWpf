@@ -12,9 +12,10 @@
     <NoWarn>BC40026</NoWarn>
     <Title>Keno</Title>
     <Description>A full-featured Windows Keno simulator — WPF front-end on .NET 10.</Description>
-    <Company>Dennis N. Maidon</Company>
+    <Authors>Dennis N Maidon</Authors>
+    <Company>PAROLE Software</Company>
     <Product>Keno</Product>
-    <Copyright>© 2026 Dennis N. Maidon. All rights reserved.</Copyright>
+    <Copyright>© 2026 PAROLE Software</Copyright>
     <PackageIcon>keno_2.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <NeutralLanguage>en-US</NeutralLanguage>
@@ -22,11 +23,11 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <OutputPath>C:\VB18\Release\KenoWpf</OutputPath>
+    <OutputPath>C:\VB26\Release\Keno</OutputPath>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <OutputPath>C:\VB18\Release\KenoWpf</OutputPath>
+    <OutputPath>C:\VB26\Release\Keno</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>

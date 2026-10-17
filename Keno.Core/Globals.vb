@@ -8,7 +8,7 @@ Public Module Globals
     Public ReadOnly LogDir As String = Path.Combine(AppContext.BaseDirectory, "Logs")
     Public ReadOnly SetDir As String = Path.Combine(AppContext.BaseDirectory, "Settings")
 
-    Public ReadOnly cpy As String = "© 2026 Dennis N. Maidon. All rights reserved."
+    Public ReadOnly cpy As String = "© 2026 PAROLE Software"
 
     ''' <summary>Writes via a temp file then replaces the target, so a crash mid-write cannot truncate it.</summary>
     Public Sub WriteAllTextAtomic(path As String, contents As String)

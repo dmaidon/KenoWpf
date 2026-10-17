@@ -15,6 +15,7 @@
     <Title>Keno</Title>
     <Authors>Dennis N Maidon</Authors>
     <Company>PAROLE Software</Company>
+    <Copyright>© 2026 PAROLE Software</Copyright>
     <PackageIcon>Resources\keno_2.png</PackageIcon>
     <NeutralLanguage>en-US</NeutralLanguage>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -22,11 +23,11 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <OutputPath>C:\VB18\Release\KenoWpf</OutputPath>
+    <OutputPath>C:\VB26\Release\Keno</OutputPath>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <OutputPath>C:\VB18\Release\KenoWpf</OutputPath>
+    <OutputPath>C:\VB26\Release\Keno</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>

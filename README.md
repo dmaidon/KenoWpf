@@ -508,7 +508,7 @@ Free Games, and Game Log.
 This project is licensed under the **GNU General Public License v3.0**.  
 See [LICENSE.txt](LICENSE.txt) for the full text.
 
-© 2026 Dennis N. Maidon. All rights reserved.
+© 2026 PAROLE Software
 
 
 ---

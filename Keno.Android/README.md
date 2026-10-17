@@ -217,4 +217,4 @@ The MAUI version redirects all file I/O to platform-safe locations via
 
 ## License
 
-© 2026 Dennis N. Maidon. All rights reserved.
+© 2026 PAROLE Software
