@@ -8,6 +8,7 @@ Class WinPayoutSchedule
     Private _betAmount As Decimal
 
     Private _secondsLeft As Integer = 5
+    Private _autoCloseSeconds As Integer = 5
     Private ReadOnly _timer As New System.Windows.Threading.DispatcherTimer()
 
     ' ── Row model ─────────────────────────────────────────────────────────────
@@ -20,14 +21,17 @@ Class WinPayoutSchedule
     ' ── Factory ───────────────────────────────────────────────────────────────
     Friend Shared Sub ShowForWin(owner As Window, gameType As String,
                                  pickedCount As Integer, matchedCount As Integer,
-                                 payout As Decimal, betAmount As Decimal)
+                                 payout As Decimal, betAmount As Decimal,
+                                 Optional autoCloseSeconds As Integer = 5)
         Dim win As New WinPayoutSchedule With {
             ._gameType = gameType,
             ._pickedCount = pickedCount,
             ._matchedCount = matchedCount,
             ._payout = payout,
             ._betAmount = betAmount,
-            .Owner = owner
+            .Owner = owner,
+            ._autoCloseSeconds = autoCloseSeconds,
+            ._secondsLeft = autoCloseSeconds
         }
         win.ShowDialog()
     End Sub
@@ -107,12 +111,13 @@ Class WinPayoutSchedule
     End Sub
 
     Private Sub Win_MouseEnter(sender As Object, e As MouseEventArgs)
+        If _autoCloseSeconds < 5 Then Return   ' multi-game popups never wait on the mouse
         _timer.Stop()
         TbkCountdown.Text = String.Empty
     End Sub
 
     Private Sub Win_MouseLeave(sender As Object, e As MouseEventArgs)
-        _secondsLeft = 5
+        _secondsLeft = _autoCloseSeconds
         UpdateCountdown()
         _timer.Start()
     End Sub

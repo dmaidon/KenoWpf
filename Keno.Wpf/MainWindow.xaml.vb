@@ -4,7 +4,9 @@ Imports System.Threading
 Class MainWindow
 
     Private ReadOnly Vm As New MainViewModel()
-    Private Shared ReadOnly DrawDelays As Integer() = {1000, 500, 200, 0}
+    ''' <summary>Popups raised between games of a multi-game run close themselves after this many seconds.</summary>
+    Private Const MultiGameAutoCloseSeconds As Integer = 3
+    Private Shared ReadOnly DrawDelays As Integer() = {1000, 500, 150, 0}
 
     ' ── colour constants matching WinForms FrmMain.KenoSelection ──────────────
     Private Shared ReadOnly BrushDefault As SolidColorBrush = Freeze(Color.FromRgb(192, 255, 255))  ' #C0FFFF
@@ -539,10 +541,10 @@ Class MainWindow
                 Dim isFreeGameResult = (gamePayout = 0D) AndAlso GameEngine.IsFreeGameBonus(result.Matches, bet, Sel.Numbers.Count)
                 If isFreeGameResult Then
                     freeGameIndices.Add(i)
-                    AwardFreeGameBonus(suppressDialog:=isSuperSonic AndAlso gamesToPlay > 1)
+                    AwardFreeGameBonus(suppressDialog:=isSuperSonic AndAlso gamesToPlay > 1, multiGame:=gamesToPlay > 1)
                 ElseIf i < gamesToPlay AndAlso Not isSuperSonic Then
                     If gamePayout > 0D Then
-                        WinPayoutSchedule.ShowForWin(Me, gameMode, Sel.Numbers.Count, result.Matches, gamePayout, bet)
+                        WinPayoutSchedule.ShowForWin(Me, gameMode, Sel.Numbers.Count, result.Matches, gamePayout, bet, MultiGameAutoCloseSeconds)
                     Else
                         Await Task.Delay(3000, token)
                     End If
@@ -848,7 +850,7 @@ Class MainWindow
         Select Case delay
             Case 1000 : selected = "Slow"
             Case 500 : selected = "Medium"
-            Case 200 : selected = "Fast"
+            Case 150 : selected = "Fast"
             Case Else : selected = "SS (Super Sonic)"
         End Select
         FlyoutCheckboxHelp.Header = "Draw Speed"
@@ -860,7 +862,7 @@ Class MainWindow
         TbkFlyoutData.Text = " Mode   Delay" & vbLf &
                              " Slow   1.0 s / ball" & vbLf &
                              " Med    0.5 s / ball" & vbLf &
-                             " Fast   0.2 s / ball" & vbLf &
+                             " Fast   0.15 s / ball" & vbLf &
                              " SS     instant"
         FlyoutCheckboxHelp.IsOpen = True
     End Sub
@@ -994,13 +996,13 @@ Class MainWindow
         End Try
     End Function
 
-    Private Sub AwardFreeGameBonus(Optional suppressDialog As Boolean = False)
+    Private Sub AwardFreeGameBonus(Optional suppressDialog As Boolean = False, Optional multiGame As Boolean = False)
         AddFreeGame()
         _sessionFreeGamesEarned += 1
         AllTimeSummaryStore.RecordFreeGameEarned()
         UpdateFreeGamesButton()
         If Not suppressDialog Then
-            WinBonusGame.ShowBonus(Me, Sel.Numbers.Count)
+            WinBonusGame.ShowBonus(Me, Sel.Numbers.Count, If(multiGame, MultiGameAutoCloseSeconds, 7))
         End If
     End Sub
 

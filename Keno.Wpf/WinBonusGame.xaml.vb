@@ -2,10 +2,11 @@
 Class WinBonusGame
 
     Private _secondsLeft As Integer = 7
+    Private _autoCloseSeconds As Integer = 7
     Private ReadOnly _timer As New System.Windows.Threading.DispatcherTimer()
 
-    Friend Shared Sub ShowBonus(owner As Window, picks As Integer)
-        Dim win As New WinBonusGame()
+    Friend Shared Sub ShowBonus(owner As Window, picks As Integer, Optional autoCloseSeconds As Integer = 7)
+        Dim win As New WinBonusGame() With {._autoCloseSeconds = autoCloseSeconds, ._secondsLeft = autoCloseSeconds}
         win.TbkInfo.Text = $"Pick {picks} with no matches earns{Environment.NewLine}1 free $2 game of any kind."
         win.Owner = owner
         win.ShowDialog()
@@ -49,12 +50,13 @@ Class WinBonusGame
     End Sub
 
     Private Sub WinBonusGame_MouseEnter(sender As Object, e As MouseEventArgs) Handles Me.MouseEnter
+        If _autoCloseSeconds < 5 Then Return   ' multi-game popups never wait on the mouse
         _timer.Stop()
         TbkCountdown.Text = String.Empty
     End Sub
 
     Private Sub WinBonusGame_MouseLeave(sender As Object, e As MouseEventArgs) Handles Me.MouseLeave
-        _secondsLeft = 7
+        _secondsLeft = _autoCloseSeconds
         UpdateCountdown()
         _timer.Start()
     End Sub
