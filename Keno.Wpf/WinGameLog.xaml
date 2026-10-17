@@ -33,6 +33,10 @@
         <StackPanel Grid.Row="2" Orientation="Horizontal"
                     HorizontalAlignment="Right" VerticalAlignment="Center"
                     Margin="8,0">
+            <Button x:Name="BtnExportCsv" Content="Export CSV"
+                    FontFamily="Segoe UI" FontSize="9"
+                    Width="90" Height="30" Margin="0,0,8,0"
+                    Click="BtnExportCsv_Click" />
             <Button x:Name="BtnClearFile" Content="Clear File"
                     FontFamily="Segoe UI" FontSize="9"
                     Width="90" Height="30" Margin="0,0,8,0"

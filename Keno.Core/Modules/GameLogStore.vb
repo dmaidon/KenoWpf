@@ -3,12 +3,14 @@ Imports System.IO
 
 Public Module GameLogStore
 
+    Private Const MaxLogBytes As Long = 5L * 1024L * 1024L
     Private Const MaxLogLinesShown As Integer = 2000
     Private ReadOnly LogFilePath As String = Path.Combine(DatDir, "game-log.txt")
 
     Public Sub AppendGame(gameMode As String, betAmount As Decimal, matched As Integer, payout As Decimal, Optional multiplier As Integer = 1, Optional freeGameAwarded As Boolean = False, Optional firstLastBonus As Decimal = 0D)
         Try
             Directory.CreateDirectory(DatDir)
+            RotateIfLarge()
             Dim matchedText = If(matched < 0, "N/A", matched.ToString())
             Dim flbNote = If(firstLastBonus > 0D, $" | FirstLast: {firstLastBonus:C2}", "")
             Dim fgNote = If(freeGameAwarded, " | Free Game", "")
@@ -22,6 +24,7 @@ Public Module GameLogStore
     Public Sub AppendBatch(gameMode As String, betAmount As Decimal, results As IEnumerable(Of (Matched As Integer, Payout As Decimal, FreeGameAwarded As Boolean, Multiplier As Integer, FirstLastBonus As Decimal)), Optional bonus As Decimal = 1D)
         Try
             Directory.CreateDirectory(DatDir)
+            RotateIfLarge()
             Dim list = results.ToList()
             Dim lines As New List(Of String)()
             Dim timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
@@ -57,6 +60,7 @@ Public Module GameLogStore
     Public Sub AppendFreeGameBatch(gameMode As String, betAmount As Decimal, results As IEnumerable(Of (Matched As Integer, Payout As Decimal)))
         Try
             Directory.CreateDirectory(DatDir)
+            RotateIfLarge()
             Dim list = results.ToList()
             Dim lines As New List(Of String)()
             Dim timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
@@ -81,6 +85,52 @@ Public Module GameLogStore
             LogError(ex, NameOf(AppendFreeGameBatch))
         End Try
     End Sub
+
+    ''' <summary>Moves the log aside once it passes 5 MB so the live file stays small.</summary>
+    Private Sub RotateIfLarge()
+        Try
+            If File.Exists(LogFilePath) AndAlso New FileInfo(LogFilePath).Length > MaxLogBytes Then
+                File.Move(LogFilePath, Path.Combine(DatDir, $"game-log-{DateTime.Now:yyyyMMdd-HHmmss}.txt"))
+            End If
+        Catch ex As Exception
+            LogError(ex, NameOf(RotateIfLarge))
+        End Try
+    End Sub
+
+    Private Function Csv(value As String) As String
+        Return ChrW(34) & value.Replace(ChrW(34), ChrW(34) & ChrW(34)) & ChrW(34)
+    End Function
+
+    ''' <summary>Writes the single-game and consecutive-game lines of the log to a CSV file. Returns the row count.</summary>
+    Public Function ExportCsv(path As String) As Integer
+        Dim rows As New List(Of String) From {"Timestamp,Mode,Bet,Match,Multiplier,Payout,FirstLastBonus,FreeGame"}
+        If File.Exists(LogFilePath) Then
+            For Each line In File.ReadLines(LogFilePath)
+                Dim parts = line.Split(New String() {" | "}, StringSplitOptions.None)
+                If parts.Length < 5 OrElse parts(0).Length < 19 OrElse Not Char.IsDigit(parts(0)(0)) Then Continue For
+                Dim fields As New Dictionary(Of String, String)()
+                For Each part In parts.Skip(2)
+                    Dim kv = part.Split(New String() {": "}, 2, StringSplitOptions.None)
+                    If kv.Length = 2 AndAlso Not fields.ContainsKey(kv(0)) Then fields(kv(0)) = kv(1)
+                Next
+                rows.Add(String.Join(",", {Csv(parts(0)), Csv(parts(1)), Money(fields, "Bet"),
+                         Field(fields, "Match"), Field(fields, "Multiplier").TrimEnd("x"c),
+                         Money(fields, "Payout"), Money(fields, "FirstLast"),
+                         If(line.Contains(" | Free Game"), "Y", "N")}))
+            Next
+        End If
+        File.WriteAllLines(path, rows)
+        Return rows.Count - 1
+    End Function
+
+    Private Function Field(fields As Dictionary(Of String, String), key As String) As String
+        Dim v As String = Nothing
+        Return If(fields.TryGetValue(key, v), v, "")
+    End Function
+
+    Private Function Money(fields As Dictionary(Of String, String), key As String) As String
+        Return Field(fields, key).Replace("$", "").Replace(",", "")
+    End Function
 
     ''' <summary>Returns the full text of the game log, or an empty string if the file does not exist.</summary>
     Public Function ReadLog() As String
