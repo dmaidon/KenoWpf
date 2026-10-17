@@ -21,6 +21,8 @@ Format: most-recent first. WPF entries are prefixed **(WPF)**, WinForms entries 
 - **(Core) Performance** — draw stats, all-time summary and jackpot are cached in memory; consecutive runs write the all-time summary once; log cleanup runs once per session.
 - **(WPF) New** — session loss-limit setting, keyboard shortcuts (F5 Play, Esc Clear, F2 Quick Pick, F1 Help), game-log Export CSV, game-log rotation at 5 MB and last-2000-lines viewer.
 - **(WPF) Fixes** — hot/cold number clicks now leave Bullseye / Way Ticket mode; special wager rounded to cents; jackpot popup states the real $25,000 reset; result-dialog errors no longer show a stack trace; CLEAR refreshes the payout schedule.
+- **(WPF) Version display** — the build version is shown in the window title and after the copyright in the status bar.
+- **(MAUI) Android** — About page, version label and a Debug-signing fix; see [Keno.Android/CHANGELOG.md](Keno.Android/CHANGELOG.md).
 - **Build** — output path is now `C:\VB26\Release\Keno`; copyright "© 2026 PAROLE Software", author "Dennis N Maidon", shared through `Directory.Build.props`.
 
 ---

@@ -45,8 +45,8 @@
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
 		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
-		<AssemblyVersion>26.10.17.53</AssemblyVersion>
-		<FileVersion>26.10.17.53</FileVersion>
+		<AssemblyVersion>26.10.17.54</AssemblyVersion>
+		<FileVersion>26.10.17.54</FileVersion>
 		<PackageIcon>keno_2.png</PackageIcon>
 		<Title>Keno.Android</Title>
 	</PropertyGroup>
@@ -114,7 +114,7 @@
 	     briefly holds the freshly zipaligned APK open. Instead sign to a separate file, then copy it over with retries.
 	     The first target forces signing to run every build; the second publishes the signed copy. -->
 	<PropertyGroup Condition="'$(AndroidPackageFormat)' != 'aab'">
-		<_KenoSignedTmp>$(MSBuildProjectDirectory)\$(IntermediateOutputPath)keno-signed-tmp.apk</_KenoSignedTmp>
+		<_KenoSignedTmp>$(MSBuildProjectDirectory)\obj\keno-signed-tmp.apk</_KenoSignedTmp>
 		<AndroidApkSignerAdditionalArguments>--out "$(_KenoSignedTmp)"</AndroidApkSignerAdditionalArguments>
 	</PropertyGroup>
 

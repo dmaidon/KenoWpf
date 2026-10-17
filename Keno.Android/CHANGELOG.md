@@ -1,10 +1,19 @@
-# Last Edit: Apr 11, 2026 10:07 - Separate internal board reset from CLEAR defaults reset.
+# Last Edit: 2026-10-17 - About page, version label, Debug signing fix.
 
 # Changelog — Keno.Android (MAUI)
 
 All notable changes to the MAUI / mobile project are documented here.  
 Format: most-recent first. Entries are prefixed **(MAUI)**.  
 See the [root CHANGELOG](../CHANGELOG.md) for WPF and WinForms history.
+
+---
+
+## [2026-10-17] — About page, version display, Debug signing fix
+
+- **(MAUI) `AboutPage.xaml(.cs)`** — new modal page (☰ → About) showing the build version, copyright "© 2026 PAROLE Software" and author.
+- **(MAUI) `MainPage` — version label** — the top bar shows `v<assembly version>` under the ☰ button; the page title also carries it.
+- **(MAUI) `Keno.Android.csproj` — Debug signing** — `KenoForceResign` / `KenoPublishSigned` targets: apksigner now signs to `obj\keno-signed-tmp.apk` and the result is copied over the `-Signed.apk` with retries, so a locked file no longer leaves an unsigned APK that fails to install (`NO_CERTIFICATES`, `java.exe exited with code 1`).
+- Copyright, company and author now come from the shared `Directory.Build.props`.
 
 ---
 

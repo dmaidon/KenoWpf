@@ -5,6 +5,8 @@
     <IsPackable>false</IsPackable>
     <OptionStrict>On</OptionStrict>
     <RootNamespace>Keno.Core.Tests</RootNamespace>
+    <AssemblyVersion>26.10.17.2</AssemblyVersion>
+    <FileVersion>26.10.17.2</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>

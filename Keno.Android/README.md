@@ -1,4 +1,4 @@
-# Last Edit: Apr 11, 2026 10:07 - Clarify REPLAY keeps current options until CLEAR.
+# Last Edit: 2026-10-17 - About page with version, version label, Debug signing note.
 
 # 📱 Keno — MAUI / Mobile
 
@@ -93,12 +93,19 @@ dotnet build Keno.Android\Keno.Android.csproj
 Or open `KenoWpf.slnx` in Visual Studio, set **Keno.Android** as the startup project,  
 select the target device/emulator from the toolbar, and press **F5**.
 
+**Debug signing note:** the project signs the package to `obj\keno-signed-tmp.apk` and then copies it over  
+`bin\Debug
+et10.0-android\*-Signed.apk` with retries (targets `KenoForceResign` / `KenoPublishSigned` in the `.csproj`).  
+This avoids `NO_CERTIFICATES` install failures caused by the freshly built APK being briefly locked by another process.  
+To check a package yourself: `apksigner verify <path to -Signed.apk>` (Android SDK `build-tools`).
+
 ---
 
 ## Project Structure
 
 ```
 Keno.Android\
+├── AboutPage.xaml(.cs)         — About: app name, build version, copyright, author
 ├── App.xaml(.cs)               — Application entry point, resource dictionaries
 ├── AppShell.xaml(.cs)          — Navigation shell
 ├── GameRecord.cs               — Immutable record for a single completed game (session history)
@@ -204,6 +211,7 @@ The MAUI version redirects all file I/O to platform-safe locations via
 ### Planned (WPF parity)
 
 - [x] **Payout schedule sheet** — ☰ → Payout Schedule; pick-count selector (1–20); CATCH / PAYS / AT $5 table via `KenoPayouts.GetPayoutScheduleEntries()`
+- [x] **About page** — ☰ → About; shows the build version (also shown under the ☰ button in the top bar), copyright and author. The version is the assembly version, which increases on every build
 - [x] **In-app help** — ☰ → How to Play; 10 sections: board, wager, Quick Pick, PLAY/REPLAY/CLEAR, consecutive games + bonus table, side bets, draw speed, favorites, bank/replenish, top bar
 - [ ] Regular, Bullseye, Quadrant, and Half-board game modes
 - [ ] Way Ticket / King Ticket
