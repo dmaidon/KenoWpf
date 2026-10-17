@@ -79,19 +79,28 @@ Public Module AllTimeSummaryStore
         End Try
     End Sub
 
+    Private _cache As AllTimeSummary
+
+    ''' <summary>Returns the in-memory summary, reading the file only on first use.</summary>
     Public Function LoadSummary() As AllTimeSummary
+        If _cache Is Nothing Then _cache = ReadSummaryFromDisk()
+        Return _cache
+    End Function
+
+    Private Function ReadSummaryFromDisk() As AllTimeSummary
         Try
             If Not File.Exists(SummaryFilePath) Then Return New AllTimeSummary()
             Dim json = File.ReadAllText(SummaryFilePath)
             Return If(JsonSerializer.Deserialize(Of AllTimeSummary)(json), New AllTimeSummary())
         Catch ex As Exception
             BackupCorruptFile(SummaryFilePath)
-            LogError(ex, NameOf(LoadSummary))
+            LogError(ex, NameOf(ReadSummaryFromDisk))
             Return New AllTimeSummary()
         End Try
     End Function
 
     Private Sub SaveSummary(summary As AllTimeSummary)
+        _cache = summary
         Try
             Directory.CreateDirectory(DatDir)
             WriteAllTextAtomic(SummaryFilePath, JsonSerializer.Serialize(summary, JsonOptions))

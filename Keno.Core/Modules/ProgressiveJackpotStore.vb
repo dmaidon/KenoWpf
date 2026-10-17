@@ -11,7 +11,15 @@ Public Module ProgressiveJackpotStore
         .WriteIndented = True
     }
 
+    Private _cachedBalance As Decimal?
+
+    ''' <summary>Returns the in-memory jackpot, reading the file only on first use.</summary>
     Public Function GetJackpotBalance() As Decimal
+        If Not _cachedBalance.HasValue Then _cachedBalance = ReadJackpotFromDisk()
+        Return _cachedBalance.Value
+    End Function
+
+    Private Function ReadJackpotFromDisk() As Decimal
         Try
             If Not File.Exists(JackpotFilePath) Then
                 Return JackpotSeed
@@ -23,7 +31,7 @@ Public Module ProgressiveJackpotStore
             Return If(data IsNot Nothing, Math.Max(data.Balance, JackpotSeed), JackpotSeed)
         Catch ex As Exception
             BackupCorruptFile(JackpotFilePath)
-            LogError(ex, NameOf(GetJackpotBalance))
+            LogError(ex, NameOf(ReadJackpotFromDisk))
             Return JackpotSeed
         End Try
     End Function
@@ -56,6 +64,7 @@ Public Module ProgressiveJackpotStore
     End Sub
 
     Private Sub SaveJackpotBalance(balance As Decimal)
+        _cachedBalance = balance
         Try
             Directory.CreateDirectory(DatDir)
             Dim data = New JackpotData With {.Balance = balance}

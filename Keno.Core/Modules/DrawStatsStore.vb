@@ -63,7 +63,15 @@ Public Module DrawStatsStore
         End Try
     End Function
 
+    Private _cache As DrawStats
+
+    ''' <summary>Returns the in-memory stats, reading the file only on first use.</summary>
     Public Function LoadStats() As DrawStats
+        If _cache Is Nothing Then _cache = ReadStatsFromDisk()
+        Return _cache
+    End Function
+
+    Private Function ReadStatsFromDisk() As DrawStats
         Try
             Directory.CreateDirectory(DatDir)
 
@@ -104,6 +112,7 @@ Public Module DrawStatsStore
     End Function
 
     Public Sub SaveStats(stats As DrawStats)
+        _cache = stats
         Try
             Directory.CreateDirectory(DatDir)
 
