@@ -1,9 +1,27 @@
-# Last Edit: 2026-03-20 05:00 AM - Two 2026-03-20 entries added (free-game queue UI, straight-through play).
+# Last Edit: 2026-10-17 - Review fixes, MVVM move, GameEngine, tests, new options.
 
 # Changelog
 
 All notable changes to this project are documented here.  
 Format: most-recent first. WPF entries are prefixed **(WPF)**, WinForms entries **(WF)**.
+
+---
+
+## [2026-10-17] — Code review fixes, MVVM move, GameEngine, tests, new options
+
+- **(WPF) Data safety** — wager is debited before the first draw and the payout credited afterwards; all JSON stores save atomically (temp file + replace); unreadable files are copied to `.bad` before defaults are used.
+- **(WPF) Cancellable play** — closing the window mid-game stops the draw, settles the games already played, refunds the rest of the wager and returns unplayed free games.
+- **(WPF) Dialog timers** — `WinBonusGame` / `WinPayoutSchedule` stop their timers on close (no more exception after closing with the X button).
+- **(WPF) Multi-game popups** — win and bonus popups between games of a multi-game run auto-close after 3 s and ignore hover.
+- **(WPF) Draw speed** — Fast is now 150 ms per ball (was 200 ms).
+- **(WPF) MVVM** — `MainViewModel` + `EqualsConverter`: bank, winnings, wager, status bar, jackpot, wager presets, consecutive games, draw speed, option checkboxes, play state, free-games and repopulate buttons are bound; side effects run from one `Vm_PropertyChanged` handler.
+- **(Core) `GameEngine`** — draw, per-game scoring (multiplier, Powerball, First/Last), wager cost, consecutive bonus and free-game rules extracted from `MainWindow`.
+- **(Core) `PickSelection`** — picks, Bullseye, quadrants/half-board and Way Ticket groups extracted; `MainWindow` repaints through `OnSelectionChanged()`.
+- **(Core) Tests** — new `Keno.Core.Tests` project (xUnit, 44 tests) covering `GameEngine`, `PickSelection` and the game-log CSV export.
+- **(Core) Performance** — draw stats, all-time summary and jackpot are cached in memory; consecutive runs write the all-time summary once; log cleanup runs once per session.
+- **(WPF) New** — session loss-limit setting, keyboard shortcuts (F5 Play, Esc Clear, F2 Quick Pick, F1 Help), game-log Export CSV, game-log rotation at 5 MB and last-2000-lines viewer.
+- **(WPF) Fixes** — hot/cold number clicks now leave Bullseye / Way Ticket mode; special wager rounded to cents; jackpot popup states the real $25,000 reset; result-dialog errors no longer show a stack trace; CLEAR refreshes the payout schedule.
+- **Build** — output path is now `C:\VB26\Release\Keno`; copyright "© 2026 PAROLE Software", author "Dennis N Maidon", shared through `Directory.Build.props`.
 
 ---
 
