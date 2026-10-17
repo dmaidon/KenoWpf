@@ -42,6 +42,23 @@ Public Module AllTimeSummaryStore
         End Try
     End Sub
 
+    ''' <summary>Records several games with a single load/save cycle.</summary>
+    Public Sub RecordGames(games As IEnumerable(Of (Bet As Decimal, Payout As Decimal)))
+        Try
+            Dim s = LoadSummary()
+            For Each g In games
+                s.TotalGamesPlayed += 1
+                s.TotalWagered += g.Bet
+                s.TotalPayout += g.Payout
+                If g.Payout > 0D Then s.TotalWins += 1
+                If g.Payout > s.BestSinglePayout Then s.BestSinglePayout = g.Payout
+            Next
+            SaveSummary(s)
+        Catch ex As Exception
+            LogError(ex, NameOf(RecordGames))
+        End Try
+    End Sub
+
     Public Sub RecordFreeGameEarned()
         Try
             Dim s = LoadSummary()
@@ -68,6 +85,7 @@ Public Module AllTimeSummaryStore
             Dim json = File.ReadAllText(SummaryFilePath)
             Return If(JsonSerializer.Deserialize(Of AllTimeSummary)(json), New AllTimeSummary())
         Catch ex As Exception
+            BackupCorruptFile(SummaryFilePath)
             LogError(ex, NameOf(LoadSummary))
             Return New AllTimeSummary()
         End Try
@@ -76,7 +94,7 @@ Public Module AllTimeSummaryStore
     Private Sub SaveSummary(summary As AllTimeSummary)
         Try
             Directory.CreateDirectory(DatDir)
-            File.WriteAllText(SummaryFilePath, JsonSerializer.Serialize(summary, JsonOptions))
+            WriteAllTextAtomic(SummaryFilePath, JsonSerializer.Serialize(summary, JsonOptions))
         Catch ex As Exception
             LogError(ex, NameOf(SaveSummary))
         End Try

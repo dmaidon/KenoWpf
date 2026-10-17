@@ -29,6 +29,7 @@ Public Module AppSettingsStore
 
             Return settings
         Catch ex As Exception
+            BackupCorruptFile(SettingsFilePath)
             LogError(ex, NameOf(LoadAppSettings))
             Return New AppSettings()
         End Try
@@ -39,7 +40,7 @@ Public Module AppSettingsStore
             Directory.CreateDirectory(SetDir)
 
             Dim json = JsonSerializer.Serialize(settings, JsonOptions)
-            File.WriteAllText(SettingsFilePath, json)
+            WriteAllTextAtomic(SettingsFilePath, json)
         Catch ex As Exception
             LogError(ex, NameOf(SaveAppSettings))
         End Try

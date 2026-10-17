@@ -71,6 +71,7 @@ Public Module BankSettingsStore
 
             Return settings
         Catch ex As Exception
+            BackupCorruptFile(SettingsFilePath)
             LogError(ex, NameOf(LoadSettings))
             Return New BankSettings With {
                 .Balance = DefaultBalance
@@ -84,7 +85,7 @@ Public Module BankSettingsStore
 
             Dim json = JsonSerializer.Serialize(settings, JsonOptions)
 
-            File.WriteAllText(SettingsFilePath, json)
+            WriteAllTextAtomic(SettingsFilePath, json)
         Catch ex As Exception
             LogError(ex, NameOf(SaveSettings))
         End Try

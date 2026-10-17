@@ -3,6 +3,7 @@ Imports System.IO
 
 Public Module GameLogStore
 
+    Private Const MaxLogLinesShown As Integer = 2000
     Private ReadOnly LogFilePath As String = Path.Combine(DatDir, "game-log.txt")
 
     Public Sub AppendGame(gameMode As String, betAmount As Decimal, matched As Integer, payout As Decimal, Optional multiplier As Integer = 1, Optional freeGameAwarded As Boolean = False, Optional firstLastBonus As Decimal = 0D)

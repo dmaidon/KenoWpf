@@ -325,6 +325,12 @@ Class MainWindow
         Dim value As Button = Nothing
         If Not _kenoButtons.TryGetValue(number, value) Then Return
 
+        If ChkWayTicket.IsChecked = True Then ChkWayTicket.IsChecked = False
+        If _isBullseyeActive Then
+            _isBullseyeActive = False
+            BtnBullseye.Background = Brushes.Coral
+        End If
+
         If _selectedNumbers.Remove(number) Then
             value.Background = BrushDefault
         ElseIf _selectedNumbers.Count < 20 Then
@@ -488,6 +494,11 @@ Class MainWindow
         Dim gameMode = If(useBullseye, "Bullseye",
                           If(halfType = "TopBottom", "Top/Bottom Half",
                           If(halfType = "LeftRight", "Left/Right Half", "Regular")))
+        ' Debit the full wager up front so a crash or close mid-play cannot leave the bet uncharged.
+        _bankBalance -= totalWager
+        SaveBankBalance(_bankBalance)
+        UpdateBankDisplay()
+
         BtnPlay.IsEnabled = False
         BtnCLEAR.IsEnabled = False
         ResetGamePlayDisplay()
@@ -583,12 +594,9 @@ Class MainWindow
 
         ' Record each game using bonus-adjusted payout so AllTimeSummary reflects actual earnings.
         Dim perGameBet = totalWager / gamesToPlay
-        For Each r In gameResults
-            Dim adjustedPayout = (r.Payout - r.FirstLastBonus) * bonus + r.FirstLastBonus
-            AllTimeSummaryStore.RecordGame(perGameBet, adjustedPayout)
-        Next
+        AllTimeSummaryStore.RecordGames(gameResults.Select(Function(r) (perGameBet, (r.Payout - r.FirstLastBonus) * bonus + r.FirstLastBonus)))
 
-        _bankBalance = _bankBalance - totalWager + totalPayout
+        _bankBalance += totalPayout   ' wager was already debited before the first draw
         SaveBankBalance(_bankBalance)
         UpdateBankDisplay()
 
@@ -627,7 +635,8 @@ Class MainWindow
                 WinPayoutSchedule.ShowForWin(Me, gameMode, _selectedNumbers.Count, lastMatches, totalPayout, bet)
             End If
         Catch ex As Exception
-            MessageBox.Show($"Result dialog error: {ex.Message}{Environment.NewLine}{ex.StackTrace}",
+            LogError(ex, "Result dialog")
+            MessageBox.Show($"Result dialog error: {ex.Message}",
                             "Result Error", MessageBoxButton.OK, MessageBoxImage.Error)
         End Try
     End Sub
@@ -720,12 +729,16 @@ Class MainWindow
     End Sub
 
     ' ── consecutive games ──────────────────────────────────────────────────
+    Private _consecutiveRadios As RadioButton()
+
     Private Function GetConsecutiveRadioButtons() As RadioButton()
-        Return {RbConsecutive2, RbConsecutive3, RbConsecutive4, RbConsecutive5,
+        If _consecutiveRadios IsNot Nothing Then Return _consecutiveRadios
+        _consecutiveRadios = {RbConsecutive2, RbConsecutive3, RbConsecutive4, RbConsecutive5,
                 RbConsecutive6, RbConsecutive7, RbConsecutive8, RbConsecutive9,
                 RbConsecutive10, RbConsecutive11, RbConsecutive12, RbConsecutive13,
                 RbConsecutive14, RbConsecutive15, RbConsecutive16, RbConsecutive17,
                 RbConsecutive18, RbConsecutive19, RbConsecutive20}
+        Return _consecutiveRadios
     End Function
 
     Private Function GetConsecutiveGamesCount() As Integer
@@ -757,9 +770,13 @@ Class MainWindow
     End Sub
 
     ' ── wager ───────────────────────────────────────────────────────────────
+    Private _wagerRadios As RadioButton()
+
     Private Function GetWagerRadioButtons() As RadioButton()
-        Return {RbWager1, RbWager2, RbWager3, RbWager5, RbWager10, RbWager15, RbWager20,
+        If _wagerRadios IsNot Nothing Then Return _wagerRadios
+        _wagerRadios = {RbWager1, RbWager2, RbWager3, RbWager5, RbWager10, RbWager15, RbWager20,
                 RbWager25, RbWager30, RbWager40, RbWager50, RbWager100, RbWager150, RbWager200}
+        Return _wagerRadios
     End Function
 
     Private Function GetSelectedBetAmount() As Decimal
@@ -768,7 +785,7 @@ Class MainWindow
         Next
 
         If NudSpecialWager IsNot Nothing AndAlso NudSpecialWager.Value.HasValue AndAlso NudSpecialWager.Value.Value >= 0.05 Then
-            Return CDec(NudSpecialWager.Value.Value)
+            Return Math.Round(CDec(NudSpecialWager.Value.Value), 2)
         End If
 
         Return 0D
@@ -1291,11 +1308,17 @@ Class MainWindow
         MessageBox.Show($"Current Jackpot: {_jackpotBalance:C0}" & Environment.NewLine & Environment.NewLine &
                         "Win by matching ALL numbers on any 8-spot or greater ticket." & Environment.NewLine &
                         "5% of every wager ≥$5 contributes to the jackpot." & Environment.NewLine &
-                        "Jackpot resets to $1,000 when won.",
+                        "Jackpot resets to $25,000 when won.",
                         "Progressive Jackpot", MessageBoxButton.OK, MessageBoxImage.Information)
     End Sub
 
     Private Sub MainWindow_Closing(sender As Object, e As ComponentModel.CancelEventArgs)
+        If Not BtnPlay.IsEnabled AndAlso Not BtnCLEAR.IsEnabled Then
+            e.Cancel = True
+            MessageBox.Show("A game is in progress. Please wait for it to finish before closing.",
+                            "Game In Progress", MessageBoxButton.OK, MessageBoxImage.Information)
+            Return
+        End If
         If _sessionGamesPlayed = 0 Then Return
         Dim netPL = _bankBalance - _sessionStartBalance
         WinSessionSummary.ShowSummary(Me, netPL, _sessionGamesPlayed, _sessionWins,

@@ -22,6 +22,7 @@ Public Module ProgressiveJackpotStore
 
             Return If(data IsNot Nothing, Math.Max(data.Balance, JackpotSeed), JackpotSeed)
         Catch ex As Exception
+            BackupCorruptFile(JackpotFilePath)
             LogError(ex, NameOf(GetJackpotBalance))
             Return JackpotSeed
         End Try
@@ -59,7 +60,7 @@ Public Module ProgressiveJackpotStore
             Directory.CreateDirectory(DatDir)
             Dim data = New JackpotData With {.Balance = balance}
             Dim json = JsonSerializer.Serialize(data, JsonOptions)
-            File.WriteAllText(JackpotFilePath, json)
+            WriteAllTextAtomic(JackpotFilePath, json)
         Catch ex As Exception
             LogError(ex, NameOf(SaveJackpotBalance))
         End Try

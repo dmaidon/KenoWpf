@@ -97,6 +97,7 @@ Public Module DrawStatsStore
 
             Return stats
         Catch ex As Exception
+            BackupCorruptFile(StatsFilePath)
             LogError(ex, NameOf(LoadStats))
             Return New DrawStats()
         End Try
@@ -108,7 +109,7 @@ Public Module DrawStatsStore
 
             Dim json = JsonSerializer.Serialize(stats, JsonOptions)
 
-            File.WriteAllText(StatsFilePath, json)
+            WriteAllTextAtomic(StatsFilePath, json)
         Catch ex As Exception
             LogError(ex, NameOf(SaveStats))
         End Try

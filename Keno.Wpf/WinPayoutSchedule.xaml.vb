@@ -40,6 +40,13 @@ Class WinPayoutSchedule
         AddHandler Me.MouseLeave, AddressOf Win_MouseLeave
     End Sub
 
+    Private Sub WinPayoutSchedule_Closed(sender As Object, e As EventArgs) Handles Me.Closed
+        _timer.Stop()
+        RemoveHandler _timer.Tick, AddressOf Timer_Tick
+        RemoveHandler Me.MouseEnter, AddressOf Win_MouseEnter
+        RemoveHandler Me.MouseLeave, AddressOf Win_MouseLeave
+    End Sub
+
     Private Sub WinPayoutSchedule_Loaded(sender As Object, e As RoutedEventArgs) Handles Me.Loaded
         TbkWin.Text = $"You Won {_payout:C2}!"
 

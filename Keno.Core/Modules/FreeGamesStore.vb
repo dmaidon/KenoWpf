@@ -52,7 +52,7 @@ Public Module FreeGamesStore
             Directory.CreateDirectory(DatDir)
             Dim settings = New FreeGamesSettings With {.Count = Math.Max(0, count)}
             Dim json = JsonSerializer.Serialize(settings, JsonOptions)
-            File.WriteAllText(SettingsFilePath, json)
+            WriteAllTextAtomic(SettingsFilePath, json)
         Catch ex As Exception
             LogError(ex, NameOf(SaveFreeGames))
         End Try
@@ -70,6 +70,7 @@ Public Module FreeGamesStore
             Dim settings = JsonSerializer.Deserialize(Of FreeGamesSettings)(json)
             Return If(settings, New FreeGamesSettings With {.Count = 0})
         Catch ex As Exception
+            BackupCorruptFile(SettingsFilePath)
             LogError(ex, NameOf(LoadSettings))
             Return New FreeGamesSettings With {.Count = 0}
         End Try

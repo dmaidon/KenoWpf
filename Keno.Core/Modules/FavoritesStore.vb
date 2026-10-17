@@ -15,9 +15,11 @@ Public Module FavoritesStore
     Public Sub SaveFavorites(slotIndex As Integer, numbers As IEnumerable(Of Integer))
         Try
             Directory.CreateDirectory(DatDir)
+            If slotIndex < 0 OrElse slotIndex >= SlotCount Then Return
+            If slotIndex < 0 OrElse slotIndex >= SlotCount Then Return
             Dim data = LoadData()
             data.Slots(slotIndex).Numbers = numbers.OrderBy(Function(n) n).ToArray()
-            File.WriteAllText(FavoritesFilePath, JsonSerializer.Serialize(data, JsonOptions))
+            WriteAllTextAtomic(FavoritesFilePath, JsonSerializer.Serialize(data, JsonOptions))
         Catch ex As Exception
             LogError(ex, NameOf(SaveFavorites))
         End Try
@@ -81,7 +83,7 @@ Public Module FavoritesStore
             If legacy IsNot Nothing AndAlso legacy.Numbers IsNot Nothing AndAlso legacy.Numbers.Length > 0 Then
                 migrated.Slots(0).Numbers = legacy.Numbers
             End If
-            File.WriteAllText(FavoritesFilePath, JsonSerializer.Serialize(migrated, JsonOptions))
+            WriteAllTextAtomic(FavoritesFilePath, JsonSerializer.Serialize(migrated, JsonOptions))
             Return migrated
         Catch ex As Exception
             LogError(ex, NameOf(LoadData))

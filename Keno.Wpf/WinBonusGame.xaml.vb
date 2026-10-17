@@ -17,6 +17,11 @@ Class WinBonusGame
         AddHandler _timer.Tick, AddressOf Timer_Tick
     End Sub
 
+    Private Sub WinBonusGame_Closed(sender As Object, e As EventArgs) Handles Me.Closed
+        _timer.Stop()
+        RemoveHandler _timer.Tick, AddressOf Timer_Tick
+    End Sub
+
     Private Sub WinBonusGame_Loaded(sender As Object, e As RoutedEventArgs) Handles Me.Loaded
         UpdateCountdown()
         _timer.Start()

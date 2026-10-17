@@ -10,10 +10,34 @@ Public Module Globals
 
     Public ReadOnly cpy As String = "© 2026 Dennis N. Maidon. All rights reserved."
 
+    ''' <summary>Writes via a temp file then replaces the target, so a crash mid-write cannot truncate it.</summary>
+    Public Sub WriteAllTextAtomic(path As String, contents As String)
+        Dim tmp = path & ".tmp"
+        File.WriteAllText(tmp, contents)
+        If File.Exists(path) Then
+            File.Replace(tmp, path, Nothing)
+        Else
+            File.Move(tmp, path)
+        End If
+    End Sub
+
+    Private _logsCleaned As Boolean
+
+    ''' <summary>Moves an unreadable data file aside so the next save does not destroy it.</summary>
+    Public Sub BackupCorruptFile(path As String)
+        Try
+            If File.Exists(path) Then File.Copy(path, path & ".bad", True)
+        Catch
+        End Try
+    End Sub
+
     Public Sub LogError(ex As Exception, context As String)
         Try
             Directory.CreateDirectory(LogDir)
-            CleanupOldLogs()
+            If Not _logsCleaned Then
+                _logsCleaned = True
+                CleanupOldLogs()
+            End If
 
             Dim fileName = $"err_{DateTime.Now:MMMdd}.log"
             Dim logPath = Path.Combine(LogDir, fileName)
