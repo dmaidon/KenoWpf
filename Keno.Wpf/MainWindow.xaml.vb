@@ -2,6 +2,8 @@
 
 Class MainWindow
 
+    Private ReadOnly Vm As New MainViewModel()
+
     ' ── colour constants matching WinForms FrmMain.KenoSelection ──────────────
     Private Shared ReadOnly BrushDefault As SolidColorBrush = Freeze(Color.FromRgb(192, 255, 255))  ' #C0FFFF
 
@@ -43,6 +45,7 @@ Class MainWindow
     ' ── construction ─────────────────────────────────────────────────────────
     Public Sub New()
         InitializeComponent()
+        DataContext = Vm
         BuildKenoGrid()
         BuildPlayedGrid()
         BuildGamePlayGrid()
@@ -241,8 +244,8 @@ Class MainWindow
         _lastMatches = -1
         _lastPayout = 0D
         _lastFirstLastBonus = 0D
-        LblWinnings.Content = "$0"
-        LblWagerTotal.Content = "$0"
+        Vm.WinningsText = "$0"
+        Vm.WagerTotalText = "$0"
         ResetGamePlayDisplay()
         If Not preserveFreeGames Then
             _freeGamesQueued = 0
@@ -256,9 +259,9 @@ Class MainWindow
 
     ' ── status bar ───────────────────────────────────────────────────────────
     Private Sub UpdateStatusBar()
-        SbiPicks.Content = $"Picks: {_selectedNumbers.Count}"
-        SbiMatches.Content = $"Matches: {If(_lastMatches < 0, "—", _lastMatches.ToString())}"
-        SbiPayout.Content = $"Payout: {_lastPayout:C2}"
+        Vm.PicksText = $"Picks: {_selectedNumbers.Count}"
+        Vm.MatchesText = $"Matches: {If(_lastMatches < 0, "—", _lastMatches.ToString())}"
+        Vm.PayoutText = $"Payout: {_lastPayout:C2}"
     End Sub
 
     ' ── hot / cold numbers + streaks ─────────────────────────────────────────
@@ -274,18 +277,17 @@ Class MainWindow
     Private Sub RefreshStatsDisplay(stats As DrawStatsStore.DrawStats)
         ' ── streaks ──────────────────────────────────────────────────────────
         If stats.CurrentWinStreak > 0 Then
-            SbiCurrentStreak.Content = $"Win Streak: {stats.CurrentWinStreak}"
-            SbiCurrentStreak.Foreground = Brushes.ForestGreen
+            Vm.StreakText = $"Win Streak: {stats.CurrentWinStreak}"
+            Vm.StreakBrush = Brushes.ForestGreen
         ElseIf stats.CurrentLossStreak > 0 Then
-            SbiCurrentStreak.Content = $"Loss Streak: {stats.CurrentLossStreak}"
-            SbiCurrentStreak.Foreground = Brushes.Firebrick
+            Vm.StreakText = $"Loss Streak: {stats.CurrentLossStreak}"
+            Vm.StreakBrush = Brushes.Firebrick
         Else
-            SbiCurrentStreak.Content = "Streak: —"
-            SbiCurrentStreak.Foreground = SystemColors.ControlTextBrush
+            Vm.StreakText = "Streak: —"
+            Vm.StreakBrush = SystemColors.ControlTextBrush
         End If
 
-        SbiBestStreak.Content = $"Best: {stats.BestWinStreak}W"
-        SbiBestStreak.Foreground = SystemColors.ControlTextBrush
+        Vm.BestStreakText = $"Best: {stats.BestWinStreak}W"
 
         ' ── hot / cold — require 5+ games in the window ───────────────────
         If stats.GamesPlayed < 5 Then Return
@@ -438,7 +440,7 @@ Class MainWindow
 
     ' ── bank display ─────────────────────────────────────────────────────────
     Private Sub UpdateBankDisplay()
-        LblBank.Content = _bankBalance.ToString("C2")
+        Vm.BankText = _bankBalance.ToString("C2")
         If NudSpecialWager IsNot Nothing Then
             NudSpecialWager.Maximum = Math.Min(5000D, CDbl(_bankBalance))
         End If
@@ -448,7 +450,7 @@ Class MainWindow
     End Sub
 
     Private Sub UpdateJackpotDisplay()
-        TbkProgressiveJackpot.Text = $"Progressive Jackpot: {_jackpotBalance:C0}"
+        Vm.JackpotText = $"Progressive Jackpot: {_jackpotBalance:C0}"
     End Sub
 
     Private Sub UpdateWagerPreview()
@@ -456,11 +458,11 @@ Class MainWindow
         Dim games = GetConsecutiveGamesCount()
 
         If bet <= 0D OrElse _selectedNumbers.Count = 0 Then
-            LblWagerTotal.Content = "$0"
+            Vm.WagerTotalText = "$0"
             Return
         End If
 
-        LblWagerTotal.Content = ComputeTotalWager(bet, games).ToString("C2")
+        Vm.WagerTotalText = ComputeTotalWager(bet, games).ToString("C2")
     End Sub
 
     ' ── play / clear ─────────────────────────────────────────────────────────
@@ -540,7 +542,7 @@ Class MainWindow
                 End If
 
                 totalPayout += gamePayout
-                LblWinnings.Content = totalPayout.ToString("C2")
+                Vm.WinningsText = totalPayout.ToString("C2")
                 lastMatches = result.Matches
                 gameResults.Add((i, result.Matches, gamePayout, currentMultiplier, firstLastBonus))
                 UpdateGamePlayCell(i, gamePayout > 0D,
@@ -608,8 +610,8 @@ Class MainWindow
 
         _lastMatches = lastMatches
         _lastPayout = totalPayout
-        LblWinnings.Content = totalPayout.ToString("C2")
-        LblWagerTotal.Content = totalWager.ToString("C2")
+        Vm.WinningsText = totalPayout.ToString("C2")
+        Vm.WagerTotalText = totalWager.ToString("C2")
         UpdatePayoutScheduleDisplay()
         UpdateStatusBar()
         UpdateFreeGamesButton()
@@ -1061,8 +1063,8 @@ Class MainWindow
         BtnPlay.IsEnabled = False
         BtnCLEAR.IsEnabled = False
         BtnFreeGames.IsEnabled = False
-        LblWinnings.Content = "$0"
-        LblWagerTotal.Content = "$0"
+        Vm.WinningsText = "$0"
+        Vm.WagerTotalText = "$0"
 
         Dim freeGameResults As New List(Of (Matched As Integer, Payout As Decimal))()
 
@@ -1078,7 +1080,7 @@ Class MainWindow
                 End If
 
                 totalPayout += gamePayout
-                LblWinnings.Content = totalPayout.ToString("C2")
+                Vm.WinningsText = totalPayout.ToString("C2")
 
                 UpdateFreeGameCellResult(i, gamePayout > 0D)
                 UpdateDrawStats(result.Draw, gamePayout > 0D)
@@ -1109,7 +1111,7 @@ Class MainWindow
             BtnCLEAR.IsEnabled = True
             UpdateFreeGamesButton()
             UpdateFreeGamesGrid()
-            LblWagerTotal.Content = (gamesToPlay * FreeGameBet).ToString("C2")
+            Vm.WagerTotalText = (gamesToPlay * FreeGameBet).ToString("C2")
         End Try
     End Function
 

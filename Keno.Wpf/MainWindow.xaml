@@ -327,9 +327,9 @@
             </StatusBar.Effect>
             <!-- SbiCpy must be declared first so DockPanel.Dock=Right reserves right space -->
             <StatusBarItem x:Name="SbiCpy" Content="cpy"  DockPanel.Dock="Right" VerticalAlignment="Center" FontSize="8" Foreground="#FF640909" FontStyle="Italic" FontWeight="Bold" Height="18" Width="304" />
-            <StatusBarItem x:Name="SbiPicks"  Content="Picks: 0"    VerticalAlignment="Center" FontSize="10" FontWeight="Bold" />
+            <StatusBarItem x:Name="SbiPicks"  Content="{Binding PicksText}"    VerticalAlignment="Center" FontSize="10" FontWeight="Bold" />
             <Separator />
-            <StatusBarItem x:Name="SbiMatches" Content="Matches: 0"  VerticalAlignment="Center" FontSize="10" FontWeight="Bold" />
+            <StatusBarItem x:Name="SbiMatches" Content="{Binding MatchesText}"  VerticalAlignment="Center" FontSize="10" FontWeight="Bold" />
             <Separator />
             <StatusBarItem x:Name="SbiColdNumbers" Padding="0,0,4,0" VerticalAlignment="Center">
                 <StackPanel Orientation="Horizontal">
@@ -352,7 +352,7 @@
                 </StackPanel>
             </StatusBarItem>
             <Separator />
-            <StatusBarItem x:Name="SbiPayout"  Content="Payout: $0.00" VerticalAlignment="Center" FontSize="10" FontWeight="Bold" Width="683" />
+            <StatusBarItem x:Name="SbiPayout"  Content="{Binding PayoutText}" VerticalAlignment="Center" FontSize="10" FontWeight="Bold" Width="683" />
         </StatusBar>
         <StatusBar x:Name="StatBar2" VerticalAlignment="Top" Margin="0,482,10,0" Height="21" Background="#FFCAF29B" Grid.ColumnSpan="4" RenderTransformOrigin="0.498,0.572"  Width="920">
             <StatusBar.Effect>
@@ -362,7 +362,7 @@
             <StatusBarItem x:Name="SbiProgressiveJackpot" DockPanel.Dock="Right"
                            Cursor="Hand" Padding="4,0"
                            MouseLeftButtonDown="SbiProgressiveJackpot_MouseDown" BorderBrush="{DynamicResource KenoDefaultBrush}">
-                <TextBlock x:Name="TbkProgressiveJackpot" Text="Progressive Jackpot: $0"
+                <TextBlock x:Name="TbkProgressiveJackpot" Text="{Binding JackpotText}"
                            FontSize="9" FontWeight="Bold" Foreground="#FFC000C0"
                            VerticalAlignment="Center"  Width="160" />
             </StatusBarItem>
@@ -394,9 +394,9 @@
                     <TextBlock Text="Settings" FontSize="9" FontWeight="Bold" Foreground="White" VerticalAlignment="Center" />
                 </Border>
             </StatusBarItem>
-            <StatusBarItem x:Name="SbiCurrentStreak" DockPanel.Dock="Left" Content="Streak: — " Foreground="Navy" VerticalAlignment="Center" FontSize="10" FontWeight="Bold" FontStyle="Normal" />
+            <StatusBarItem x:Name="SbiCurrentStreak" DockPanel.Dock="Left" Content="{Binding StreakText}" Foreground="{Binding StreakBrush}" VerticalAlignment="Center" FontSize="10" FontWeight="Bold" FontStyle="Normal" />
             <Separator />
-            <StatusBarItem x:Name="SbiBestStreak" DockPanel.Dock="Left" Content="Best: 0W" Foreground="Navy" VerticalAlignment="Center" FontSize="10" FontWeight="Bold" />
+            <StatusBarItem x:Name="SbiBestStreak" DockPanel.Dock="Left" Content="{Binding BestStreakText}" Foreground="Navy" VerticalAlignment="Center" FontSize="10" FontWeight="Bold" />
             <Separator />
             <StatusBarItem x:Name="SbiHotNumbers" DockPanel.Dock="Left" Padding="6,0,0,0" VerticalAlignment="Center">
                 <StackPanel Orientation="Horizontal">
@@ -425,7 +425,7 @@
                 <DropShadowEffect />
             </GroupBox.Effect>
             <StackPanel Margin="4,2,4,4">
-                <Label x:Name="LblBank" Content="$0"
+                <Label x:Name="LblBank" Content="{Binding BankText}"
                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
                        VerticalContentAlignment="Center" FontFamily="Segoe UI" FontSize="10" FontWeight="Bold"
                        Background="#FF8FF3E4" Foreground="Navy" BorderBrush="#888888" BorderThickness="1"
@@ -433,7 +433,7 @@
                 <TextBlock Text="Winnings" HorizontalAlignment="Center"
                            FontFamily="Segoe UI" FontSize="9" FontWeight="Bold" FontStyle="Italic"
                            Margin="0,4,0,1" Foreground="White" />
-                <Label x:Name="LblWinnings" Content="$0"
+                <Label x:Name="LblWinnings" Content="{Binding WinningsText}"
                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
                        VerticalContentAlignment="Center" FontFamily="Segoe UI" FontSize="10" FontWeight="Bold" FontStyle="Italic"
                        Background="#FF80FF80" Foreground="Black"
@@ -441,7 +441,7 @@
                 <TextBlock Text="Wager" HorizontalAlignment="Center"
                            FontFamily="Segoe UI" FontSize="9" FontWeight="Bold" FontStyle="Italic"
                            Margin="0,4,0,1" Foreground="White" />
-                <Label x:Name="LblWagerTotal" Content="$0"
+                <Label x:Name="LblWagerTotal" Content="{Binding WagerTotalText}"
                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
                        VerticalContentAlignment="Center" FontFamily="Segoe UI" FontSize="10" FontWeight="Bold" FontStyle="Italic"
                        Background="DarkOrange" Foreground="Black"
