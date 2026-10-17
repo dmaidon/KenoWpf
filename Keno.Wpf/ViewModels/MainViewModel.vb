@@ -13,6 +13,55 @@ Public Class MainViewModel
     Private _streakBrush As Brush = SystemColors.ControlTextBrush
     Private _bestStreakText As String = "Best: 0W"
 
+    ' ── play state ───────────────────────────────────────────────────────────
+    Private _isPlaying As Boolean
+    Private _freeGamesText As String = "Free Games Won (0)"
+    Private _canStageFreeGame As Boolean
+    Private _canRepopulate As Boolean
+
+    ''' <summary>True while a game (or queued free-game run) is being drawn.</summary>
+    Public Property IsPlaying As Boolean
+        Get
+            Return _isPlaying
+        End Get
+        Set(value As Boolean)
+            If SetField(_isPlaying, value) Then RaisePropertyChanged(NameOf(IsIdle))
+        End Set
+    End Property
+
+    Public ReadOnly Property IsIdle As Boolean
+        Get
+            Return Not _isPlaying
+        End Get
+    End Property
+
+    Public Property FreeGamesText As String
+        Get
+            Return _freeGamesText
+        End Get
+        Set(value As String)
+            SetField(_freeGamesText, value)
+        End Set
+    End Property
+
+    Public Property CanStageFreeGame As Boolean
+        Get
+            Return _canStageFreeGame
+        End Get
+        Set(value As Boolean)
+            SetField(_canStageFreeGame, value)
+        End Set
+    End Property
+
+    Public Property CanRepopulate As Boolean
+        Get
+            Return _canRepopulate
+        End Get
+        Set(value As Boolean)
+            SetField(_canRepopulate, value)
+        End Set
+    End Property
+
     ' ── ticket options ───────────────────────────────────────────────────────
     Private _betPreset As Integer = 1
     Private _specialWager As Double?

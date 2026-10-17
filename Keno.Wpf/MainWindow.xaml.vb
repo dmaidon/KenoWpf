@@ -312,7 +312,7 @@ Class MainWindow
     End Sub
 
     Private Sub HotColdNum_Click(sender As Object, e As MouseButtonEventArgs)
-        If Not BtnPlay.IsEnabled Then Return
+        If Vm.IsPlaying Then Return
         Dim brd = TryCast(sender, Border)
         If brd Is Nothing Then Return
         Dim tbk = TryCast(brd.Child, TextBlock)
@@ -441,9 +441,7 @@ Class MainWindow
         If NudSpecialWager IsNot Nothing Then
             NudSpecialWager.Maximum = Math.Min(5000D, CDbl(_bankBalance))
         End If
-        If BtnRepopulateBank IsNot Nothing Then
-            BtnRepopulateBank.IsEnabled = _bankBalance <= 0D
-        End If
+        Vm.CanRepopulate = _bankBalance <= 0D
     End Sub
 
     Private Sub UpdateJackpotDisplay()
@@ -499,8 +497,7 @@ Class MainWindow
         SaveBankBalance(_bankBalance)
         UpdateBankDisplay()
 
-        BtnPlay.IsEnabled = False
-        BtnCLEAR.IsEnabled = False
+        Vm.IsPlaying = True
         ResetGamePlayDisplay()
         Try
             For i = 1 To gamesToPlay
@@ -556,8 +553,7 @@ Class MainWindow
                 End If
             Next
         Finally
-            BtnPlay.IsEnabled = True
-            BtnCLEAR.IsEnabled = True
+            Vm.IsPlaying = False
         End Try
 
         Dim subtotal = totalPayout
@@ -785,6 +781,8 @@ Class MainWindow
                 UpdateWagerPreview()
             Case NameOf(MainViewModel.UseWayTicket)
                 OnWayTicketChanged()
+            Case NameOf(MainViewModel.IsPlaying)
+                UpdateFreeGamesButton()
             Case NameOf(MainViewModel.UsePowerball)
                 LblPowerballValue.Content = If(Vm.UsePowerball, "Active", "—")
             Case NameOf(MainViewModel.FlyoutsEnabled)
@@ -901,7 +899,7 @@ Class MainWindow
     End Sub
 
     Private Sub BtnBullseye_Click(sender As Object, e As RoutedEventArgs)
-        If Not BtnPlay.IsEnabled Then Return
+        If Vm.IsPlaying Then Return
         If Vm.UseWayTicket Then Vm.UseWayTicket = False
 
         For Each kvp In _kenoButtons
@@ -953,9 +951,7 @@ Class MainWindow
 
         UseFreeGames(gamesToPlay)
 
-        BtnPlay.IsEnabled = False
-        BtnCLEAR.IsEnabled = False
-        BtnFreeGames.IsEnabled = False
+        Vm.IsPlaying = True
         Vm.WinningsText = "$0"
         Vm.WagerTotalText = "$0"
 
@@ -998,8 +994,7 @@ Class MainWindow
             End If
             _freeGamesQueued = 0
             _lastFirstLastBonus = 0D
-            BtnPlay.IsEnabled = True
-            BtnCLEAR.IsEnabled = True
+            Vm.IsPlaying = False
             UpdateFreeGamesButton()
             UpdateFreeGamesGrid()
             Vm.WagerTotalText = (gamesToPlay * FreeGameBet).ToString("C2")
@@ -1019,9 +1014,8 @@ Class MainWindow
     Private Sub UpdateFreeGamesButton()
         Dim count = GetFreeGames()
         Dim remaining = count - _freeGamesQueued
-        Dim template = TryCast(BtnFreeGames.Tag, String)
-        BtnFreeGames.Content = If(template IsNot Nothing, String.Format(template, remaining), $"Free Games Won ({remaining})")
-        BtnFreeGames.IsEnabled = remaining > 0 AndAlso _freeGamesQueued < 10 AndAlso BtnPlay.IsEnabled
+        Vm.FreeGamesText = $"Free Games Won ({remaining})"
+        Vm.CanStageFreeGame = remaining > 0 AndAlso _freeGamesQueued < 10 AndAlso Not Vm.IsPlaying
     End Sub
 
     Private Sub BtnPlayFavorites_Click()
@@ -1192,7 +1186,7 @@ Class MainWindow
     End Sub
 
     Private Sub MainWindow_Closing(sender As Object, e As ComponentModel.CancelEventArgs)
-        If Not BtnPlay.IsEnabled AndAlso Not BtnCLEAR.IsEnabled Then
+        If Vm.IsPlaying Then
             e.Cancel = True
             MessageBox.Show("A game is in progress. Please wait for it to finish before closing.",
                             "Game In Progress", MessageBoxButton.OK, MessageBoxImage.Information)
