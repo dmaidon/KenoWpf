@@ -45,8 +45,8 @@
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
 		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
-		<AssemblyVersion>26.10.17.51</AssemblyVersion>
-		<FileVersion>26.10.17.51</FileVersion>
+		<AssemblyVersion>26.10.17.53</AssemblyVersion>
+		<FileVersion>26.10.17.53</FileVersion>
 		<PackageIcon>keno_2.png</PackageIcon>
 		<Title>Keno.Android</Title>
 	</PropertyGroup>
@@ -109,11 +109,21 @@
 	  <None Update="Resources\AppIcon\appicon.svg.OLD" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
 	</ItemGroup>
 
-	<!-- Debug-deploy fix: a failed apksigner run (locked file) used to leave an UNSIGNED "-Signed.apk" behind,
-	     and the next build skipped signing because that file looked up to date -> NO_CERTIFICATES on install.
-	     Deleting it first forces zipalign + apksigner to run on every package build, and a signing failure now fails the build. -->
+	<!-- Debug-deploy fix for NO_CERTIFICATES / "java.exe exited with code 1".
+	     apksigner normally signs the package in place, which fails when something (scanner, indexer, a leftover build node)
+	     briefly holds the freshly zipaligned APK open. Instead sign to a separate file, then copy it over with retries.
+	     The first target forces signing to run every build; the second publishes the signed copy. -->
+	<PropertyGroup Condition="'$(AndroidPackageFormat)' != 'aab'">
+		<_KenoSignedTmp>$(MSBuildProjectDirectory)\$(IntermediateOutputPath)keno-signed-tmp.apk</_KenoSignedTmp>
+		<AndroidApkSignerAdditionalArguments>--out "$(_KenoSignedTmp)"</AndroidApkSignerAdditionalArguments>
+	</PropertyGroup>
+
 	<Target Name="KenoForceResign" BeforeTargets="_Sign" Condition="'$(AndroidPackageFormat)' != 'aab'">
-		<Delete Files="$(ApkFileSigned)" ContinueOnError="true" />
+		<Delete Files="$(ApkFileSigned);$(_KenoSignedTmp)" ContinueOnError="true" />
+	</Target>
+
+	<Target Name="KenoPublishSigned" AfterTargets="_Sign" Condition="'$(AndroidPackageFormat)' != 'aab' And Exists('$(_KenoSignedTmp)')">
+		<Copy SourceFiles="$(_KenoSignedTmp)" DestinationFiles="$(ApkFileSigned)" Retries="30" RetryDelayMilliseconds="500" />
 	</Target>
 
 </Project>
