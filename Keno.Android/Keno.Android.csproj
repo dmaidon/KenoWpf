@@ -49,10 +49,6 @@
 		<FileVersion>26.4.11.49</FileVersion>
 		<PackageIcon>keno_2.png</PackageIcon>
 		<Title>Keno.Android</Title>
-		<Company>PAROLE Software</Company>
-		<Authors>Dennis N Maidon</Authors>
-		<Copyright>© 2026 PAROLE Software</Copyright>
-		<NeutralLanguage>en-US</NeutralLanguage>
 	</PropertyGroup>
 
 	<ItemGroup>

@@ -13,11 +13,7 @@
     <ApplicationIcon>Resources\keno_2.ico</ApplicationIcon>
     <OptionStrict>On</OptionStrict>
     <Title>Keno</Title>
-    <Authors>Dennis N Maidon</Authors>
-    <Company>PAROLE Software</Company>
-    <Copyright>© 2026 PAROLE Software</Copyright>
     <PackageIcon>Resources\keno_2.png</PackageIcon>
-    <NeutralLanguage>en-US</NeutralLanguage>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
